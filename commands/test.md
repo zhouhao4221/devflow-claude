@@ -39,22 +39,23 @@ else:
         print(f"  {i+1}. {req}")
 ```
 
-### 1. 解析需求路径
+### 1. 解析存储路径（本地优先 + 缓存同步）
 
 ```bash
-# 检查当前仓库绑定的项目
+# 本地存储路径（主存储）
+LOCAL_ROOT=docs/requirements
+LOCAL_ACTIVE=$LOCAL_ROOT/active
+
+# 检查当前仓库绑定的项目（用于缓存同步）
 PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
 
 if [ -n "$PROJECT" ]; then
-    REQ_ROOT=~/.claude-requirements/projects/$PROJECT
-else
-    REQ_ROOT=docs/requirements
+    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
+    CACHE_ACTIVE=$CACHE_ROOT/active
 fi
-
-REQ_ACTIVE=$REQ_ROOT/active
 ```
 
-### 1. 前置检查
+### 2. 前置检查
 
 ```python
 if 状态 not in ["开发中", "测试中"]:
@@ -69,12 +70,13 @@ if 有未完成的功能点:
     print("是否继续进入测试？(y/n)")
 ```
 
-### 2. 更新状态为「测试中」
+### 3. 更新状态为「测试中」（先本地，后缓存）
 
 - 修改元信息状态为「测试中」
 - 勾选生命周期「测试中」
+- 先更新本地，再同步到缓存
 
-### 3. 加载测试要点
+### 4. 加载测试要点
 
 从需求文档提取测试要点：
 
@@ -101,7 +103,7 @@ API 测试：
 - [ ] 缓存正确失效
 ```
 
-### 4. API 自动测试
+### 5. API 自动测试
 
 对于 API 接口，自动执行测试：
 
@@ -122,7 +124,7 @@ API 测试：
 📊 API 测试结果：7/7 通过
 ```
 
-### 5. 交互式验证
+### 6. 交互式验证
 
 对于无法自动测试的场景，引导用户手动验证：
 
@@ -144,9 +146,9 @@ API 测试：
 请输入结果：
 ```
 
-### 6. 记录测试结果
+### 7. 记录测试结果（先本地，后缓存）
 
-更新需求文档的测试要点：
+更新需求文档的测试要点，并同步到缓存：
 
 ```markdown
 ## 八、测试要点
@@ -161,7 +163,7 @@ API 测试：
 - [x] 缓存正确失效 ✅ 2026-01-08
 ```
 
-### 7. 测试总结
+### 8. 测试总结
 
 ```
 📊 测试结果汇总
@@ -174,7 +176,7 @@ API 测试：
 通过率：100%
 ```
 
-### 8. 下一步操作
+### 9. 下一步操作
 
 #### 全部通过
 

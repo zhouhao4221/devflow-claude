@@ -16,32 +16,40 @@ description: 创建新需求 - 基于模板创建需求文档
 
 ## 执行流程
 
-### 0. 解析需求路径
+### 0. 解析存储路径（本地优先 + 缓存同步）
 
 ```bash
-# 检查当前仓库绑定的项目
+# 本地存储路径（主存储）
+LOCAL_ROOT=docs/requirements
+LOCAL_ACTIVE=$LOCAL_ROOT/active
+LOCAL_COMPLETED=$LOCAL_ROOT/completed
+LOCAL_TEMPLATE=$LOCAL_ROOT/template.md
+
+# 检查当前仓库绑定的项目（用于缓存同步）
 PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
 
 if [ -n "$PROJECT" ]; then
-    # 使用全局缓存路径
-    REQ_ROOT=~/.claude-requirements/projects/$PROJECT
-else
-    # 回退到本地路径
-    REQ_ROOT=docs/requirements
+    # 全局缓存路径（同步副本）
+    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
+    CACHE_ACTIVE=$CACHE_ROOT/active
+    CACHE_COMPLETED=$CACHE_ROOT/completed
 fi
 
-REQ_ACTIVE=$REQ_ROOT/active
-REQ_COMPLETED=$REQ_ROOT/completed
-REQ_TEMPLATE=$REQ_ROOT/template.md
+# 确保本地目录存在
+mkdir -p $LOCAL_ACTIVE $LOCAL_COMPLETED
 ```
 
 ### 1. 生成需求编号
 
-扫描现有需求文档，生成下一个编号：
+扫描本地和缓存中的需求文档，生成下一个编号：
 
 ```bash
-# 获取最大编号
-ls $REQ_ACTIVE/ $REQ_COMPLETED/ 2>/dev/null | grep -oE 'REQ-[0-9]+' | sort -t'-' -k2 -n | tail -1
+# 从本地和缓存获取最大编号
+LOCAL_MAX=$(ls $LOCAL_ACTIVE/ $LOCAL_COMPLETED/ 2>/dev/null | grep -oE 'REQ-[0-9]+' | sort -t'-' -k2 -n | tail -1)
+CACHE_MAX=$(ls $CACHE_ACTIVE/ $CACHE_COMPLETED/ 2>/dev/null | grep -oE 'REQ-[0-9]+' | sort -t'-' -k2 -n | tail -1)
+
+# 取两者中较大的编号
+MAX_NUM=$(echo -e "$LOCAL_MAX\n$CACHE_MAX" | sort -t'-' -k2 -n | tail -1)
 ```
 
 新编号 = 最大编号 + 1，格式：REQ-XXX（三位数字，如 REQ-001）
@@ -55,13 +63,25 @@ ls $REQ_ACTIVE/ $REQ_COMPLETED/ 2>/dev/null | grep -oE 'REQ-[0-9]+' | sort -t'-'
 - 优先级（P1/P2/P3，默认 P2）
 - 负责人（可选）
 
-### 3. 创建需求文档
+### 3. 创建需求文档（先本地，后缓存）
 
-从模板创建文件：`$REQ_ACTIVE/REQ-XXX-标题.md`
+**步骤 3.1：写入本地存储（主存储）**
+
+从模板创建文件：`$LOCAL_ACTIVE/REQ-XXX-标题.md`
 
 **初始化内容：**
 - 填充元信息（编号、标题、状态=草稿、日期）
 - 生命周期勾选「草稿」
+
+**步骤 3.2：同步到全局缓存**
+
+```bash
+# 如果已绑定项目，同步到缓存
+if [ -n "$PROJECT" ]; then
+    mkdir -p $CACHE_ACTIVE
+    cp $LOCAL_ACTIVE/REQ-XXX-标题.md $CACHE_ACTIVE/
+fi
+```
 
 ### 4. 进入需求分析模式
 
@@ -119,10 +139,27 @@ ls $REQ_ACTIVE/ $REQ_COMPLETED/ 2>/dev/null | grep -oE 'REQ-[0-9]+' | sort -t'-'
 #### 4.8 测试要点
 列出关键测试场景和预期结果。
 
-### 5. 保存并提示
+### 5. 保存并同步
+
+每次保存需求文档时：
+
+```bash
+# 1. 先写入本地（主存储）
+write_to $LOCAL_ACTIVE/REQ-XXX-标题.md
+
+# 2. 同步到缓存（如已绑定项目）
+if [ -n "$PROJECT" ]; then
+    cp $LOCAL_ACTIVE/REQ-XXX-标题.md $CACHE_ACTIVE/
+fi
+```
+
+### 6. 输出结果
 
 ```
-✅ 需求文档已创建：$REQ_ACTIVE/REQ-XXX-标题.md
+✅ 需求文档已创建
+
+📁 本地存储：docs/requirements/active/REQ-XXX-标题.md
+🔄 缓存同步：已同步到 ~/.claude-requirements/projects/<project>/
 
 📋 当前状态：📝 草稿
 
@@ -138,6 +175,7 @@ ls $REQ_ACTIVE/ $REQ_COMPLETED/ 2>/dev/null | grep -oE 'REQ-[0-9]+' | sort -t'-'
 - 需求编号不复用已废弃的编号
 - 标题使用中文，文件名使用编号+标题
 - 创建后状态为「草稿」，需评审通过才能开发
+- **存储策略**：本地优先写入，成功后同步到全局缓存
 
 ## 用户输入
 

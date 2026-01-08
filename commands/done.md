@@ -39,23 +39,25 @@ else:
         print(f"  {i+1}. {req}")
 ```
 
-### 1. 解析需求路径
+### 1. 解析存储路径（本地优先 + 缓存同步）
 
 ```bash
-# 检查当前仓库绑定的项目
+# 本地存储路径（主存储）
+LOCAL_ROOT=docs/requirements
+LOCAL_ACTIVE=$LOCAL_ROOT/active
+LOCAL_COMPLETED=$LOCAL_ROOT/completed
+
+# 检查当前仓库绑定的项目（用于缓存同步）
 PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
 
 if [ -n "$PROJECT" ]; then
-    REQ_ROOT=~/.claude-requirements/projects/$PROJECT
-else
-    REQ_ROOT=docs/requirements
+    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
+    CACHE_ACTIVE=$CACHE_ROOT/active
+    CACHE_COMPLETED=$CACHE_ROOT/completed
 fi
-
-REQ_ACTIVE=$REQ_ROOT/active
-REQ_COMPLETED=$REQ_ROOT/completed
 ```
 
-### 1. 前置检查
+### 2. 前置检查
 
 ```python
 if 状态 != "测试中":
@@ -73,7 +75,7 @@ if 未通过的测试:
         exit()
 ```
 
-### 2. 生成完成摘要
+### 3. 生成完成摘要
 
 ```
 📋 需求完成确认：REQ-001 部门渠道关联
@@ -104,7 +106,7 @@ if 未通过的测试:
 是否确认完成？(y/n)
 ```
 
-### 3. 更新需求文档
+### 4. 更新需求文档
 
 - 修改元信息状态为「已完成」
 - 勾选生命周期「已完成」
@@ -130,16 +132,23 @@ if 未通过的测试:
 - [x] 🎉 已完成
 ```
 
-### 4. 归档文档
+### 5. 归档文档（先本地，后缓存）
 
 将需求文档移动到完成目录：
 
 ```bash
-mv $REQ_ACTIVE/REQ-001-部门渠道关联.md \
-   $REQ_COMPLETED/REQ-001-部门渠道关联.md
+# 1. 先归档本地（主存储）
+mv $LOCAL_ACTIVE/REQ-001-部门渠道关联.md \
+   $LOCAL_COMPLETED/REQ-001-部门渠道关联.md
+
+# 2. 同步到缓存
+if [ -n "$PROJECT" ]; then
+    mv $CACHE_ACTIVE/REQ-001-部门渠道关联.md \
+       $CACHE_COMPLETED/REQ-001-部门渠道关联.md
+fi
 ```
 
-### 5. 生成完成报告
+### 6. 生成完成报告
 
 ```
 🎉 需求已完成！
@@ -179,7 +188,7 @@ $REQ_COMPLETED/REQ-001-部门渠道关联.md
 - 查看活跃需求：/req
 ```
 
-### 6. 可选：Git 提交关联
+### 7. 可选：Git 提交关联
 
 如果有关联的 Git 提交，显示提交记录：
 

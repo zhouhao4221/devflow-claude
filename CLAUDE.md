@@ -19,20 +19,27 @@ scripts/                     # 验证和工具脚本
 templates/                   # 需求文档模板
 ```
 
-### 插件配置
+### 存储架构（本地优先 + 缓存同步）
 
-需求存储支持两种模式：
+需求采用**双存储**架构，本地为主、缓存为辅：
 
-**1. 全局缓存模式（推荐，支持跨仓库共享）**
-- 全局缓存目录：`~/.claude-requirements/`
-- 项目需求路径：`~/.claude-requirements/projects/<project-name>/`
-- 仓库绑定配置：`.claude/settings.local.json` 中的 `requirementProject`
-
-**2. 本地模式（单仓库）**
-- 需求存储目录：`docs/requirements/`
+**1. 项目本地存储（主存储）**
+- 存储目录：`docs/requirements/`
 - 进行中的需求：`docs/requirements/active/`
 - 已完成的需求：`docs/requirements/completed/`
 - 模板文件：`docs/requirements/template.md`
+- 优势：纳入 git 版本控制，团队可审查
+
+**2. 全局缓存（同步副本）**
+- 缓存目录：`~/.claude-requirements/`
+- 项目缓存路径：`~/.claude-requirements/projects/<project-name>/`
+- 仓库绑定配置：`.claude/settings.local.json` 中的 `requirementProject`
+- 优势：支持跨仓库共享同一套需求
+
+**更新策略：**
+1. 创建/修改需求 → 先写入本地 `docs/requirements/`
+2. 本地写入成功 → 同步到全局缓存
+3. 读取需求 → 优先读本地，本地不存在时从缓存读取
 
 ### 命令结构
 
@@ -79,25 +86,29 @@ templates/                   # 需求文档模板
 支持前后端等多个仓库共享同一套需求：
 
 ```
-~/.claude-requirements/
+~/backend/                         # 后端仓库（主仓库）
+├── docs/requirements/             # 本地存储（主存储，纳入 git）
+│   ├── active/
+│   │   └── REQ-001-用户积分.md
+│   └── completed/
+└── .claude/settings.local.json    # { "requirementProject": "my-saas-product" }
+
+~/frontend/                        # 前端仓库（关联仓库）
+└── .claude/settings.local.json    # { "requirementProject": "my-saas-product" }
+
+~/.claude-requirements/            # 全局缓存（同步副本）
 └── projects/
-    └── my-saas-product/          # 项目需求（前后端共享）
+    └── my-saas-product/
         ├── active/
-        │   └── REQ-001-用户积分.md
-        ├── completed/
-        └── template.md
-
-~/backend/                         # 后端仓库
-└── .claude/settings.local.json    # { "requirementProject": "my-saas-product" }
-
-~/frontend/                        # 前端仓库
-└── .claude/settings.local.json    # { "requirementProject": "my-saas-product" }
+        │   └── REQ-001-用户积分.md  # 从主仓库同步
+        └── completed/
 ```
 
 **使用流程：**
-1. 在任意仓库执行 `/req init my-saas-product` 创建项目
-2. 在其他仓库执行 `/req use my-saas-product` 绑定同一项目
-3. 所有仓库共享相同的需求文档
+1. 在主仓库执行 `/req init my-saas-product` 初始化项目
+2. 创建需求时：先写入 `docs/requirements/` → 同步到全局缓存
+3. 在其他仓库执行 `/req use my-saas-product` 绑定同一项目
+4. 关联仓库读取需求时从全局缓存获取
 
 ## 目标项目架构
 

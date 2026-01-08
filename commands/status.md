@@ -40,27 +40,31 @@ else:
         print(f"  {i+1}. {req}")
 ```
 
-### 1. 解析需求路径
+### 1. 解析存储路径（本地优先）
 
 ```bash
-# 检查当前仓库绑定的项目
+# 本地存储路径（主存储）
+LOCAL_ROOT=docs/requirements
+LOCAL_ACTIVE=$LOCAL_ROOT/active
+LOCAL_COMPLETED=$LOCAL_ROOT/completed
+
+# 检查当前仓库绑定的项目（备用读取）
 PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
 
 if [ -n "$PROJECT" ]; then
-    REQ_ROOT=~/.claude-requirements/projects/$PROJECT
-else
-    REQ_ROOT=docs/requirements
+    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
+    CACHE_ACTIVE=$CACHE_ROOT/active
+    CACHE_COMPLETED=$CACHE_ROOT/completed
 fi
-
-REQ_ACTIVE=$REQ_ROOT/active
-REQ_COMPLETED=$REQ_ROOT/completed
 ```
 
-### 1. 查找需求文档
+### 2. 查找需求文档（优先本地）
 
-搜索位置：
-- `$REQ_ACTIVE/REQ-XXX-*.md`
-- `$REQ_COMPLETED/REQ-XXX-*.md`
+搜索位置（按优先级）：
+1. `$LOCAL_ACTIVE/REQ-XXX-*.md`
+2. `$LOCAL_COMPLETED/REQ-XXX-*.md`
+3. `$CACHE_ACTIVE/REQ-XXX-*.md`（本地不存在时）
+4. `$CACHE_COMPLETED/REQ-XXX-*.md`（本地不存在时）
 
 如果未找到：
 ```
@@ -71,7 +75,7 @@ REQ_COMPLETED=$REQ_ROOT/completed
 - 创建新需求：/req new
 ```
 
-### 2. 解析需求文档
+### 3. 解析需求文档
 
 提取关键信息：
 - 元信息
@@ -81,7 +85,7 @@ REQ_COMPLETED=$REQ_ROOT/completed
 - 文件改动清单
 - 变更记录
 
-### 3. 输出详细状态
+### 4. 输出详细状态
 
 ```
 ═══════════════════════════════════════════════

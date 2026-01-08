@@ -40,22 +40,23 @@ else:
     # 等待用户选择
 ```
 
-### 1. 解析需求路径
+### 1. 解析存储路径（本地优先 + 缓存同步）
 
 ```bash
-# 检查当前仓库绑定的项目
+# 本地存储路径（主存储）
+LOCAL_ROOT=docs/requirements
+LOCAL_ACTIVE=$LOCAL_ROOT/active
+
+# 检查当前仓库绑定的项目（用于缓存同步）
 PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
 
 if [ -n "$PROJECT" ]; then
-    REQ_ROOT=~/.claude-requirements/projects/$PROJECT
-else
-    REQ_ROOT=docs/requirements
+    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
+    CACHE_ACTIVE=$CACHE_ROOT/active
 fi
-
-REQ_ACTIVE=$REQ_ROOT/active
 ```
 
-### 1. 前置检查
+### 2. 前置检查
 
 ```python
 if 状态 not in ["评审通过", "开发中", "测试中"]:
@@ -64,16 +65,16 @@ if 状态 not in ["评审通过", "开发中", "测试中"]:
     exit()
 ```
 
-### 2. 加载需求上下文
+### 3. 加载需求上下文
 
-读取需求文档，解析：
+优先读取本地，本地不存在时从缓存读取：
 - 功能清单（识别已完成/未完成）
 - 文件改动清单
 - 实现步骤
 - 数据模型
 - API 设计
 
-### 3. 显示开发概览
+### 4. 显示开发概览
 
 ```
 📋 需求开发：REQ-001 部门渠道关联
@@ -96,13 +97,14 @@ if 状态 not in ["评审通过", "开发中", "测试中"]:
 - ... (共 12 个文件)
 ```
 
-### 4. 更新状态为「开发中」
+### 5. 更新状态为「开发中」（先本地，后缓存）
 
 首次进入开发时：
 - 修改元信息状态为「开发中」
 - 勾选生命周期「开发中」
+- 先写入本地，再同步到缓存
 
-### 5. 生成开发任务
+### 6. 生成开发任务
 
 使用 TodoWrite 创建任务列表：
 

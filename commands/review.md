@@ -38,20 +38,23 @@ else:
         print(f"  {i+1}. {req}")
 ```
 
-### 1. 解析需求路径
+### 1. 解析存储路径（本地优先 + 缓存同步）
 
 ```bash
-# 检查当前仓库绑定的项目
+# 本地存储路径（主存储）
+LOCAL_ROOT=docs/requirements
+LOCAL_ACTIVE=$LOCAL_ROOT/active
+
+# 检查当前仓库绑定的项目（用于缓存同步）
 PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
 
 if [ -n "$PROJECT" ]; then
-    REQ_ROOT=~/.claude-requirements/projects/$PROJECT
-else
-    REQ_ROOT=docs/requirements
+    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
+    CACHE_ACTIVE=$CACHE_ROOT/active
 fi
-
-REQ_ACTIVE=$REQ_ROOT/active
 ```
+
+**所有状态更新都遵循：先更新本地，再同步到缓存。**
 
 ### 根据当前状态执行不同操作
 
