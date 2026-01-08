@@ -9,14 +9,37 @@ description: 需求测试 - 执行测试验证
 ## 命令格式
 
 ```
-/req test <REQ-XXX>
+/req test [REQ-XXX]
 ```
+
+**说明**：编号可选，省略时自动识别当前进行中的需求。
 
 ---
 
 ## 执行流程
 
-### 0. 解析需求路径
+### 0. 自动识别需求
+
+如果未提供 REQ-XXX 编号：
+
+```python
+# 查找状态为「开发中」或「测试中」的需求
+candidates = find_requirements(status=["开发中", "测试中"])
+
+if len(candidates) == 0:
+    print("❌ 没有可测试的需求")
+    print("💡 请先完成开发：/req dev")
+    exit()
+elif len(candidates) == 1:
+    REQ_ID = candidates[0]
+    print(f"📌 自动选择：{REQ_ID}")
+else:
+    print("📋 发现多个可测试的需求，请选择：")
+    for i, req in enumerate(candidates):
+        print(f"  {i+1}. {req}")
+```
+
+### 1. 解析需求路径
 
 ```bash
 # 检查当前仓库绑定的项目

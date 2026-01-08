@@ -9,14 +9,36 @@ description: 需求评审 - 提交或记录评审结果
 ## 命令格式
 
 ```
-/req review <REQ-XXX> [pass|reject]
+/req review [REQ-XXX] [pass|reject]
 ```
+
+**说明**：编号可选，省略时自动识别当前待处理的需求。
 
 ---
 
 ## 执行流程
 
-### 0. 解析需求路径
+### 0. 自动识别需求
+
+如果未提供 REQ-XXX 编号：
+
+```python
+# 查找状态为「草稿」「评审驳回」或「待评审」的需求
+candidates = find_requirements(status=["草稿", "评审驳回", "待评审"])
+
+if len(candidates) == 0:
+    print("❌ 没有待评审的需求")
+    exit()
+elif len(candidates) == 1:
+    REQ_ID = candidates[0]
+    print(f"📌 自动选择：{REQ_ID}")
+else:
+    print("📋 发现多个待处理的需求，请选择：")
+    for i, req in enumerate(candidates):
+        print(f"  {i+1}. {req}")
+```
+
+### 1. 解析需求路径
 
 ```bash
 # 检查当前仓库绑定的项目

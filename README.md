@@ -12,19 +12,35 @@
 
 ## 安装
 
-### 方式一：本地开发测试
+> 要求：Claude Code v2.0.12 或更高版本
 
-```bash
-claude --plugin-dir /path/to/requirement-workflow
+### 方式一：从 Git 仓库安装（推荐）
+
+```
+/plugin install github:your-username/requirement-workflow
 ```
 
-### 方式二：项目集成
+### 方式二：项目级安装（团队共享）
 
-将插件目录复制到项目的 `.claude/plugins/` 目录：
+在项目的 `.claude/settings.json` 中配置：
 
-```bash
-cp -r requirement-workflow /your-project/.claude/plugins/
+```json
+{
+  "extraKnownMarketplaces": {
+    "dev-workflow": {
+      "source": {
+        "source": "directory",
+        "path": "/path/to/requirement-workflow"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "requirement-workflow@dev-workflow": true
+  }
+}
 ```
+
+团队成员克隆仓库并信任后，插件会自动安装启用。
 
 ## 命令列表
 
@@ -32,12 +48,14 @@ cp -r requirement-workflow /your-project/.claude/plugins/
 |------|------|
 | `/req` | 列出所有需求 |
 | `/req new [标题]` | 创建新需求 |
-| `/req edit <REQ-XXX>` | 编辑需求 |
-| `/req review <REQ-XXX>` | 提交/通过评审 |
-| `/req dev <REQ-XXX>` | 启动开发 |
-| `/req test <REQ-XXX>` | 启动测试 |
-| `/req done <REQ-XXX>` | 完成需求 |
-| `/req status <REQ-XXX>` | 查看状态 |
+| `/req edit` | 编辑需求（自动识别） |
+| `/req review` | 提交/通过评审（自动识别） |
+| `/req dev` | 启动开发（自动识别） |
+| `/req test` | 启动测试（自动识别） |
+| `/req done` | 完成需求（自动识别） |
+| `/req status` | 查看状态（自动识别） |
+
+> 所有命令都支持省略 REQ-XXX 编号，自动识别当前进行中的需求。
 
 ## 快速开始
 
@@ -58,7 +76,7 @@ cp -r requirement-workflow /your-project/.claude/plugins/
 ### 2. 提交评审
 
 ```
-/req review REQ-001
+/req review
 ```
 
 检查需求完整性，生成评审摘要。
@@ -66,13 +84,13 @@ cp -r requirement-workflow /your-project/.claude/plugins/
 ### 3. 评审通过
 
 ```
-/req review REQ-001 pass
+/req review pass
 ```
 
 ### 4. 启动开发
 
 ```
-/req dev REQ-001
+/req dev
 ```
 
 按项目架构逐层引导开发：
@@ -81,7 +99,7 @@ cp -r requirement-workflow /your-project/.claude/plugins/
 ### 5. 执行测试
 
 ```
-/req test REQ-001
+/req test
 ```
 
 自动执行 API 测试，引导业务验证。
@@ -89,7 +107,7 @@ cp -r requirement-workflow /your-project/.claude/plugins/
 ### 6. 完成需求
 
 ```
-/req done REQ-001
+/req done
 ```
 
 归档文档，生成完成报告。

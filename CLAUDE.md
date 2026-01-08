@@ -38,15 +38,15 @@ templates/                   # 需求文档模板
 
 命令通过 `/req` 子命令模式调用：
 
-**需求管理命令：**
+**需求管理命令（编号可选，自动识别当前需求）：**
 - `/req` - 列出所有需求
 - `/req new [标题]` - 创建新需求
-- `/req edit <REQ-XXX>` - 编辑需求
-- `/req review <REQ-XXX>` - 提交/通过评审
-- `/req dev <REQ-XXX>` - 启动开发
-- `/req test <REQ-XXX>` - 启动测试
-- `/req done <REQ-XXX>` - 完成需求
-- `/req status <REQ-XXX>` - 查看需求状态
+- `/req edit` - 编辑需求
+- `/req review [pass|reject]` - 提交/通过评审
+- `/req dev` - 启动开发
+- `/req test` - 启动测试
+- `/req done` - 完成需求
+- `/req status` - 查看需求状态
 
 **项目管理命令（全局缓存模式）：**
 - `/req init <project-name>` - 初始化项目，创建全局缓存

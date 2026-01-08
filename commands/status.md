@@ -9,14 +9,38 @@ description: 查看需求状态 - 详细状态和进度
 ## 命令格式
 
 ```
-/req status <REQ-XXX>
+/req status [REQ-XXX]
 ```
+
+**说明**：编号可选，省略时自动选择最近活跃的需求。
 
 ---
 
 ## 执行流程
 
-### 0. 解析需求路径
+### 0. 自动识别需求
+
+如果未提供 REQ-XXX 编号：
+
+```python
+# 查找所有活跃需求，按修改时间排序
+candidates = find_requirements(dir="active", sort_by="mtime")
+
+if len(candidates) == 0:
+    print("📭 没有活跃的需求")
+    print("💡 创建新需求：/req new")
+    print("💡 查看已完成：/req status --all")
+    exit()
+elif len(candidates) == 1:
+    REQ_ID = candidates[0]
+    print(f"📌 自动选择：{REQ_ID}")
+else:
+    print("📋 发现多个活跃需求，请选择：")
+    for i, req in enumerate(candidates):
+        print(f"  {i+1}. {req}")
+```
+
+### 1. 解析需求路径
 
 ```bash
 # 检查当前仓库绑定的项目
