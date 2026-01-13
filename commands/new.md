@@ -9,8 +9,14 @@ description: 创建新需求 - 基于模板创建需求文档
 ## 命令格式
 
 ```
-/req new [需求标题]
+/req:new [需求标题] [--type=类型] [--module=模块名]
 ```
+
+**示例：**
+- `/req:new 用户积分系统` - 创建需求，交互选择类型和模块
+- `/req:new 用户积分-后端 --type=后端 --module=用户模块` - 后端需求
+- `/req:new 用户积分-前端 --type=前端 --module=用户模块` - 前端需求
+- `/req:new 订单优惠券 --type=全栈 --module=订单模块,支付模块` - 全栈跨模块需求
 
 ---
 
@@ -60,8 +66,54 @@ MAX_NUM=$(echo -e "$LOCAL_MAX\n$CACHE_MAX" | sort -t'-' -k2 -n | tail -1)
 
 **需要收集的信息：**
 - 需求标题（必填）
+- 需求类型（后端/前端/全栈）
+- 所属模块（从已有模块中选择，或创建新模块）
+- 关联需求（如果有对应的前端/后端需求）
 - 优先级（P1/P2/P3，默认 P2）
 - 负责人（可选）
+
+**类型选择流程：**
+
+```python
+# 如果命令行指定了 --type
+if args.type:
+    req_type = args.type
+else:
+    print("请选择需求类型：")
+    print("  1. 后端 - 仅涉及后端 API、数据库等")
+    print("  2. 前端 - 仅涉及前端页面、组件等")
+    print("  3. 全栈 - 前后端都涉及")
+```
+
+**模块选择流程：**
+
+```python
+# 如果命令行指定了 --module
+if args.module:
+    modules = args.module.split(',')
+else:
+    # 扫描已有模块
+    existing_modules = scan_modules_dir()
+    if existing_modules:
+        print("请选择所属模块（可多选）：")
+        for i, m in enumerate(existing_modules):
+            print(f"  {i+1}. {m}")
+        print(f"  {len(existing_modules)+1}. 创建新模块")
+        print(f"  {len(existing_modules)+2}. 暂不指定")
+    else:
+        print("暂无模块，是否创建？(y/n)")
+```
+
+**关联需求选择：**
+
+```python
+# 如果是后端需求，询问是否有对应的前端需求
+if req_type == "后端":
+    frontend_reqs = find_requirements(type="前端", module=modules)
+    if frontend_reqs:
+        print("是否关联前端需求？")
+        # 显示可关联的前端需求列表
+```
 
 ### 3. 创建需求文档（先本地，后缓存）
 
@@ -153,19 +205,34 @@ if [ -n "$PROJECT" ]; then
 fi
 ```
 
-### 6. 输出结果
+### 6. 更新模块文档
+
+如果指定了模块，自动更新模块文档的「相关需求」章节：
+
+```bash
+# 在模块文档的「相关需求」表格中添加新行
+append_to_module_doc($MODULE, $REQ_ID, $TITLE, "📝 草稿")
+```
+
+### 7. 更新索引
+
+更新 `INDEX.md`，将新需求添加到对应分类中。
+
+### 8. 输出结果
 
 ```
 ✅ 需求文档已创建
 
 📁 本地存储：docs/requirements/active/REQ-XXX-标题.md
 🔄 缓存同步：已同步到 ~/.claude-requirements/projects/<project>/
+📦 所属模块：用户模块, 订单模块
 
 📋 当前状态：📝 草稿
 
 💡 下一步：
-- 继续完善：/req edit REQ-XXX
-- 提交评审：/req review REQ-XXX
+- 继续完善：/req:edit REQ-XXX
+- 提交评审：/req:review REQ-XXX
+- 查看模块：/req:modules show 用户模块
 ```
 
 ---

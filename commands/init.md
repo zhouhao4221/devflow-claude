@@ -9,7 +9,7 @@ description: 初始化需求项目 - 创建本地存储和全局缓存
 ## 命令格式
 
 ```
-/req init <project-name>
+/req:init <project-name>
 ```
 
 ## 参数
@@ -99,7 +99,7 @@ cp $LOCAL_ROOT/template.md $CACHE_ROOT/template.md
 🔗 当前仓库已绑定到此项目
 
 💡 下一步:
-   - /req new <标题>  创建新需求
+   - /req:new <标题>  创建新需求
    - /req             查看需求列表
 ```
 
@@ -122,7 +122,7 @@ cp $LOCAL_ROOT/template.md $CACHE_ROOT/template.md
 
 | 错误场景 | 处理方式 |
 |---------|---------|
-| 未提供项目名 | 提示：请提供项目名称，如 `/req init my-project` |
+| 未提供项目名 | 提示：请提供项目名称，如 `/req:init my-project` |
 | 项目名包含非法字符 | 提示：项目名只能包含字母、数字、连字符 |
 | 本地目录已存在 | 提示：本地需求目录已存在，是否继续？ |
 | 权限不足 | 提示：无法创建目录，请检查权限 |

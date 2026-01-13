@@ -9,7 +9,7 @@ description: 需求开发 - 启动或继续开发
 ## 命令格式
 
 ```
-/req dev [REQ-XXX]
+/req:dev [REQ-XXX]
 ```
 
 **说明**：编号可选，省略时自动识别当前进行中的需求。
@@ -28,7 +28,7 @@ candidates = find_requirements(status=["评审通过", "开发中"])
 
 if len(candidates) == 0:
     print("❌ 没有可开发的需求")
-    print("💡 请先创建需求：/req new")
+    print("💡 请先创建需求：/req:new")
     exit()
 elif len(candidates) == 1:
     REQ_ID = candidates[0]
@@ -61,7 +61,7 @@ fi
 ```python
 if 状态 not in ["评审通过", "开发中", "测试中"]:
     print("❌ 错误：需求尚未通过评审")
-    print("💡 请先执行：/req review REQ-XXX")
+    print("💡 请先执行：/req:review REQ-XXX")
     exit()
 ```
 
@@ -194,7 +194,7 @@ if 状态 not in ["评审通过", "开发中", "测试中"]:
    make swagger-doc-mac
 
 3. 进入测试
-   /req test REQ-001
+   /req:test REQ-001
 ```
 
 询问是否执行代码审查和 Swagger 更新。
@@ -210,7 +210,7 @@ if 状态 not in ["评审通过", "开发中", "测试中"]:
 继续上次进度，跳过已完成步骤。
 
 ### 重新开发
-强制从头开始：`/req dev REQ-XXX --reset`
+强制从头开始：`/req:dev REQ-XXX --reset`
 
 ---
 

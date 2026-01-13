@@ -9,7 +9,7 @@ description: 切换需求项目 - 将当前仓库绑定到不同的项目
 ## 命令格式
 
 ```
-/req use <project-name>
+/req:use <project-name>
 ```
 
 ## 参数
@@ -35,7 +35,7 @@ ls ~/.claude-requirements/projects/<project-name>/
 
 **如果项目不存在**：
 - 列出所有可用项目
-- 提示使用 `/req init` 创建新项目
+- 提示使用 `/req:init` 创建新项目
 
 ### 3. 读取当前绑定
 
@@ -85,7 +85,7 @@ ls ~/.claude-requirements/projects/<project-name>/
 
 ## 无参数模式
 
-当不带参数执行 `/req use` 时：
+当不带参数执行 `/req:use` 时：
 
 ### 显示当前绑定
 
@@ -94,8 +94,8 @@ ls ~/.claude-requirements/projects/<project-name>/
 📁 路径: ~/.claude-requirements/projects/<project-name>/
 
 💡 可用命令:
-   - /req use <project-name>  切换到其他项目
-   - /req projects            查看所有项目
+   - /req:use <project-name>  切换到其他项目
+   - /req:projects            查看所有项目
 ```
 
 ---
@@ -104,8 +104,8 @@ ls ~/.claude-requirements/projects/<project-name>/
 
 | 错误场景 | 处理方式 |
 |---------|---------|
-| 项目不存在 | 列出可用项目，提示使用 `/req init` 创建 |
-| 全局缓存未初始化 | 提示先运行 `/req init <project-name>` |
+| 项目不存在 | 列出可用项目，提示使用 `/req:init` 创建 |
+| 全局缓存未初始化 | 提示先运行 `/req:init <project-name>` |
 
 ---
 

@@ -9,7 +9,7 @@ description: 需求评审 - 提交或记录评审结果
 ## 命令格式
 
 ```
-/req review [REQ-XXX] [pass|reject]
+/req:review [REQ-XXX] [pass|reject]
 ```
 
 **说明**：编号可选，省略时自动识别当前待处理的需求。
@@ -91,7 +91,7 @@ fi
 - ❌ 业务规则 - 未填写
 - ❌ 实现步骤 - 未填写
 
-请先完善需求文档：/req edit REQ-XXX
+请先完善需求文档：/req:edit REQ-XXX
 ```
 
 ### 2. 生成评审摘要
@@ -134,8 +134,8 @@ fi
 📋 REQ-001 部门渠道关联
 📊 状态：👀 待评审
 
-💡 评审通过后执行：/req review REQ-001 pass
-💡 评审驳回执行：/req review REQ-001 reject
+💡 评审通过后执行：/req:review REQ-001 pass
+💡 评审驳回执行：/req:review REQ-001 reject
 ```
 
 ---
@@ -185,7 +185,7 @@ if 状态 != "待评审":
 📋 REQ-001 部门渠道关联
 📊 状态：✅ 评审通过
 
-💡 开始开发：/req dev REQ-001
+💡 开始开发：/req:dev REQ-001
 ```
 
 ---
@@ -224,8 +224,8 @@ if 状态 != "待评审":
 
 驳回原因：API 设计需要补充错误码定义
 
-💡 修改需求：/req edit REQ-001
-💡 重新提审：/req review REQ-001
+💡 修改需求：/req:edit REQ-001
+💡 重新提审：/req:review REQ-001
 ```
 
 ---

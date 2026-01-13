@@ -9,7 +9,7 @@ description: 完成需求 - 标记完成并归档
 ## 命令格式
 
 ```
-/req done [REQ-XXX]
+/req:done [REQ-XXX]
 ```
 
 **说明**：编号可选，省略时自动识别当前测试中的需求。
@@ -28,7 +28,7 @@ candidates = find_requirements(status=["测试中"])
 
 if len(candidates) == 0:
     print("❌ 没有可完成的需求")
-    print("💡 请先完成测试：/req test")
+    print("💡 请先完成测试：/req:test")
     exit()
 elif len(candidates) == 1:
     REQ_ID = candidates[0]
@@ -62,7 +62,7 @@ fi
 ```python
 if 状态 != "测试中":
     print("❌ 错误：需求尚未完成测试")
-    print("💡 请先执行：/req test REQ-XXX")
+    print("💡 请先执行：/req:test REQ-XXX")
     exit()
 
 # 检查测试完成情况
@@ -184,7 +184,7 @@ $REQ_COMPLETED/REQ-001-部门渠道关联.md
 
 💡 后续操作：
 - 查看历史需求：ls docs/requirements/completed/
-- 创建新需求：/req new
+- 创建新需求：/req:new
 - 查看活跃需求：/req
 ```
 

@@ -25,8 +25,10 @@ templates/                   # 需求文档模板
 
 **1. 项目本地存储（主存储）**
 - 存储目录：`docs/requirements/`
+- 模块文档：`docs/requirements/modules/`
 - 进行中的需求：`docs/requirements/active/`
 - 已完成的需求：`docs/requirements/completed/`
+- 需求索引：`docs/requirements/INDEX.md`（自动生成）
 - 模板文件：`docs/requirements/template.md`
 - 优势：纳入 git 版本控制，团队可审查
 
@@ -47,27 +49,34 @@ templates/                   # 需求文档模板
 
 **需求管理命令（编号可选，自动识别当前需求）：**
 - `/req` - 列出所有需求
-- `/req new [标题]` - 创建新需求
-- `/req edit` - 编辑需求
-- `/req review [pass|reject]` - 提交/通过评审
-- `/req dev` - 启动开发
-- `/req test` - 启动测试
-- `/req done` - 完成需求
-- `/req status` - 查看需求状态
+- `/req:new [标题] [--type=后端|前端|全栈]` - 创建新需求
+- `/req:edit` - 编辑需求
+- `/req:review [pass|reject]` - 提交/通过评审
+- `/req:dev` - 启动开发
+- `/req:test` - 启动测试
+- `/req:done` - 完成需求
+- `/req:status` - 查看需求状态
+- `/req --type=后端` - 按类型筛选需求列表
+
+**模块管理命令：**
+- `/req:modules` - 列出所有模块及其需求概览
+- `/req:modules new <模块名>` - 创建新模块文档
+- `/req:modules show <模块名>` - 查看模块详情
+- `/req --module=<模块名>` - 按模块筛选需求列表
 
 **项目管理命令（全局缓存模式）：**
-- `/req init <project-name>` - 初始化项目，创建全局缓存
-- `/req use <project-name>` - 切换当前仓库绑定的项目
-- `/req projects` - 列出所有项目
-- `/req migrate <project-name>` - 将本地需求迁移到全局缓存
-- `/req cache <action>` - 缓存管理（info/clear/clear-all/rebuild/export）
+- `/req:init <project-name>` - 初始化项目，创建全局缓存
+- `/req:use <project-name>` - 切换当前仓库绑定的项目
+- `/req:projects` - 列出所有项目
+- `/req:migrate <project-name>` - 将本地需求迁移到全局缓存
+- `/req:cache <action>` - 缓存管理（info/clear/clear-all/rebuild/export）
 
 ### 技能（自动触发）
 
 - `requirement-analyzer` - 创建/编辑需求时触发，帮助完善文档各章节
-- `dev-guide` - 执行 `/req dev` 时触发，按分层架构引导代码实现
+- `dev-guide` - 执行 `/req:dev` 时触发，按分层架构引导代码实现
 - `code-impact-analyzer` - 需求变更时触发，分析受影响的代码
-- `test-guide` - 执行 `/req test` 时触发，引导测试流程
+- `test-guide` - 执行 `/req:test` 时触发，引导测试流程
 
 ### 钩子
 
@@ -88,9 +97,13 @@ templates/                   # 需求文档模板
 ```
 ~/backend/                         # 后端仓库（主仓库）
 ├── docs/requirements/             # 本地存储（主存储，纳入 git）
+│   ├── modules/                   # 模块文档
+│   │   ├── user.md
+│   │   └── order.md
 │   ├── active/
 │   │   └── REQ-001-用户积分.md
-│   └── completed/
+│   ├── completed/
+│   └── INDEX.md                   # 需求索引
 └── .claude/settings.local.json    # { "requirementProject": "my-saas-product" }
 
 ~/frontend/                        # 前端仓库（关联仓库）
@@ -99,16 +112,65 @@ templates/                   # 需求文档模板
 ~/.claude-requirements/            # 全局缓存（同步副本）
 └── projects/
     └── my-saas-product/
+        ├── modules/               # 模块文档同步
         ├── active/
-        │   └── REQ-001-用户积分.md  # 从主仓库同步
-        └── completed/
+        │   └── REQ-001-用户积分.md
+        ├── completed/
+        └── INDEX.md
 ```
 
 **使用流程：**
-1. 在主仓库执行 `/req init my-saas-product` 初始化项目
+1. 在主仓库执行 `/req:init my-saas-product` 初始化项目
 2. 创建需求时：先写入 `docs/requirements/` → 同步到全局缓存
-3. 在其他仓库执行 `/req use my-saas-product` 绑定同一项目
+3. 在其他仓库执行 `/req:use my-saas-product` 绑定同一项目
 4. 关联仓库读取需求时从全局缓存获取
+
+## 模块与需求关系
+
+**模块（Module）**：按技术架构划分的功能域，相对稳定
+- 描述模块职责、业务规则、核心功能
+- 记录关键文件路径和 API 概览
+- 作为 AI 理解业务上下文的入口
+
+**需求（Requirement）**：按业务目标划分的可交付单元，不断新增
+- 可能涉及一个或多个模块
+- 有明确的完成态和生命周期
+- 每个需求在元信息中标记所属模块
+
+**AI 使用场景：**
+1. 开发新功能时，先读取模块文档了解业务上下文
+2. 通过索引快速定位相关需求
+3. 按模块筛选需求，聚焦特定领域
+
+## 前后端需求管理
+
+前后端需求**分开管理**，通过关联字段链接：
+
+**需求类型：**
+- `后端` - 仅涉及后端 API、数据库、业务逻辑
+- `前端` - 仅涉及前端页面、组件、交互
+- `全栈` - 前后端都涉及（适合小功能）
+
+**典型流程：**
+```
+1. 产品提出业务需求
+2. 拆分为后端需求 + 前端需求
+3. 各自独立开发、评审
+4. 通过「关联需求」字段互相引用
+5. 联调测试
+```
+
+**示例：**
+```
+REQ-001 用户积分-后端    类型=后端  关联=REQ-002
+REQ-002 用户积分-前端    类型=前端  关联=REQ-001
+```
+
+**筛选命令：**
+```bash
+/req --type=后端              # 只看后端需求
+/req --type=前端 --module=用户  # 前端 + 用户模块
+```
 
 ## 目标项目架构
 

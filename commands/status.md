@@ -9,7 +9,7 @@ description: 查看需求状态 - 详细状态和进度
 ## 命令格式
 
 ```
-/req status [REQ-XXX]
+/req:status [REQ-XXX]
 ```
 
 **说明**：编号可选，省略时自动选择最近活跃的需求。
@@ -28,8 +28,8 @@ candidates = find_requirements(dir="active", sort_by="mtime")
 
 if len(candidates) == 0:
     print("📭 没有活跃的需求")
-    print("💡 创建新需求：/req new")
-    print("💡 查看已完成：/req status --all")
+    print("💡 创建新需求：/req:new")
+    print("💡 查看已完成：/req:status --all")
     exit()
 elif len(candidates) == 1:
     REQ_ID = candidates[0]
@@ -72,7 +72,7 @@ fi
 
 💡 可用操作：
 - 查看所有需求：/req
-- 创建新需求：/req new
+- 创建新需求：/req:new
 ```
 
 ### 3. 解析需求文档
@@ -151,9 +151,9 @@ fi
 ═══════════════════════════════════════════════
 
 💡 可用操作：
-- 继续开发：/req dev REQ-001
-- 编辑需求：/req edit REQ-001
-- 进入测试：/req test REQ-001
+- 继续开发：/req:dev REQ-001
+- 编辑需求：/req:edit REQ-001
+- 进入测试：/req:test REQ-001
 ```
 
 ---
@@ -163,7 +163,7 @@ fi
 使用 `--brief` 参数输出简洁信息：
 
 ```
-/req status REQ-001 --brief
+/req:status REQ-001 --brief
 ```
 
 输出：
@@ -179,7 +179,7 @@ REQ-001 部门渠道关联
 查看所有活跃需求状态：
 
 ```
-/req status --all
+/req:status --all
 ```
 
 输出：

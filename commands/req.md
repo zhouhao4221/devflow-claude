@@ -9,7 +9,7 @@ description: 需求工作流管理 - 列出所有需求及其状态
 ## 命令格式
 
 ```
-/req [子命令] [参数]
+/req [子命令] [参数] [--module=模块名] [--type=类型]
 ```
 
 ## 子命令
@@ -17,18 +17,19 @@ description: 需求工作流管理 - 列出所有需求及其状态
 | 子命令 | 说明 | 示例 |
 |-------|------|------|
 | (空) | 列出所有需求 | `/req` |
-| `new` | 创建新需求 | `/req new 用户积分系统` |
-| `edit` | 编辑需求 | `/req edit REQ-001` |
-| `review` | 评审需求 | `/req review REQ-001` |
-| `dev` | 开发需求 | `/req dev REQ-001` |
-| `test` | 测试需求 | `/req test REQ-001` |
-| `done` | 完成需求 | `/req done REQ-001` |
-| `status` | 查看状态 | `/req status REQ-001` |
-| `init` | 初始化项目 | `/req init my-project` |
-| `use` | 切换项目 | `/req use my-project` |
-| `projects` | 列出所有项目 | `/req projects` |
-| `migrate` | 迁移本地需求到全局缓存 | `/req migrate my-project` |
-| `cache` | 缓存管理 | `/req cache clear my-project` |
+| `new` | 创建新需求 | `/req:new 用户积分系统` |
+| `edit` | 编辑需求 | `/req:edit REQ-001` |
+| `review` | 评审需求 | `/req:review REQ-001` |
+| `dev` | 开发需求 | `/req:dev REQ-001` |
+| `test` | 测试需求 | `/req:test REQ-001` |
+| `done` | 完成需求 | `/req:done REQ-001` |
+| `status` | 查看状态 | `/req:status REQ-001` |
+| `init` | 初始化项目 | `/req:init my-project` |
+| `use` | 切换项目 | `/req:use my-project` |
+| `projects` | 列出所有项目 | `/req:projects` |
+| `migrate` | 迁移本地需求到全局缓存 | `/req:migrate my-project` |
+| `cache` | 缓存管理 | `/req:cache clear my-project` |
+| `modules` | 列出所有模块 | `/req:modules` |
 
 ---
 
@@ -53,8 +54,12 @@ description: 需求工作流管理 - 列出所有需求及其状态
 
 ```
 <需求根目录>/
+├── modules/       # 模块文档
+│   ├── user.md   # 用户模块
+│   └── order.md  # 订单模块
 ├── active/        # 进行中的需求
 ├── completed/     # 已完成的需求
+├── INDEX.md       # 需求索引（自动生成）
 └── template.md    # 需求模板
 ```
 
@@ -86,9 +91,22 @@ ls $REQ_PATH
 提取元信息：
 - 编号（REQ-XXX）
 - 标题
+- 类型（后端/前端/全栈）
+- 模块
 - 状态
 - 功能点完成进度
 - 更新时间
+- 关联需求
+
+### 2.5 筛选（可选）
+
+支持按模块和类型筛选：
+
+```bash
+/req --module=用户模块           # 只看用户模块的需求
+/req --type=后端                 # 只看后端需求
+/req --type=前端 --module=用户模块  # 组合筛选
+```
 
 ### 3. 展示需求列表
 
@@ -98,19 +116,20 @@ ls $REQ_PATH
 📋 活跃需求列表
 
 🔨 开发中
-| 编号 | 标题 | 进度 | 更新时间 |
-|------|------|------|----------|
-| REQ-001 | 部门渠道关联 | 4/6 | 2026-01-07 |
+| 编号 | 标题 | 类型 | 模块 | 进度 | 关联 |
+|------|------|------|------|------|------|
+| REQ-001 | 用户积分-后端 | 后端 | 用户模块 | 4/6 | REQ-002 |
+| REQ-002 | 用户积分-前端 | 前端 | 用户模块 | 2/4 | REQ-001 |
 
 👀 待评审
-| 编号 | 标题 | 功能点 | 创建时间 |
-|------|------|--------|----------|
-| REQ-002 | ... | 3 | 2026-01-08 |
+| 编号 | 标题 | 类型 | 模块 | 功能点 |
+|------|------|------|------|--------|
+| REQ-003 | 订单导出 | 后端 | 订单模块 | 3 |
 
 📝 草稿
-| 编号 | 标题 | 创建时间 |
-|------|------|----------|
-| REQ-003 | ... | 2026-01-08 |
+| 编号 | 标题 | 类型 | 模块 | 创建时间 |
+|------|------|------|------|----------|
+| REQ-004 | 支付对账 | 全栈 | 支付模块 | 2026-01-08 |
 ```
 
 ### 4. 提示可用操作
@@ -131,18 +150,19 @@ ls $REQ_PATH
 ```
 参数解析：
 - 无参数 → 列表模式
-- new → /req-new
-- edit REQ-XXX → /req-edit REQ-XXX
-- review REQ-XXX → /req-review REQ-XXX
-- dev REQ-XXX → /req-dev REQ-XXX
-- test REQ-XXX → /req-test REQ-XXX
-- done REQ-XXX → /req-done REQ-XXX
-- status REQ-XXX → /req-status REQ-XXX
-- init <project-name> → /req-init <project-name>
-- use <project-name> → /req-use <project-name>
-- projects → /req-projects
-- migrate <project-name> → /req-migrate <project-name>
-- cache <action> → /req-cache <action>
+- new → /req:new
+- edit REQ-XXX → /req:edit REQ-XXX
+- review REQ-XXX → /req:review REQ-XXX
+- dev REQ-XXX → /req:dev REQ-XXX
+- test REQ-XXX → /req:test REQ-XXX
+- done REQ-XXX → /req:done REQ-XXX
+- status REQ-XXX → /req:status REQ-XXX
+- init <project-name> → /req:init <project-name>
+- use <project-name> → /req:use <project-name>
+- projects → /req:projects
+- migrate <project-name> → /req:migrate <project-name>
+- cache <action> → /req:cache <action>
+- modules → /req:modules
 ```
 
 ## 用户输入

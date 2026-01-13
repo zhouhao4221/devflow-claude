@@ -9,7 +9,7 @@ description: 编辑需求 - 修改已有需求文档
 ## 命令格式
 
 ```
-/req edit [REQ-XXX]
+/req:edit [REQ-XXX]
 ```
 
 **说明**：编号可选，省略时自动选择最近活跃的需求。
@@ -28,7 +28,7 @@ candidates = find_requirements(dir="active", sort_by="mtime")
 
 if len(candidates) == 0:
     print("❌ 没有活跃的需求")
-    print("💡 请先创建需求：/req new")
+    print("💡 请先创建需求：/req:new")
     exit()
 elif len(candidates) == 1:
     REQ_ID = candidates[0]
@@ -180,9 +180,9 @@ fi
 - 新增了 2 个功能点
 
 💡 下一步：
-- 继续编辑：/req edit REQ-XXX
-- 提交评审：/req review
-- 查看状态：/req status
+- 继续编辑：/req:edit REQ-XXX
+- 提交评审：/req:review
+- 查看状态：/req:status
 ```
 
 ---

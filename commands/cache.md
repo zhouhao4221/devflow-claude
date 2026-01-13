@@ -9,22 +9,22 @@ description: 缓存管理 - 查看、清理全局需求缓存
 ## 命令格式
 
 ```
-/req cache <action> [project-name]
+/req:cache <action> [project-name]
 ```
 
 ## 子命令
 
 | 子命令 | 说明 | 示例 |
 |-------|------|------|
-| `info` | 查看缓存信息 | `/req cache info` |
-| `clear` | 清理缓存 | `/req cache clear my-project` |
-| `clear-all` | 清理所有缓存 | `/req cache clear-all` |
-| `rebuild` | 重建索引 | `/req cache rebuild` |
-| `export` | 导出需求 | `/req cache export my-project` |
+| `info` | 查看缓存信息 | `/req:cache info` |
+| `clear` | 清理缓存 | `/req:cache clear my-project` |
+| `clear-all` | 清理所有缓存 | `/req:cache clear-all` |
+| `rebuild` | 重建索引 | `/req:cache rebuild` |
+| `export` | 导出需求 | `/req:cache export my-project` |
 
 ---
 
-## /req cache info
+## /req:cache info
 
 显示全局缓存状态。
 
@@ -36,7 +36,7 @@ CACHE_PATH=~/.claude-requirements
 # 检查缓存是否存在
 if [ ! -d "$CACHE_PATH" ]; then
     echo "📭 全局缓存未初始化"
-    echo "💡 使用 /req init <project-name> 创建第一个项目"
+    echo "💡 使用 /req:init <project-name> 创建第一个项目"
     exit 0
 fi
 
@@ -64,14 +64,14 @@ TOTAL_SIZE=$(du -sh $CACHE_PATH 2>/dev/null | cut -f1)
 📌 当前仓库绑定: my-saas-product
 
 💡 可用操作:
-- /req cache clear <project>  清理指定项目
-- /req cache clear-all        清理所有缓存
-- /req cache export <project> 导出项目需求
+- /req:cache clear <project>  清理指定项目
+- /req:cache clear-all        清理所有缓存
+- /req:cache export <project> 导出项目需求
 ```
 
 ---
 
-## /req cache clear <project-name>
+## /req:cache clear <project-name>
 
 清理指定项目的缓存。
 
@@ -141,7 +141,7 @@ rm -rf $PROJECT_PATH
 
 ---
 
-## /req cache clear-all
+## /req:cache clear-all
 
 清理所有全局缓存。
 
@@ -185,12 +185,12 @@ rm -rf ~/.claude-requirements
 - 释放空间: 1.2 MB
 
 💡 所有仓库现在将使用本地模式
-💡 使用 /req init <project-name> 重新创建项目
+💡 使用 /req:init <project-name> 重新创建项目
 ```
 
 ---
 
-## /req cache rebuild
+## /req:cache rebuild
 
 重建全局索引文件。
 
@@ -236,7 +236,7 @@ done
 
 ---
 
-## /req cache export <project-name>
+## /req:cache export <project-name>
 
 导出项目需求到本地目录。
 
@@ -273,10 +273,10 @@ cp -r $PROJECT_PATH/* $EXPORT_PATH/
 
 | 错误场景 | 处理方式 |
 |---------|---------|
-| 缓存不存在 | 提示使用 `/req init` |
+| 缓存不存在 | 提示使用 `/req:init` |
 | 项目不存在 | 列出可用项目 |
 | 权限不足 | 提示检查目录权限 |
-| 索引损坏 | 建议执行 `/req cache rebuild` |
+| 索引损坏 | 建议执行 `/req:cache rebuild` |
 
 ## 用户输入
 

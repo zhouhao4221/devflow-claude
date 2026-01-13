@@ -9,7 +9,7 @@ description: 迁移需求 - 将本地需求迁移到全局缓存
 ## 命令格式
 
 ```
-/req migrate <project-name> [--keep]
+/req:migrate <project-name> [--keep]
 ```
 
 ## 参数
@@ -27,7 +27,7 @@ description: 迁移需求 - 将本地需求迁移到全局缓存
 # 检查本地需求目录是否存在
 if [ ! -d "docs/requirements/active" ] && [ ! -d "docs/requirements/completed" ]; then
     echo "❌ 未找到本地需求目录 docs/requirements/"
-    echo "💡 无需迁移，可直接使用 /req init <project-name>"
+    echo "💡 无需迁移，可直接使用 /req:init <project-name>"
     exit 1
 fi
 
@@ -167,7 +167,7 @@ rm -f docs/requirements/template.md
 
 💡 下一步:
 - 查看需求列表: /req
-- 在其他仓库绑定: /req use <project-name>
+- 在其他仓库绑定: /req:use <project-name>
 ```
 
 ---
@@ -176,7 +176,7 @@ rm -f docs/requirements/template.md
 
 | 错误场景 | 处理方式 |
 |---------|---------|
-| 本地无需求 | 提示使用 `/req init` |
+| 本地无需求 | 提示使用 `/req:init` |
 | 目标项目有冲突 | 提供合并策略选择 |
 | 权限不足 | 提示检查目录权限 |
 | 迁移中断 | 回滚已迁移文件 |
@@ -187,13 +187,13 @@ rm -f docs/requirements/template.md
 
 ```bash
 # 基本迁移
-/req migrate my-saas-product
+/req:migrate my-saas-product
 
 # 迁移但保留本地副本
-/req migrate my-saas-product --keep
+/req:migrate my-saas-product --keep
 
 # 迁移到已有项目（会提示合并策略）
-/req migrate existing-project
+/req:migrate existing-project
 ```
 
 ## 用户输入

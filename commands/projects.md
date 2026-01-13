@@ -9,7 +9,7 @@ description: 列出所有需求项目 - 查看全局缓存中的所有项目
 ## 命令格式
 
 ```
-/req projects
+/req:projects
 ```
 
 ---
@@ -26,7 +26,7 @@ ls ~/.claude-requirements/projects/
 ```
 📭 暂无需求项目
 
-💡 使用 /req init <project-name> 创建第一个项目
+💡 使用 /req:init <project-name> 创建第一个项目
 ```
 
 ### 2. 读取全局索引
@@ -63,8 +63,8 @@ cat ~/.claude-requirements/index.json
 📂 缓存路径: ~/.claude-requirements/
 
 💡 可用命令:
-   - /req use <project>   切换到指定项目
-   - /req init <project>  创建新项目
+   - /req:use <project>   切换到指定项目
+   - /req:init <project>  创建新项目
 ```
 
 ---
@@ -72,7 +72,7 @@ cat ~/.claude-requirements/index.json
 ## 详细模式
 
 ```
-/req projects --detail
+/req:projects --detail
 ```
 
 显示每个项目的详细信息：

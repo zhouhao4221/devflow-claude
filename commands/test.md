@@ -9,7 +9,7 @@ description: 需求测试 - 执行测试验证
 ## 命令格式
 
 ```
-/req test [REQ-XXX]
+/req:test [REQ-XXX]
 ```
 
 **说明**：编号可选，省略时自动识别当前进行中的需求。
@@ -28,7 +28,7 @@ candidates = find_requirements(status=["开发中", "测试中"])
 
 if len(candidates) == 0:
     print("❌ 没有可测试的需求")
-    print("💡 请先完成开发：/req dev")
+    print("💡 请先完成开发：/req:dev")
     exit()
 elif len(candidates) == 1:
     REQ_ID = candidates[0]
@@ -60,7 +60,7 @@ fi
 ```python
 if 状态 not in ["开发中", "测试中"]:
     print("❌ 错误：需求尚未完成开发")
-    print("💡 请先执行：/req dev REQ-XXX")
+    print("💡 请先执行：/req:dev REQ-XXX")
     exit()
 
 # 检查功能点完成情况
@@ -187,8 +187,8 @@ API 测试：
 📊 状态：🧪 测试中（8/8 通过）
 
 💡 下一步：
-- 完成需求：/req done REQ-001
-- 重新测试：/req test REQ-001
+- 完成需求：/req:done REQ-001
+- 重新测试：/req:test REQ-001
 ```
 
 #### 存在失败
@@ -201,8 +201,8 @@ API 测试：
   问题：未设置渠道时应显示全部，实际为空
 
 💡 下一步：
-- 返回修复：/req dev REQ-001
-- 忽略继续：/req test REQ-001 --force
+- 返回修复：/req:dev REQ-001
+- 忽略继续：/req:test REQ-001 --force
 ```
 
 ---
@@ -213,10 +213,10 @@ API 测试：
 执行所有测试要点。
 
 ### 增量测试
-仅测试未通过的项：`/req test REQ-XXX --failed`
+仅测试未通过的项：`/req:test REQ-XXX --failed`
 
 ### 强制通过
-跳过失败项：`/req test REQ-XXX --force`（不推荐）
+跳过失败项：`/req:test REQ-XXX --force`（不推荐）
 
 ---
 
