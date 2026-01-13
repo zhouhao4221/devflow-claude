@@ -19,7 +19,7 @@ description: 缓存管理 - 查看、清理全局需求缓存
 | `info` | 查看缓存信息 | `/req:cache info` |
 | `clear` | 清理缓存 | `/req:cache clear my-project` |
 | `clear-all` | 清理所有缓存 | `/req:cache clear-all` |
-| `rebuild` | 重建索引 | `/req:cache rebuild` |
+| `rebuild` | 重建当前项目缓存 | `/req:cache rebuild` |
 | `export` | 导出需求 | `/req:cache export my-project` |
 
 ---
@@ -192,46 +192,55 @@ rm -rf ~/.claude-requirements
 
 ## /req:cache rebuild
 
-重建全局索引文件。
+从本地存储重建当前项目的全局缓存。
 
 ### 使用场景
 
-- 索引文件损坏
-- 手动修改了缓存目录
-- 需要同步实际文件状态
+- 缓存与本地不同步
+- 缓存文件损坏或丢失
+- 手动修改了本地需求文档
+
+### 前置条件
+
+当前仓库必须已绑定项目（`.claude/settings.local.json` 中有 `requirementProject`）
 
 ### 执行流程
 
+1. 读取当前仓库绑定的项目名
+2. 清空该项目的缓存目录
+3. 从本地 `docs/requirements/` 复制到缓存
+
 ```bash
-CACHE_PATH=~/.claude-requirements
+# 获取当前项目
+PROJECT=$(cat .claude/settings.local.json | jq -r '.requirementProject')
 
-# 扫描所有项目
-for project in $CACHE_PATH/projects/*/; do
-    project_name=$(basename $project)
+if [ -z "$PROJECT" ]; then
+    echo "❌ 当前仓库未绑定项目"
+    exit 1
+fi
 
-    # 统计需求数量
-    active_count=$(ls $project/active/*.md 2>/dev/null | wc -l)
-    completed_count=$(ls $project/completed/*.md 2>/dev/null | wc -l)
+CACHE_PATH=~/.claude-requirements/projects/$PROJECT
+LOCAL_PATH=docs/requirements
 
-    # 更新索引
-done
-
-# 重建 index.json
+# 清空并重建
+rm -rf $CACHE_PATH/active/* $CACHE_PATH/completed/*
+cp -r $LOCAL_PATH/active/* $CACHE_PATH/active/
+cp -r $LOCAL_PATH/completed/* $CACHE_PATH/completed/
 ```
 
 ### 输出
 
 ```
-🔄 重建全局索引
+🔄 重建项目缓存: my-saas-product
 
-扫描项目: 3 个
-├── my-saas-product: 5 活跃, 12 已完成
-├── internal-tools: 2 活跃, 8 已完成
-└── client-portal: 0 活跃, 0 已完成
+📂 源目录: docs/requirements/
+📂 目标: ~/.claude-requirements/projects/my-saas-product/
 
-✅ 索引重建完成
+同步内容:
+├── active/: 5 个文件
+└── completed/: 12 个文件
 
-📁 索引文件: ~/.claude-requirements/index.json
+✅ 缓存重建完成
 ```
 
 ---
