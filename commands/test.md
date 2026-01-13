@@ -6,75 +6,36 @@ description: 需求测试 - 执行测试验证
 
 执行测试验证，确保需求实现符合预期。
 
+> 存储路径和缓存同步规则见 [_common.md](./_common.md)
+
 ## 命令格式
 
 ```
 /req:test [REQ-XXX]
 ```
 
-**说明**：编号可选，省略时自动识别当前进行中的需求。
+- 省略编号时自动选择「开发中」或「测试中」的需求
+- 多个候选时让用户选择
 
 ---
 
 ## 执行流程
 
-### 0. 自动识别需求
+### 1. 选择需求
 
-如果未提供 REQ-XXX 编号：
-
-```python
-# 查找状态为「开发中」或「测试中」的需求
-candidates = find_requirements(status=["开发中", "测试中"])
-
-if len(candidates) == 0:
-    print("❌ 没有可测试的需求")
-    print("💡 请先完成开发：/req:dev")
-    exit()
-elif len(candidates) == 1:
-    REQ_ID = candidates[0]
-    print(f"📌 自动选择：{REQ_ID}")
-else:
-    print("📋 发现多个可测试的需求，请选择：")
-    for i, req in enumerate(candidates):
-        print(f"  {i+1}. {req}")
-```
-
-### 1. 解析存储路径（本地优先 + 缓存同步）
-
-```bash
-# 本地存储路径（主存储）
-LOCAL_ROOT=docs/requirements
-LOCAL_ACTIVE=$LOCAL_ROOT/active
-
-# 检查当前仓库绑定的项目（用于缓存同步）
-PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
-
-if [ -n "$PROJECT" ]; then
-    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
-    CACHE_ACTIVE=$CACHE_ROOT/active
-fi
-```
+- 指定编号 → 使用该需求
+- 未指定 → 查找可测试需求（状态为开发中/测试中）
 
 ### 2. 前置检查
 
-```python
-if 状态 not in ["开发中", "测试中"]:
-    print("❌ 错误：需求尚未完成开发")
-    print("💡 请先执行：/req:dev REQ-XXX")
-    exit()
+- 状态必须为「开发中」或「测试中」
+- 检查功能点完成情况，有未完成时警告
 
-# 检查功能点完成情况
-if 有未完成的功能点:
-    print("⚠️ 警告：存在未完成的功能点")
-    显示未完成列表
-    print("是否继续进入测试？(y/n)")
-```
-
-### 3. 更新状态为「测试中」（先本地，后缓存）
+### 3. 更新状态并同步缓存
 
 - 修改元信息状态为「测试中」
 - 勾选生命周期「测试中」
-- 先更新本地，再同步到缓存
+- **同步到全局缓存**
 
 ### 4. 加载测试要点
 
@@ -146,22 +107,10 @@ API 测试：
 请输入结果：
 ```
 
-### 7. 记录测试结果（先本地，后缓存）
+### 7. 记录测试结果并同步缓存
 
-更新需求文档的测试要点，并同步到缓存：
-
-```markdown
-## 八、测试要点
-
-- [x] 部门创建时关联渠道 ✅ 2026-01-08
-- [x] 部门更新时修改渠道关联 ✅ 2026-01-08
-- [x] 上级部门未设置渠道，下级可任意选择 ✅ 2026-01-08
-- [x] 上级部门已设置渠道，下级必须设置且为子集 ✅ 2026-01-08
-- [x] 选择超出范围的渠道报错 ✅ 2026-01-08
-- [x] 订单列表按渠道正确过滤 ✅ 2026-01-08
-- [x] Dashboard 数据按渠道正确过滤 ✅ 2026-01-08
-- [x] 缓存正确失效 ✅ 2026-01-08
-```
+- 更新需求文档的测试要点（勾选通过项，记录日期）
+- **同步到全局缓存**
 
 ### 8. 测试总结
 

@@ -6,74 +6,30 @@ description: 完成需求 - 标记完成并归档
 
 标记需求为已完成，归档文档。
 
+> 存储路径和缓存同步规则见 [_common.md](./_common.md)
+
 ## 命令格式
 
 ```
 /req:done [REQ-XXX]
 ```
 
-**说明**：编号可选，省略时自动识别当前测试中的需求。
+- 省略编号时自动选择「测试中」的需求
+- 多个候选时让用户选择
 
 ---
 
 ## 执行流程
 
-### 0. 自动识别需求
+### 1. 选择需求
 
-如果未提供 REQ-XXX 编号：
-
-```python
-# 查找状态为「测试中」的需求
-candidates = find_requirements(status=["测试中"])
-
-if len(candidates) == 0:
-    print("❌ 没有可完成的需求")
-    print("💡 请先完成测试：/req:test")
-    exit()
-elif len(candidates) == 1:
-    REQ_ID = candidates[0]
-    print(f"📌 自动选择：{REQ_ID}")
-else:
-    print("📋 发现多个测试中的需求，请选择：")
-    for i, req in enumerate(candidates):
-        print(f"  {i+1}. {req}")
-```
-
-### 1. 解析存储路径（本地优先 + 缓存同步）
-
-```bash
-# 本地存储路径（主存储）
-LOCAL_ROOT=docs/requirements
-LOCAL_ACTIVE=$LOCAL_ROOT/active
-LOCAL_COMPLETED=$LOCAL_ROOT/completed
-
-# 检查当前仓库绑定的项目（用于缓存同步）
-PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
-
-if [ -n "$PROJECT" ]; then
-    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
-    CACHE_ACTIVE=$CACHE_ROOT/active
-    CACHE_COMPLETED=$CACHE_ROOT/completed
-fi
-```
+- 指定编号 → 使用该需求
+- 未指定 → 查找可完成需求（状态为测试中）
 
 ### 2. 前置检查
 
-```python
-if 状态 != "测试中":
-    print("❌ 错误：需求尚未完成测试")
-    print("💡 请先执行：/req:test REQ-XXX")
-    exit()
-
-# 检查测试完成情况
-未通过的测试 = 获取未通过测试点()
-if 未通过的测试:
-    print("⚠️ 警告：存在未通过的测试点")
-    显示未通过列表
-    print("是否强制完成？(y/n)")
-    if 用户选择 n:
-        exit()
-```
+- 状态必须为「测试中」
+- 检查测试完成情况，有未通过时警告并确认
 
 ### 3. 生成完成摘要
 
@@ -112,41 +68,10 @@ if 未通过的测试:
 - 勾选生命周期「已完成」
 - 记录完成时间
 
-```markdown
-## 元信息
+### 5. 归档文档并同步缓存
 
-| 属性 | 值 |
-|-----|-----|
-| 编号 | REQ-001 |
-| 状态 | ✅ 已完成 |
-| 完成日期 | 2026-01-08 |
-| ... | ... |
-
-## 生命周期
-
-- [x] 📝 草稿（编写中）
-- [x] 👀 待评审
-- [x] ✅ 评审通过
-- [x] 🔨 开发中
-- [x] 🧪 测试中
-- [x] 🎉 已完成
-```
-
-### 5. 归档文档（先本地，后缓存）
-
-将需求文档移动到完成目录：
-
-```bash
-# 1. 先归档本地（主存储）
-mv $LOCAL_ACTIVE/REQ-001-部门渠道关联.md \
-   $LOCAL_COMPLETED/REQ-001-部门渠道关联.md
-
-# 2. 同步到缓存
-if [ -n "$PROJECT" ]; then
-    mv $CACHE_ACTIVE/REQ-001-部门渠道关联.md \
-       $CACHE_COMPLETED/REQ-001-部门渠道关联.md
-fi
-```
+- 移动到 completed/ 目录
+- **缓存同步移动**（从缓存 active/ 移到 completed/）
 
 ### 6. 生成完成报告
 
