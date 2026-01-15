@@ -71,7 +71,14 @@ description: 完成需求 - 标记完成并归档
 ### 5. 归档文档并同步缓存
 
 - 移动到 completed/ 目录
-- **缓存同步移动**（从缓存 active/ 移到 completed/）
+- **必须执行缓存同步**：
+  1. 读取 `.claude/settings.local.json` 获取 `requirementProject`
+  2. 若项目已绑定，执行缓存归档：
+     ```bash
+     CACHE_ROOT=~/.claude-requirements/projects/<project>
+     mv $CACHE_ROOT/active/REQ-XXX-*.md $CACHE_ROOT/completed/
+     ```
+  3. 缓存目录不存在时跳过（项目未初始化）
 
 ### 6. 生成完成报告
 
