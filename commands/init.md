@@ -42,6 +42,7 @@ description: 初始化需求项目 - 创建本地存储和全局缓存
 LOCAL_ROOT=docs/requirements
 mkdir -p $LOCAL_ROOT/active
 mkdir -p $LOCAL_ROOT/completed
+mkdir -p $LOCAL_ROOT/modules
 ```
 
 ### 3. 复制模板文件到本地
@@ -67,6 +68,69 @@ if [ ! -f $LOCAL_ROOT/PRD.md ]; then
 fi
 ```
 
+### 4.1 创建「快速修复」模块
+
+自动创建「快速修复」模块文档，用于归档快速修复类需求：
+
+```bash
+# 仅当模块文档不存在时创建
+QUICK_FIX_MODULE=$LOCAL_ROOT/modules/quick-fix.md
+if [ ! -f $QUICK_FIX_MODULE ]; then
+  cat > $QUICK_FIX_MODULE << 'EOF'
+# 快速修复
+
+## 概述
+
+本模块用于归档所有快速修复类需求，包括：
+- 小 bug 修复
+- 小功能增强
+- 代码优化
+- UI 微调
+
+这些改动通常不需要完整的需求评审流程，可快速完成。
+
+---
+
+## 核心功能
+
+> 快速修复按时间顺序记录，无需细分功能点
+
+| 编号 | 描述 | 状态 | 完成日期 |
+|------|------|------|----------|
+| - | 暂无记录 | - | - |
+
+---
+
+## 业务规则
+
+| 规则 | 说明 |
+|------|------|
+| 改动范围 | 建议 <5 个文件 |
+| 数据库变更 | 不涉及表结构变更 |
+| 影响范围 | 不影响核心业务流程 |
+| 验证方式 | 自测即可 |
+
+---
+
+## 相关需求
+
+| 编号 | 标题 | 状态 | 更新时间 |
+|------|------|------|----------|
+| - | 暂无 | - | - |
+
+---
+
+## 变更记录
+
+| 日期 | 变更内容 |
+|------|----------|
+| {{DATE}} | 初始版本 |
+EOF
+  # 替换日期
+  sed -i 's/{{DATE}}/$(date +%Y-%m-%d)/g' $QUICK_FIX_MODULE
+fi
+```
+
 ### 5. 创建全局缓存目录（同步副本）
 
 ```bash
@@ -74,10 +138,14 @@ fi
 CACHE_ROOT=~/.claude-requirements/projects/<project-name>
 mkdir -p $CACHE_ROOT/active
 mkdir -p $CACHE_ROOT/completed
+mkdir -p $CACHE_ROOT/modules
 
 # 同步模板和 PRD 到缓存（仅当本地存在时）
 [ -f $LOCAL_ROOT/template.md ] && cp $LOCAL_ROOT/template.md $CACHE_ROOT/template.md
 [ -f $LOCAL_ROOT/PRD.md ] && cp $LOCAL_ROOT/PRD.md $CACHE_ROOT/PRD.md
+
+# 同步快速修复模块到缓存
+[ -f $LOCAL_ROOT/modules/quick-fix.md ] && cp $LOCAL_ROOT/modules/quick-fix.md $CACHE_ROOT/modules/
 ```
 
 ### 6. 更新全局索引
@@ -116,6 +184,8 @@ mkdir -p $CACHE_ROOT/completed
    docs/requirements/
    ├── active/      # 进行中的需求
    ├── completed/   # 已完成的需求
+   ├── modules/     # 模块文档
+   │   └── quick-fix.md  # 快速修复模块（预置）
    ├── PRD.md       # 产品需求文档
    └── template.md  # 需求模板
 
@@ -144,6 +214,8 @@ mkdir -p $CACHE_ROOT/completed
 📁 检查并补充缺失内容:
    ✓ docs/requirements/active/      目录已存在
    ✓ docs/requirements/completed/   目录已存在
+   ✓ docs/requirements/modules/     目录已存在
+   + docs/requirements/modules/quick-fix.md  已生成（新增）
    + docs/requirements/PRD.md       已生成（新增）
    ✓ docs/requirements/template.md  文件已存在（保留）
 
