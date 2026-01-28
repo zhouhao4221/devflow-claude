@@ -38,12 +38,13 @@ templates/                   # 需求文档模板
 - 仓库绑定配置：`.claude/settings.local.json` 中的 `requirementProject`
 - 优势：支持跨仓库共享同一套需求
 
-**更新策略：**
+**更新策略（强制自动同步）：**
 1. 创建/修改需求 → 先写入本地 `docs/requirements/`
-2. 本地写入成功 → 自动同步到全局缓存（通过 PostToolUse Hook）
+2. 本地写入成功 → **强制自动同步**到全局缓存（通过 PostToolUse Hook，无需用户确认）
 3. 读取需求 → 优先读本地，本地不存在时从缓存读取
 4. **状态更新前置条件**：本地必须存在需求文档，否则跳过更新（避免关联仓库误操作）
 5. **以本地为准**：同步时直接用本地版本覆盖缓存，不进行冲突检测
+6. **触发工具**：Write 和 Edit 工具都会触发缓存同步（包括 active/ 和 completed/ 目录）
 
 ### 命令结构
 
@@ -89,9 +90,11 @@ templates/                   # 需求文档模板
 ### 钩子
 
 在 `hooks/hooks.json` 中配置的前置/后置钩子：
-- **PostToolUse（Write 后）**：
+- **PostToolUse（Write/Edit 后）**：
   - `validate-requirement.sh` - 验证需求文档格式
-  - `sync-cache.sh` - 自动同步到全局缓存（以本地为准）
+  - `sync-cache.sh` - **强制自动同步**到全局缓存（无需用户确认，以本地为准）
+
+**缓存同步规则**：任何对需求文档的修改（包括 active/ 和 completed/ 目录）都会**强制自动**同步到缓存，无需用户确认。
 
 ## 需求生命周期状态
 

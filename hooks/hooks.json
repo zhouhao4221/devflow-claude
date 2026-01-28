@@ -9,11 +9,35 @@
             "command": "echo '📝 正在更新需求文档...'"
           }
         ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '📝 正在编辑需求文档...'"
+          }
+        ]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-requirement.sh \"$CLAUDE_FILE_PATH\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/sync-cache.sh \"$CLAUDE_FILE_PATH\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
         "hooks": [
           {
             "type": "command",
