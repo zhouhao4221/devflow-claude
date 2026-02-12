@@ -98,9 +98,10 @@ cp docs/requirements/active/*.md $PROJECT_PATH/active/ 2>/dev/null
 # 复制已完成需求
 cp docs/requirements/completed/*.md $PROJECT_PATH/completed/ 2>/dev/null
 
-# 复制模板（如果存在且目标没有）
-if [ -f "docs/requirements/template.md" ] && [ ! -f "$PROJECT_PATH/template.md" ]; then
-    cp docs/requirements/template.md $PROJECT_PATH/template.md
+# 复制模板目录（如果存在且目标没有）
+if [ -d "docs/requirements/templates" ]; then
+    mkdir -p $PROJECT_PATH/templates
+    cp docs/requirements/templates/*.md $PROJECT_PATH/templates/ 2>/dev/null
 fi
 ```
 
@@ -138,7 +139,7 @@ fi
 # 如果没有 --keep 参数
 rm -rf docs/requirements/active/
 rm -rf docs/requirements/completed/
-rm -f docs/requirements/template.md
+rm -rf docs/requirements/templates/
 
 # 保留空目录结构（可选）
 # mkdir -p docs/requirements/active

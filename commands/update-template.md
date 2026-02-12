@@ -26,10 +26,10 @@ description: 更新模板 - 将插件最新模板同步到项目本地
 
 | 模板名称 | 插件源文件（相对插件根目录） | 项目目标文件 |
 |---------|--------------------------|------------|
-| `requirement` | `templates/requirement-template.md` | `docs/requirements/template.md` |
-| `quick` | `templates/quick-template.md` | `docs/requirements/quick-template.md` |
-| `module` | `templates/module-template.md` | `docs/requirements/module-template.md` |
-| `prd` | `templates/prd-template.md` | `docs/requirements/prd-template.md` |
+| `requirement` | `templates/requirement-template.md` | `docs/requirements/templates/requirement-template.md` |
+| `quick` | `templates/quick-template.md` | `docs/requirements/templates/quick-template.md` |
+| `module` | `templates/module-template.md` | `docs/requirements/templates/module-template.md` |
+| `prd` | `templates/prd-template.md` | `docs/requirements/templates/prd-template.md` |
 | `all` | 以上全部 | 以上全部 |
 
 ---
@@ -82,7 +82,7 @@ fi
 ```
 请选择要更新的模板：
 
-1. requirement - 需求模板 (template.md)
+1. requirement - 需求模板 (requirement-template.md)
 2. quick       - 快速修复模板 (quick-template.md)
 3. module      - 模块模板 (module-template.md)
 4. prd         - PRD 模板 (prd-template.md)
@@ -120,7 +120,7 @@ a. all         - 更新全部模板
 ```
 模板 requirement:
   插件版本: <插件根目录>/templates/requirement-template.md
-  本地文件: docs/requirements/template.md
+  本地文件: docs/requirements/templates/requirement-template.md
 
 差异摘要:
   - 插件版本新增章节: "十三、非功能需求"
@@ -140,10 +140,10 @@ a. all         - 更新全部模板
 
 | 模板名称 | 读取（Read） | 写入（Write） |
 |---------|-------------|-------------|
-| `requirement` | `<插件根目录>/templates/requirement-template.md` | `docs/requirements/template.md` |
-| `quick` | `<插件根目录>/templates/quick-template.md` | `docs/requirements/quick-template.md` |
-| `module` | `<插件根目录>/templates/module-template.md` | `docs/requirements/module-template.md` |
-| `prd` | `<插件根目录>/templates/prd-template.md` | `docs/requirements/prd-template.md` |
+| `requirement` | `<插件根目录>/templates/requirement-template.md` | `docs/requirements/templates/requirement-template.md` |
+| `quick` | `<插件根目录>/templates/quick-template.md` | `docs/requirements/templates/quick-template.md` |
+| `module` | `<插件根目录>/templates/module-template.md` | `docs/requirements/templates/module-template.md` |
+| `prd` | `<插件根目录>/templates/prd-template.md` | `docs/requirements/templates/prd-template.md` |
 
 **注意**：PRD 模板更新时保留原始模板变量（`{{PROJECT_NAME}}`、`{{DATE}}`），不做变量替换。已有的 `PRD.md` 是项目文档，不会被覆盖。PRD 模板更新到 `prd-template.md`，仅影响后续新建项目时使用。
 
@@ -155,7 +155,8 @@ a. all         - 更新全部模板
 PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
 if [ -n "$PROJECT" ]; then
     CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
-    cp $LOCAL_ROOT/template.md $CACHE_ROOT/template.md 2>/dev/null
+    mkdir -p $CACHE_ROOT/templates
+    cp $LOCAL_ROOT/templates/*.md $CACHE_ROOT/templates/ 2>/dev/null
 fi
 ```
 
@@ -165,7 +166,7 @@ fi
 ```
 已更新模板: requirement
   源文件: <插件根目录>/templates/requirement-template.md
-  目标: docs/requirements/template.md
+  目标: docs/requirements/templates/requirement-template.md
   缓存同步: 已完成
 
 新创建的需求将使用更新后的模板。已有需求文档不受影响。

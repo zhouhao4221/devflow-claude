@@ -43,25 +43,38 @@ LOCAL_ROOT=docs/requirements
 mkdir -p $LOCAL_ROOT/active
 mkdir -p $LOCAL_ROOT/completed
 mkdir -p $LOCAL_ROOT/modules
+mkdir -p $LOCAL_ROOT/templates
 ```
 
 ### 3. 复制模板文件到本地
 
+将所有模板文件复制到 `docs/requirements/templates/` 目录：
+
 ```bash
+TEMPLATE_DIR=$LOCAL_ROOT/templates
+
 # 仅当文件不存在时复制（--reinit 模式下保护已有文件）
-if [ ! -f $LOCAL_ROOT/template.md ]; then
-  cp <plugin-path>/templates/requirement-template.md $LOCAL_ROOT/template.md
+if [ ! -f $TEMPLATE_DIR/requirement-template.md ]; then
+  cp <plugin-path>/templates/requirement-template.md $TEMPLATE_DIR/requirement-template.md
+fi
+
+if [ ! -f $TEMPLATE_DIR/quick-template.md ]; then
+  cp <plugin-path>/templates/quick-template.md $TEMPLATE_DIR/quick-template.md
+fi
+
+if [ ! -f $TEMPLATE_DIR/prd-template.md ]; then
+  cp <plugin-path>/templates/prd-template.md $TEMPLATE_DIR/prd-template.md
 fi
 ```
 
 ### 4. 生成 PRD 文档
 
-从模板生成项目 PRD 文档，替换变量：
+从本地模板生成项目 PRD 文档，替换变量：
 
 ```bash
 # 仅当 PRD.md 不存在时生成（--reinit 模式下保护已有文件）
 if [ ! -f $LOCAL_ROOT/PRD.md ]; then
-  cp <plugin-path>/templates/prd-template.md $LOCAL_ROOT/PRD.md
+  cp $TEMPLATE_DIR/prd-template.md $LOCAL_ROOT/PRD.md
   # 替换模板变量
   sed -i 's/{{PROJECT_NAME}}/<project-name>/g' $LOCAL_ROOT/PRD.md
   sed -i 's/{{DATE}}/$(date +%Y-%m-%d)/g' $LOCAL_ROOT/PRD.md
@@ -141,7 +154,10 @@ mkdir -p $CACHE_ROOT/completed
 mkdir -p $CACHE_ROOT/modules
 
 # 同步模板和 PRD 到缓存（仅当本地存在时）
-[ -f $LOCAL_ROOT/template.md ] && cp $LOCAL_ROOT/template.md $CACHE_ROOT/template.md
+mkdir -p $CACHE_ROOT/templates
+[ -f $TEMPLATE_DIR/requirement-template.md ] && cp $TEMPLATE_DIR/requirement-template.md $CACHE_ROOT/templates/
+[ -f $TEMPLATE_DIR/quick-template.md ] && cp $TEMPLATE_DIR/quick-template.md $CACHE_ROOT/templates/
+[ -f $TEMPLATE_DIR/prd-template.md ] && cp $TEMPLATE_DIR/prd-template.md $CACHE_ROOT/templates/
 [ -f $LOCAL_ROOT/PRD.md ] && cp $LOCAL_ROOT/PRD.md $CACHE_ROOT/PRD.md
 
 # 同步快速修复模块到缓存
@@ -183,12 +199,15 @@ mkdir -p $CACHE_ROOT/modules
 
 📁 本地存储（主存储，纳入 git）:
    docs/requirements/
-   ├── active/      # 进行中的需求
-   ├── completed/   # 已完成的需求
-   ├── modules/     # 模块文档
+   ├── active/         # 进行中的需求
+   ├── completed/      # 已完成的需求
+   ├── modules/        # 模块文档
    │   └── quick-fix.md  # 快速修复模块（预置）
-   ├── PRD.md       # 产品需求文档
-   └── template.md  # 需求模板
+   ├── templates/      # 模板文件
+   │   ├── requirement-template.md  # 需求模板
+   │   ├── quick-template.md        # 快速修复模板
+   │   └── prd-template.md          # PRD 模板
+   └── PRD.md          # 产品需求文档
 
 🔄 全局缓存（同步副本，跨仓库共享）:
    ~/.claude-requirements/projects/<project-name>/
@@ -216,9 +235,12 @@ mkdir -p $CACHE_ROOT/modules
    ✓ docs/requirements/active/      目录已存在
    ✓ docs/requirements/completed/   目录已存在
    ✓ docs/requirements/modules/     目录已存在
+   + docs/requirements/templates/   模板目录
+   + docs/requirements/templates/requirement-template.md  已复制
+   + docs/requirements/templates/quick-template.md        已复制
+   + docs/requirements/templates/prd-template.md          已复制
    + docs/requirements/modules/quick-fix.md  已生成（新增）
    + docs/requirements/PRD.md       已生成（新增）
-   ✓ docs/requirements/template.md  文件已存在（保留）
 
 🔗 当前仓库已绑定到此项目
 

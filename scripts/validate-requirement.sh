@@ -48,7 +48,7 @@ if [[ "$FILENAME" =~ ^REQ-[0-9]+ ]]; then
 
     if [ -n "$MISSING" ]; then
         echo -e "缺少章节:$MISSING"
-        echo "请严格按照模板格式补全所有章节（参考 docs/requirements/template.md）"
+        echo "请严格按照模板格式补全所有章节（参考 docs/requirements/templates/requirement-template.md）"
     fi
 fi
 

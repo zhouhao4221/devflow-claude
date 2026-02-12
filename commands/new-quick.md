@@ -78,8 +78,15 @@ MAX_NUM=$(echo -e "$LOCAL_MAX\n$CACHE_MAX" | sort -t'-' -k2 -n | tail -1)
 
 ```
 优先级：
-1. 本地模板：docs/requirements/quick-template.md
+1. 本地模板：docs/requirements/templates/quick-template.md
 2. 插件模板：<plugin-path>/templates/quick-template.md
+```
+
+**两个路径都不存在时，终止操作**：
+```
+❌ 未找到快速修复模板文件
+
+💡 请执行 /req:update-template quick 恢复模板
 ```
 
 读取后解析模板的完整章节结构，后续创建文档**必须严格保留模板中的所有章节、层级和格式**。

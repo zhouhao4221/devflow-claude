@@ -13,10 +13,12 @@
 #   - /req:done       完成归档（移动到 completed/）
 #   - /req:upgrade    升级 QUICK 为 REQ
 #   - /req:modules new 创建模块文档
+#   - /req:prd-edit    编辑 PRD 文档
 #
 # 不触发缓存更新的命令（只读操作）：
 #   - /req, /req:status, /req:projects, /req:cache, /req:use
 #   - /req:init, /req:migrate, /req:test_regression, /req:test_new
+#   - /req:prd
 
 FILE_PATH="$1"
 
@@ -34,6 +36,7 @@ fi
 FILENAME=$(basename "$FILE_PATH")
 IS_REQUIREMENT=false
 IS_MODULE=false
+IS_PRD=false
 
 # REQ 或 QUICK 需求文档
 if [[ "$FILENAME" =~ ^(REQ|QUICK)-[0-9]+ ]]; then
@@ -41,6 +44,9 @@ if [[ "$FILENAME" =~ ^(REQ|QUICK)-[0-9]+ ]]; then
 # 模块文档
 elif [[ "$FILE_PATH" =~ docs/requirements/modules/ ]]; then
     IS_MODULE=true
+# PRD 文档
+elif [[ "$FILENAME" = "PRD.md" ]]; then
+    IS_PRD=true
 # 其他文件（INDEX.md、template.md 等）不同步
 else
     exit 0

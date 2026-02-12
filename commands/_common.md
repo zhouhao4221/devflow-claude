@@ -55,13 +55,14 @@
 - `/req:done` - 完成归档
 - `/req:upgrade` - 升级 QUICK 为 REQ
 - `/req:modules new` - 创建模块文档
+- `/req:prd-edit` - 编辑 PRD 文档
 
-不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`
+不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:prd`
 
 同步配置：
 - Hook 脚本：`scripts/sync-cache.sh`
 - 触发条件：**Write 或 Edit 工具**操作 `docs/requirements/` 目录下的文件后
-- 同步范围：REQ-XXX、QUICK-XXX 需求文档及模块文档（modules/），不含 INDEX.md、template.md
+- 同步范围：REQ-XXX、QUICK-XXX 需求文档、模块文档（modules/）及 PRD.md，不含 INDEX.md、template.md
 - **执行方式**：静默自动执行，仅输出同步状态提示
 
 **重要原则**：
@@ -100,8 +101,11 @@
 
 | 需求类型 | 优先读取 | 回退读取 |
 |---------|---------|---------|
-| REQ-XXX | `docs/requirements/template.md` | `<plugin-path>/templates/requirement-template.md` |
-| QUICK-XXX | `docs/requirements/quick-template.md` | `<plugin-path>/templates/quick-template.md` |
+| REQ-XXX | `docs/requirements/templates/requirement-template.md` | `<plugin-path>/templates/requirement-template.md` |
+| QUICK-XXX | `docs/requirements/templates/quick-template.md` | `<plugin-path>/templates/quick-template.md` |
+| PRD | `docs/requirements/templates/prd-template.md` | `<plugin-path>/templates/prd-template.md` |
+
+**模板不存在时终止**：两个路径都不存在时，**必须终止操作**，提示用户执行 `/req:update-template` 恢复模板。不得在无模板的情况下创建或编辑文档。
 
 ### 格式规则
 

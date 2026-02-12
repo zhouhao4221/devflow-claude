@@ -65,8 +65,15 @@ description: 创建新需求 - 基于模板创建需求文档
 
 ```
 优先级：
-1. 本地模板：docs/requirements/template.md
+1. 本地模板：docs/requirements/templates/requirement-template.md
 2. 插件模板：<plugin-path>/templates/requirement-template.md
+```
+
+**两个路径都不存在时，终止操作**：
+```
+❌ 未找到需求模板文件
+
+💡 请执行 /req:update-template requirement 恢复模板
 ```
 
 读取后解析模板的完整章节结构，后续创建文档**必须严格保留模板中的所有章节、层级和格式**。

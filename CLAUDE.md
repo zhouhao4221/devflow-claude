@@ -29,7 +29,7 @@ templates/                   # 需求文档模板
 - 进行中的需求：`docs/requirements/active/`
 - 已完成的需求：`docs/requirements/completed/`
 - 需求索引：`docs/requirements/INDEX.md`（自动生成）
-- 模板文件：`docs/requirements/template.md`
+- 模板目录：`docs/requirements/templates/`
 - 优势：纳入 git 版本控制，团队可审查
 
 **2. 全局缓存（同步副本）**
@@ -75,6 +75,10 @@ templates/                   # 需求文档模板
 - `/req:modules show <模块名>` - 查看模块详情
 - `/req --module=<模块名>` - 按模块筛选需求列表
 
+**PRD 管理命令：**
+- `/req:prd [--section=章节名]` - 查看 PRD 状态概览和章节填充分析
+- `/req:prd-edit [章节名或编号]` - 编辑/完善 PRD 文档（支持 AI 智能补充）
+
 **项目管理命令（全局缓存模式）：**
 - `/req:init <project-name>` - 初始化项目，创建全局缓存
 - `/req:use <project-name>` - 切换当前仓库绑定的项目
@@ -87,6 +91,7 @@ templates/                   # 需求文档模板
 
 - `requirement-analyzer` - 创建/编辑需求时触发，帮助完善文档各章节
 - `dev-guide` - 执行 `/req:dev` 时触发，按分层架构引导代码实现
+- `prd-analyzer` - 执行 `/req:prd-edit` 时触发，辅助完善 PRD 文档各章节
 - `code-impact-analyzer` - 需求变更时触发，分析受影响的代码
 - `test-guide` - 执行测试命令时触发，支持两种模式：
   - `/req:test_regression` - 运行已有自动化测试，生成回归报告
@@ -114,10 +119,11 @@ templates/                   # 需求文档模板
 | `/req:done` | 完成归档（移动到 completed/） |
 | `/req:upgrade` | 升级 QUICK 为 REQ |
 | `/req:modules new` | 创建模块文档 |
+| `/req:prd-edit` | 编辑 PRD 文档 |
 
-不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`
+不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`、`/req:prd`
 
-**同步范围**：`docs/requirements/` 目录下的 REQ-XXX、QUICK-XXX 需求文档及模块文档（modules/），其他文件（INDEX.md、template.md）不同步。
+**同步范围**：`docs/requirements/` 目录下的 REQ-XXX、QUICK-XXX 需求文档、模块文档（modules/）及 PRD.md，其他文件（INDEX.md、template.md）不同步。
 
 ## 需求生命周期状态
 
@@ -149,12 +155,17 @@ templates/                   # 需求文档模板
 ```
 ~/backend/                         # 后端仓库（主仓库）
 ├── docs/requirements/             # 本地存储（主存储，纳入 git）
+│   ├── templates/                 # 模板文件
+│   │   ├── requirement-template.md
+│   │   ├── quick-template.md
+│   │   └── prd-template.md
 │   ├── modules/                   # 模块文档
 │   │   ├── user.md
 │   │   └── order.md
 │   ├── active/
 │   │   └── REQ-001-用户积分.md
 │   ├── completed/
+│   ├── PRD.md                     # 产品需求文档
 │   └── INDEX.md                   # 需求索引
 └── .claude/settings.local.json    # { "requirementProject": "my-saas-product", "requirementRole": "primary" }
 
@@ -211,6 +222,10 @@ PRD.md（产品规划）
 **自动维护**：
 - `/req:new` 创建需求时 → 在 PRD.md「需求追踪」章节追加记录
 - `/req:done` 完成需求时 → 更新对应记录的状态和完成日期
+
+**主动维护**：
+- `/req:prd` → 查看 PRD 状态概览，分析各章节填充情况
+- `/req:prd-edit` → 编辑 PRD 章节，支持 AI 从现有需求反推内容
 
 ## REQ 模板章节划分
 

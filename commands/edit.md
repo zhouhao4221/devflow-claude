@@ -33,12 +33,19 @@ description: 编辑需求 - 修改已有需求文档
 
 ```
 正式需求（REQ-XXX）：
-  1. 本地模板：docs/requirements/template.md
+  1. 本地模板：docs/requirements/templates/requirement-template.md
   2. 插件模板：<plugin-path>/templates/requirement-template.md
 
 快速修复（QUICK-XXX）：
-  1. 本地模板：docs/requirements/quick-template.md
+  1. 本地模板：docs/requirements/templates/quick-template.md
   2. 插件模板：<plugin-path>/templates/quick-template.md
+```
+
+**两个路径都不存在时，终止操作**：
+```
+❌ 未找到对应类型的模板文件
+
+💡 请执行 /req:update-template <requirement|quick> 恢复模板
 ```
 
 读取后解析模板的完整章节结构，编辑时**必须严格保持模板中的所有章节、层级和格式**。

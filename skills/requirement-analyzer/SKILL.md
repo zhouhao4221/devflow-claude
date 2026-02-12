@@ -58,8 +58,9 @@ description: |
 生成或补充内容时，**必须严格遵循模板格式**：
 
 1. **先读取模板**：根据需求类型读取对应模板文件
-   - 正式需求：优先 `docs/requirements/template.md`，其次 `<plugin-path>/templates/requirement-template.md`
-   - 快速修复：优先 `docs/requirements/quick-template.md`，其次 `<plugin-path>/templates/quick-template.md`
+   - 正式需求：优先 `docs/requirements/templates/requirement-template.md`，其次 `<plugin-path>/templates/requirement-template.md`
+   - 快速修复：优先 `docs/requirements/templates/quick-template.md`，其次 `<plugin-path>/templates/quick-template.md`
+   - **两个路径都不存在时，终止操作**，提示用户执行 `/req:update-template` 恢复模板
 2. **章节结构不可变**：不得新增、删除、合并或重命名模板中的章节
 3. **层级标题不可变**：章节标题、编号必须与模板完全一致
 4. **表格格式不可变**：表格的列名、列数必须与模板一致

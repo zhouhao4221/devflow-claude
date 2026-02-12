@@ -178,7 +178,7 @@ requirement-workflow/
     "requirementDir": "docs/requirements",
     "activeDir": "docs/requirements/active",
     "completedDir": "docs/requirements/completed",
-    "templateFile": "docs/requirements/template.md"
+    "templateDir": "docs/requirements/templates/"
   }
 }
 ```
