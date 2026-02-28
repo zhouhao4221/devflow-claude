@@ -1,0 +1,286 @@
+---
+description: 规范提交 - 生成 Conventional Commits 格式的 Git 提交
+---
+
+# 规范提交
+
+生成符合 Conventional Commits 规范的 Git 提交，自动关联当前需求编号，便于后续 `/req:changelog` 生成版本说明。
+
+> 此命令**不受仓库角色限制**，readonly 仓库也可执行。
+> 不触发缓存同步。
+
+## 命令格式
+
+```
+/req:commit [消息]
+```
+
+**示例：**
+- `/req:commit` — 交互式选择类型并生成提交
+- `/req:commit 实现部门渠道关联` — 自动分析变更并生成提交
+
+---
+
+## 执行流程
+
+### 1. 检查工作区状态
+
+```bash
+git status --short
+git diff --cached --stat
+```
+
+**无变更时：**
+```
+❌ 没有可提交的变更
+
+💡 请先暂存文件：
+- git add <file>       暂存指定文件
+- git add -A           暂存所有变更
+```
+
+**有未暂存变更时：**
+展示变更文件列表，询问用户是否全部暂存或选择性暂存：
+
+```
+📁 工作区变更：
+
+已暂存（staged）：
+  M  internal/sys/biz/dept_channel.go
+  A  internal/sys/model/sys_dept_channel_model.go
+
+未暂存（unstaged）：
+  M  internal/sys/controller/v1/sys_dept.go
+  M  internal/sys/router.go
+
+是否将未暂存的文件也加入提交？
+1. 全部加入
+2. 仅提交已暂存的文件
+3. 选择性暂存（逐个确认）
+```
+
+### 2. Code Review 提醒（强制）
+
+提交前**必须**提醒用户确认是否已完成代码审查：
+
+```
+🔍 提交前确认：是否已完成 Code Review？(y/n)
+   （检查要点：逻辑正确性、安全隐患、错误处理、代码规范、调试代码清理）
+```
+
+- `y` → 继续提交流程
+- `n` → 终止提交：
+  ```
+  ⏸️ 提交已暂停，请先完成代码审查后重新执行 /req:commit
+  ```
+
+**此步骤不可跳过**，每次执行 `/req:commit` 都必须确认。
+
+### 3. 检测当前需求
+
+```python
+# 查找当前活跃的需求（状态为开发中/测试中）
+PROJECT = read_settings("requirementProject")
+ROLE = read_settings("requirementRole")
+
+if ROLE == "readonly":
+    active_dir = f"~/.claude-requirements/projects/{PROJECT}/active/"
+elif ROLE == "primary":
+    active_dir = "docs/requirements/active/"
+else:
+    active_dir = "docs/requirements/active/"
+
+# 扫描开发中/测试中的需求
+active_reqs = find_requirements(active_dir, status=["开发中", "测试中"])
+
+if len(active_reqs) == 1:
+    CURRENT_REQ = active_reqs[0]  # 自动选择
+elif len(active_reqs) > 1:
+    # 多个活跃需求，让用户选择或跳过
+    print("检测到多个活跃需求：")
+    for i, req in enumerate(active_reqs):
+        print(f"  {i+1}. {req}")
+    print(f"  {len(active_reqs)+1}. 不关联需求")
+else:
+    CURRENT_REQ = None  # 无活跃需求
+```
+
+### 4. 分析变更内容
+
+读取 `git diff --cached` 的内容，分析暂存的代码变更：
+
+- 变更涉及哪些模块/目录（推断 scope）
+- 变更性质（新增文件=feat、修复逻辑=fix、重构=refactor 等）
+- 变更描述（从代码差异中提炼）
+
+### 5. 生成提交信息
+
+#### 5.1 选择提交类型
+
+如果用户未提供消息，交互式选择：
+
+```
+📝 选择提交类型：
+
+  1. feat      新功能
+  2. fix       问题修复
+  3. refactor  代码重构
+  4. perf      性能优化
+  5. docs      文档更新
+  6. test      测试相关
+  7. chore     构建/工具/依赖
+  8. style     代码格式（不影响逻辑）
+```
+
+如果用户已提供消息，根据变更内容和消息自动推断类型。
+
+#### 5.2 确定 scope
+
+从变更文件路径推断 scope：
+
+```python
+# 按目录推断模块
+file_paths = get_staged_files()
+scopes = set()
+for path in file_paths:
+    # 示例：internal/sys/biz/dept_channel.go → sys
+    # 示例：internal/oms/store/order_store.go → oms
+    parts = path.split("/")
+    if len(parts) >= 2 and parts[0] == "internal":
+        scopes.add(parts[1])
+    elif path.startswith("docs/"):
+        scopes.add("docs")
+
+# 单一 scope 直接使用，多个 scope 用逗号连接或让用户选择
+scope = ",".join(sorted(scopes)) if scopes else None
+```
+
+#### 5.3 组装提交消息
+
+**格式：**
+```
+type(scope): 描述 (REQ-XXX)
+```
+
+**规则：**
+- `type`：必填，从上述类型中选择
+- `scope`：可选，括号内为模块名
+- 描述：简洁的中文或英文描述
+- `(REQ-XXX)`：自动追加当前需求编号（如有）
+
+**示例：**
+```
+feat(sys): 实现部门渠道关联 (REQ-001)
+fix(oms): 修复订单渠道过滤逻辑 (REQ-001)
+refactor(sys): 重构部门服务层代码 (QUICK-003)
+docs: 更新 API 文档
+chore: 升级依赖版本
+```
+
+### 6. 确认并提交
+
+展示完整提交预览：
+
+```
+📋 提交预览：
+
+  类型：feat (新功能)
+  范围：sys
+  描述：实现部门渠道关联
+  关联：REQ-001
+
+  完整消息：
+  feat(sys): 实现部门渠道关联 (REQ-001)
+
+  变更文件（4）：
+  A  internal/sys/model/sys_dept_channel_model.go
+  A  internal/sys/store/sys_dept_channel_store.go
+  A  internal/sys/biz/dept_channel.go
+  M  internal/sys/router.go
+
+确认提交？(y/n/e)
+  y - 确认提交
+  n - 取消
+  e - 编辑消息
+```
+
+用户确认后执行：
+
+```bash
+git commit -m "feat(sys): 实现部门渠道关联 (REQ-001)"
+```
+
+### 7. 提交结果
+
+```
+✅ 提交成功！
+
+  commit abc1234
+  feat(sys): 实现部门渠道关联 (REQ-001)
+
+  4 files changed, 156 insertions(+), 3 deletions(-)
+
+💡 后续操作：
+- 继续开发：/req:dev
+- 再次提交：/req:commit
+- 推送远程：git push
+- 生成版本说明：/req:changelog <version>
+```
+
+---
+
+## Breaking Change 支持
+
+如果变更包含破坏性改动，在提交消息中添加 `!` 标记：
+
+```
+feat(sys)!: 重构部门 API 返回结构 (REQ-005)
+```
+
+交互式流程中增加确认：
+
+```
+⚠️ 此变更是否包含破坏性改动（Breaking Change）？(y/n)
+```
+
+---
+
+## 多行提交消息
+
+对于需要详细说明的提交，支持添加 body：
+
+```
+feat(sys): 实现部门渠道关联 (REQ-001)
+
+- 新增 sys_dept_channel 表及 Model/Store 层
+- 实现渠道范围校验逻辑
+- 添加获取可选渠道接口
+```
+
+交互式流程中：
+
+```
+是否添加详细说明？(y/n)
+```
+
+---
+
+## 与 Changelog 的对应关系
+
+本命令生成的提交消息遵循 Conventional Commits 规范，`/req:changelog` 可直接解析：
+
+| 提交格式 | Changelog 分类 |
+|---------|---------------|
+| `feat(scope): 描述 (REQ-XXX)` | 新功能 (Features) |
+| `fix(scope): 描述 (REQ-XXX)` | 问题修复 (Bug Fixes) |
+| `refactor(scope): 描述` | 重构优化 (Refactoring) |
+| `perf(scope): 描述` | 性能优化 (Performance) |
+| `docs: 描述` | 文档更新 (Documentation) |
+| `test: 描述` | 测试 (Tests) |
+| `chore/ci/build/style: 描述` | 其他变更 (Others) |
+
+**需求编号关联**：commit message 中的 `(REQ-XXX)` / `(QUICK-XXX)` 会被 changelog 自动提取并归入「关联需求」章节。
+
+## 用户输入
+
+$ARGUMENTS

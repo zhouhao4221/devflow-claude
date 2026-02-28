@@ -79,6 +79,10 @@ templates/                   # 需求文档模板
 - `/req:prd [--section=章节名]` - 查看 PRD 状态概览和章节填充分析
 - `/req:prd-edit [章节名或编号]` - 编辑/完善 PRD 文档（支持 AI 智能补充）
 
+**版本管理命令：**
+- `/req:commit [消息]` - 规范提交，自动关联需求编号（Conventional Commits 格式，readonly 可用）
+- `/req:changelog <version> [--from=<tag|commit>] [--to=<tag|commit>]` - 生成版本升级说明（readonly 可用）
+
 **项目管理命令（全局缓存模式）：**
 - `/req:init <project-name>` - 初始化项目，创建全局缓存
 - `/req:use <project-name>` - 切换当前仓库绑定的项目
@@ -96,6 +100,7 @@ templates/                   # 需求文档模板
 - `test-guide` - 执行测试命令时触发，支持两种模式：
   - `/req:test_regression` - 运行已有自动化测试，生成回归报告
   - `/req:test_new` - 创建新测试用例（UT/API/E2E）
+- `changelog-generator` - 执行 `/req:changelog` 时触发，根据 Git 记录生成版本说明
 
 ### 钩子
 
@@ -121,7 +126,7 @@ templates/                   # 需求文档模板
 | `/req:modules new` | 创建模块文档 |
 | `/req:prd-edit` | 编辑 PRD 文档 |
 
-不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`、`/req:prd`
+不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`、`/req:prd`、`/req:changelog`、`/req:commit`
 
 **同步范围**：`docs/requirements/` 目录下的 REQ-XXX、QUICK-XXX 需求文档、模块文档（modules/）及 PRD.md，其他文件（INDEX.md、template.md）不同步。
 
