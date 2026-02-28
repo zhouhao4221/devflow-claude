@@ -73,23 +73,23 @@ git log $FROM_REF..$TO_REF --pretty=format:"%h|%ai|%s" --no-merges
 - 提交日期
 - 提交消息（用于分类和展示）
 
-### 4. 按 Conventional Commits 分类
+### 4. 按提交前缀分类
 
-将提交按前缀分类：
+将提交按前缀分类（中文优先，兼容英文）：
 
-| 前缀 | 分类 | 说明 |
-|------|------|------|
-| `feat` | 新功能 (Features) | 新增功能 |
-| `fix` | 问题修复 (Bug Fixes) | 修复 bug |
-| `refactor` | 重构优化 (Refactoring) | 代码重构 |
-| `perf` | 性能优化 (Performance) | 性能提升 |
-| `docs` | 文档更新 (Documentation) | 文档变更 |
-| `test` | 测试 (Tests) | 测试相关 |
-| `chore`/`ci`/`build`/`style` | 其他变更 (Others) | 构建、CI、代码风格等 |
-| 无前缀 | 其他变更 (Others) | 未遵循 conventional commits |
+| 中文前缀 | 英文前缀 | 分类 |
+|---------|---------|------|
+| `新功能` | `feat` | 新功能 (Features) |
+| `修复` | `fix` | 问题修复 (Bug Fixes) |
+| `重构` | `refactor` | 重构优化 (Refactoring) |
+| `优化` | `perf` | 性能优化 (Performance) |
+| `文档` | `docs` | 文档更新 (Documentation) |
+| `测试` | `test` | 测试 (Tests) |
+| `构建`/`样式` | `chore`/`ci`/`build`/`style` | 其他变更 (Others) |
+| 无前缀/不识别 | 无前缀/不识别 | 其他变更 (Others) |
 
 **分类规则：**
-- 按 `type(scope): message` 或 `type: message` 格式解析
+- 按 `前缀: 描述` 格式解析（中文或英文前缀均可）
 - 无法识别前缀的统一归入「其他变更」
 - 空分类不输出对应章节
 
@@ -164,23 +164,23 @@ fi
 
 ## 新功能 (Features)
 
-- feat(scope): 描述 (`hash`)
+- 描述 (`hash`)
 
 ## 问题修复 (Bug Fixes)
 
-- fix(scope): 描述 (`hash`)
+- 描述 (`hash`)
 
 ## 重构优化 (Refactoring)
 
-- refactor(scope): 描述 (`hash`)
+- 描述 (`hash`)
 
 ## 性能优化 (Performance)
 
-- perf(scope): 描述 (`hash`)
+- 描述 (`hash`)
 
 ## 其他变更
 
-- chore(scope): 描述 (`hash`)
+- 描述 (`hash`)
 
 ---
 *由 /req:changelog 自动生成*

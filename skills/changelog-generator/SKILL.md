@@ -27,27 +27,30 @@ git log <from>..<to> --pretty=format:"%h|%ai|%s" --no-merges
 git diff --stat <from>..<to>
 ```
 
-### 2. 解析 Conventional Commits
+### 2. 解析提交前缀
 
-按 `type(scope): message` 格式解析每条提交消息：
+按 `前缀: 描述` 格式解析每条提交消息，同时兼容英文 Conventional Commits 格式：
 
 ```
-输入：feat(sys): 实现部门渠道关联 (REQ-001)
-解析：type=feat, scope=sys, message=实现部门渠道关联, req=REQ-001
+输入：新功能: 实现部门渠道关联 (REQ-001)
+解析：type=新功能, message=实现部门渠道关联, req=REQ-001
+
+输入：feat: add user login
+解析：type=feat→新功能, message=add user login
 ```
 
-**分类映射：**
+**分类映射（中文优先，兼容英文）：**
 
-| 前缀 | 章节标题 | 优先级 |
-|------|---------|--------|
-| `feat` | 新功能 (Features) | 1 |
-| `fix` | 问题修复 (Bug Fixes) | 2 |
-| `refactor` | 重构优化 (Refactoring) | 3 |
-| `perf` | 性能优化 (Performance) | 4 |
-| `docs` | 文档更新 (Documentation) | 5 |
-| `test` | 测试 (Tests) | 6 |
-| `chore`/`ci`/`build`/`style` | 其他变更 (Others) | 7 |
-| 无前缀/不识别 | 其他变更 (Others) | 7 |
+| 中文前缀 | 英文前缀 | 章节标题 | 优先级 |
+|---------|---------|---------|--------|
+| `新功能` | `feat` | 新功能 (Features) | 1 |
+| `修复` | `fix` | 问题修复 (Bug Fixes) | 2 |
+| `重构` | `refactor` | 重构优化 (Refactoring) | 3 |
+| `优化` | `perf` | 性能优化 (Performance) | 4 |
+| `文档` | `docs` | 文档更新 (Documentation) | 5 |
+| `测试` | `test` | 测试 (Tests) | 6 |
+| `构建`/`样式` | `chore`/`ci`/`build`/`style` | 其他变更 (Others) | 7 |
+| 无前缀/不识别 | 无前缀/不识别 | 其他变更 (Others) | 7 |
 
 ### 3. 提取关联需求编号
 
@@ -76,12 +79,12 @@ git diff --stat <from>..<to>
 
 ## 新功能 (Features)
 
-- scope: 描述 (`hash`)
-- scope: 描述 (`hash`)
+- 描述 (`hash`)
+- 描述 (`hash`)
 
 ## 问题修复 (Bug Fixes)
 
-- scope: 描述 (`hash`)
+- 描述 (`hash`)
 
 ---
 *由 /req:changelog 自动生成*
@@ -92,7 +95,7 @@ git diff --stat <from>..<to>
 1. **空分类不输出**：没有匹配提交的分类章节直接省略
 2. **无关联需求不输出**：没有 REQ/QUICK 引用时省略「关联需求」章节
 3. **提交倒序排列**：最新的提交在前
-4. **scope 省略括号**：`feat(sys): xxx` 输出为 `- sys: xxx`，无 scope 时直接输出描述
+4. **去除前缀**：输出时去掉 `新功能:` 等前缀，仅保留描述内容
 5. **hash 用反引号包裹**：方便区分和查找
 
 ## 内容优化原则

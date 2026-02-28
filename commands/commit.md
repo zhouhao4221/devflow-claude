@@ -109,8 +109,7 @@ else:
 
 读取 `git diff --cached` 的内容，分析暂存的代码变更：
 
-- 变更涉及哪些模块/目录（推断 scope）
-- 变更性质（新增文件=feat、修复逻辑=fix、重构=refactor 等）
+- 变更性质（新增功能、修复问题、重构等）
 - 变更描述（从代码差异中提炼）
 
 ### 5. 生成提交信息
@@ -122,59 +121,50 @@ else:
 ```
 📝 选择提交类型：
 
-  1. feat      新功能
-  2. fix       问题修复
-  3. refactor  代码重构
-  4. perf      性能优化
-  5. docs      文档更新
-  6. test      测试相关
-  7. chore     构建/工具/依赖
-  8. style     代码格式（不影响逻辑）
+  1. 新功能     新增功能
+  2. 修复       问题修复
+  3. 重构       代码重构
+  4. 优化       性能优化
+  5. 文档       文档更新
+  6. 测试       测试相关
+  7. 构建       构建/工具/依赖
+  8. 样式       代码格式（不影响逻辑）
 ```
 
 如果用户已提供消息，根据变更内容和消息自动推断类型。
 
-#### 5.2 确定 scope
-
-从变更文件路径推断 scope：
-
-```python
-# 按目录推断模块
-file_paths = get_staged_files()
-scopes = set()
-for path in file_paths:
-    # 示例：internal/sys/biz/dept_channel.go → sys
-    # 示例：internal/oms/store/order_store.go → oms
-    parts = path.split("/")
-    if len(parts) >= 2 and parts[0] == "internal":
-        scopes.add(parts[1])
-    elif path.startswith("docs/"):
-        scopes.add("docs")
-
-# 单一 scope 直接使用，多个 scope 用逗号连接或让用户选择
-scope = ",".join(sorted(scopes)) if scopes else None
-```
-
-#### 5.3 组装提交消息
+#### 5.2 组装提交消息
 
 **格式：**
 ```
-type(scope): 描述 (REQ-XXX)
+前缀: 描述 (REQ-XXX)
 ```
 
 **规则：**
-- `type`：必填，从上述类型中选择
-- `scope`：可选，括号内为模块名
-- 描述：简洁的中文或英文描述
+- `前缀`：必填，中文类型前缀
+- 描述：简洁的中文描述
 - `(REQ-XXX)`：自动追加当前需求编号（如有）
+
+**前缀映射：**
+
+| 前缀 | 含义 | Changelog 分类 |
+|------|------|---------------|
+| `新功能` | 新增功能 | 新功能 (Features) |
+| `修复` | 问题修复 | 问题修复 (Bug Fixes) |
+| `重构` | 代码重构 | 重构优化 (Refactoring) |
+| `优化` | 性能优化 | 性能优化 (Performance) |
+| `文档` | 文档更新 | 文档更新 (Documentation) |
+| `测试` | 测试相关 | 测试 (Tests) |
+| `构建` | 构建/工具/依赖 | 其他变更 (Others) |
+| `样式` | 代码格式 | 其他变更 (Others) |
 
 **示例：**
 ```
-feat(sys): 实现部门渠道关联 (REQ-001)
-fix(oms): 修复订单渠道过滤逻辑 (REQ-001)
-refactor(sys): 重构部门服务层代码 (QUICK-003)
-docs: 更新 API 文档
-chore: 升级依赖版本
+新功能: 实现部门渠道关联 (REQ-001)
+修复: 订单渠道过滤逻辑错误 (REQ-001)
+重构: 部门服务层代码 (QUICK-003)
+文档: 更新 API 文档
+构建: 升级依赖版本
 ```
 
 ### 6. 确认并提交
@@ -184,13 +174,12 @@ chore: 升级依赖版本
 ```
 📋 提交预览：
 
-  类型：feat (新功能)
-  范围：sys
+  类型：新功能
   描述：实现部门渠道关联
   关联：REQ-001
 
   完整消息：
-  feat(sys): 实现部门渠道关联 (REQ-001)
+  新功能: 实现部门渠道关联 (REQ-001)
 
   变更文件（4）：
   A  internal/sys/model/sys_dept_channel_model.go
@@ -207,7 +196,7 @@ chore: 升级依赖版本
 用户确认后执行：
 
 ```bash
-git commit -m "feat(sys): 实现部门渠道关联 (REQ-001)"
+git commit -m "新功能: 实现部门渠道关联 (REQ-001)"
 ```
 
 ### 7. 提交结果
@@ -216,7 +205,7 @@ git commit -m "feat(sys): 实现部门渠道关联 (REQ-001)"
 ✅ 提交成功！
 
   commit abc1234
-  feat(sys): 实现部门渠道关联 (REQ-001)
+  新功能: 实现部门渠道关联 (REQ-001)
 
   4 files changed, 156 insertions(+), 3 deletions(-)
 
@@ -231,10 +220,10 @@ git commit -m "feat(sys): 实现部门渠道关联 (REQ-001)"
 
 ## Breaking Change 支持
 
-如果变更包含破坏性改动，在提交消息中添加 `!` 标记：
+如果变更包含破坏性改动，在前缀后添加 `!` 标记：
 
 ```
-feat(sys)!: 重构部门 API 返回结构 (REQ-005)
+新功能!: 重构部门 API 返回结构 (REQ-005)
 ```
 
 交互式流程中增加确认：
@@ -250,7 +239,7 @@ feat(sys)!: 重构部门 API 返回结构 (REQ-005)
 对于需要详细说明的提交，支持添加 body：
 
 ```
-feat(sys): 实现部门渠道关联 (REQ-001)
+新功能: 实现部门渠道关联 (REQ-001)
 
 - 新增 sys_dept_channel 表及 Model/Store 层
 - 实现渠道范围校验逻辑
@@ -267,17 +256,17 @@ feat(sys): 实现部门渠道关联 (REQ-001)
 
 ## 与 Changelog 的对应关系
 
-本命令生成的提交消息遵循 Conventional Commits 规范，`/req:changelog` 可直接解析：
+本命令生成的提交消息使用中文前缀，`/req:changelog` 可直接解析：
 
 | 提交格式 | Changelog 分类 |
 |---------|---------------|
-| `feat(scope): 描述 (REQ-XXX)` | 新功能 (Features) |
-| `fix(scope): 描述 (REQ-XXX)` | 问题修复 (Bug Fixes) |
-| `refactor(scope): 描述` | 重构优化 (Refactoring) |
-| `perf(scope): 描述` | 性能优化 (Performance) |
-| `docs: 描述` | 文档更新 (Documentation) |
-| `test: 描述` | 测试 (Tests) |
-| `chore/ci/build/style: 描述` | 其他变更 (Others) |
+| `新功能: 描述 (REQ-XXX)` | 新功能 (Features) |
+| `修复: 描述 (REQ-XXX)` | 问题修复 (Bug Fixes) |
+| `重构: 描述` | 重构优化 (Refactoring) |
+| `优化: 描述` | 性能优化 (Performance) |
+| `文档: 描述` | 文档更新 (Documentation) |
+| `测试: 描述` | 测试 (Tests) |
+| `构建/样式: 描述` | 其他变更 (Others) |
 
 **需求编号关联**：commit message 中的 `(REQ-XXX)` / `(QUICK-XXX)` 会被 changelog 自动提取并归入「关联需求」章节。
 
