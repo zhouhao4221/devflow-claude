@@ -267,7 +267,7 @@ mkdir -p $CACHE_ROOT/templates
 💡 若要为历史项目补充缺失文件，请使用:
    /req:init <project-name> --reinit
 
-是否将当前仓库绑定到此项目？(y/n)
+👉 回车绑定 | 输入 n 跳过
 ```
 
 ---

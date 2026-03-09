@@ -54,7 +54,7 @@ Docker 容器状态：
 ├── mysql-test    ❌ 未启动
 └── redis-test    ❌ 未启动
 
-是否启动测试环境？(y/n): y
+👉 回车启动测试环境 | 输入 n 跳过:
 
 🚀 启动 Docker 容器...
 docker-compose -f docker-compose.test.yml up -d
