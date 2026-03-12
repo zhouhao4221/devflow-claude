@@ -58,6 +58,7 @@ templates/                   # 需求文档模板
 - `/req` - 列出所有需求
 - `/req:new [标题] [--type=后端|前端|全栈]` - 创建新需求
 - `/req:new-quick [标题]` - 创建快速修复（小bug/小功能）
+- `/req:split [需求描述]` - 需求拆分分析（只读，给出粒度和拆分建议）
 - `/req:upgrade <QUICK-XXX>` - 将快速修复升级为正式需求
 - `/req:edit` - 编辑需求
 - `/req:review [pass|reject]` - 提交/通过评审
