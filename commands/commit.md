@@ -50,7 +50,62 @@ git diff --cached --stat
   M  internal/sys/router.go
 ```
 
-### 2. Code Review 提醒
+### 2. 分支合规检查
+
+> 读取 `.claude/settings.local.json` 的 `branchStrategy`，未配置时跳过此步骤。
+
+```python
+strategy = read_settings("branchStrategy")
+current_branch = git("branch --show-current")
+
+if strategy:
+    main_branch = strategy["mainBranch"]
+    develop_branch = strategy.get("developBranch")
+
+    # 检测活跃需求（开发中/测试中）
+    active_reqs = find_active_requirements()
+
+    # 情况 A：在主分支上，且有活跃需求
+    if current_branch == main_branch and active_reqs:
+        # 找到有 branch 字段的活跃需求
+        req_branches = [r for r in active_reqs if r.branch != "-"]
+        if req_branches:
+            print(f"⚠️ 当前在主分支 {main_branch}，检测到活跃需求分支：")
+            for r in req_branches:
+                print(f"  - {r.id} → {r.branch}")
+            print(f"\n建议切换到需求分支后再提交")
+            print(f"继续在 {main_branch} 提交？")
+            # 等待用户确认，用户可选择继续或切换
+
+    # 情况 B：在 develop 分支上（Git Flow）
+    elif current_branch == develop_branch and active_reqs:
+        print(f"⚠️ 当前在 {develop_branch} 分支，功能开发建议在功能分支进行")
+        # 同上，展示可选的需求分支
+
+    # 情况 C：在 hotfix 分支上
+    elif current_branch.startswith(strategy.get("hotfixPrefix", "hotfix/")):
+        print(f"🚨 当前在紧急修复分支：{current_branch}")
+        # 正常提交，类型建议选「修复」
+
+    # 情况 D：在需求分支上
+    else:
+        # 正常提交，尝试从分支名匹配需求编号
+        pass
+```
+
+**各场景行为总结：**
+
+| 当前分支 | 有活跃需求 | 行为 |
+|---------|-----------|------|
+| mainBranch | 有，且有需求分支 | ⚠️ 警告，建议切换到需求分支，用户可选择继续 |
+| mainBranch | 有，无需求分支 | 正常提交 |
+| mainBranch | 无 | 正常提交（文档、配置等非需求变更） |
+| developBranch | 有 | ⚠️ 警告，功能开发应在功能分支 |
+| hotfix/* 分支 | — | 正常提交，自动建议「修复」类型 |
+| feat/REQ-XXX-* | — | 正常提交，自动关联对应 REQ |
+| fix/QUICK-XXX-* | — | 正常提交，自动关联对应 QUICK |
+
+### 3. Code Review 提醒
 
 提交前展示代码审查提醒（信息展示，不等待回复）：
 
@@ -59,45 +114,51 @@ git diff --cached --stat
    检查要点：逻辑正确性、安全隐患、错误处理、代码规范、调试代码清理
 ```
 
-### 3. 检测当前需求
+### 4.5 检测当前需求
+
+**优先从分支名匹配**（步骤 2 已获取当前分支信息）：
 
 ```python
-# 查找当前活跃的需求（状态为开发中/测试中）
-PROJECT = read_settings("requirementProject")
-ROLE = read_settings("requirementRole")
+current_branch = git("branch --show-current")
 
-if ROLE == "readonly":
-    active_dir = f"~/.claude-requirements/projects/{PROJECT}/active/"
-elif ROLE == "primary":
-    active_dir = "docs/requirements/active/"
+# 优先：从分支名提取需求编号
+import re
+branch_match = re.search(r'(REQ-\d+|QUICK-\d+)', current_branch)
+if branch_match:
+    CURRENT_REQ = branch_match.group(1)
 else:
-    active_dir = "docs/requirements/active/"
+    # 回退：扫描活跃需求
+    PROJECT = read_settings("requirementProject")
+    ROLE = read_settings("requirementRole")
 
-# 扫描开发中/测试中的需求
-active_reqs = find_requirements(active_dir, status=["开发中", "测试中"])
+    if ROLE == "readonly":
+        active_dir = f"~/.claude-requirements/projects/{PROJECT}/active/"
+    else:
+        active_dir = "docs/requirements/active/"
 
-if len(active_reqs) == 1:
-    CURRENT_REQ = active_reqs[0]  # 自动选择
-elif len(active_reqs) > 1:
-    # 多个活跃需求，让用户选择或跳过
-    print("检测到多个活跃需求：")
-    for i, req in enumerate(active_reqs):
-        print(f"  {i+1}. {req}")
-    print(f"  {len(active_reqs)+1}. 不关联需求")
-else:
-    CURRENT_REQ = None  # 无活跃需求
+    active_reqs = find_requirements(active_dir, status=["开发中", "测试中"])
+
+    if len(active_reqs) == 1:
+        CURRENT_REQ = active_reqs[0]
+    elif len(active_reqs) > 1:
+        print("检测到多个活跃需求：")
+        for i, req in enumerate(active_reqs):
+            print(f"  {i+1}. {req}")
+        print(f"  {len(active_reqs)+1}. 不关联需求")
+    else:
+        CURRENT_REQ = None
 ```
 
-### 4. 分析变更内容
+### 5. 分析变更内容
 
 读取 `git diff --cached` 的内容，分析暂存的代码变更：
 
 - 变更性质（新增功能、修复问题、重构等）
 - 变更描述（从代码差异中提炼）
 
-### 5. 生成提交信息
+### 6. 生成提交信息
 
-#### 5.1 选择提交类型
+#### 6.1 选择提交类型
 
 如果用户未提供消息，交互式选择：
 
@@ -116,7 +177,7 @@ else:
 
 如果用户已提供消息，根据变更内容和消息自动推断类型。
 
-#### 5.2 组装提交消息
+#### 6.2 组装提交消息
 
 **格式：**
 ```
@@ -150,7 +211,7 @@ else:
 构建: 升级依赖版本
 ```
 
-### 6. 确认并提交
+### 7. 确认并提交
 
 展示完整提交预览：
 
@@ -178,7 +239,7 @@ else:
 git commit -m "新功能: 实现部门渠道关联 (REQ-001)"
 ```
 
-### 7. 提交结果
+### 8. 提交结果
 
 ```
 ✅ 提交成功！

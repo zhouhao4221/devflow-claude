@@ -81,8 +81,14 @@ templates/                   # 需求文档模板
 - `/req:prd [--section=章节名]` - 查看 PRD 状态概览和章节填充分析
 - `/req:prd-edit [章节名或编号]` - 编辑/完善 PRD 文档（支持 AI 智能补充）
 
+**分支管理命令：**
+- `/req:branch` - 查看当前分支策略和状态（等同于 `status`）
+- `/req:branch init` - 交互式配置分支策略（GitHub Flow / Git Flow / Trunk-Based）
+- `/req:branch status` - 查看策略配置和各需求分支状态
+- `/req:branch hotfix [描述]` - 从主分支创建紧急修复分支
+
 **版本管理命令：**
-- `/req:commit [消息]` - 规范提交，自动关联需求编号（Conventional Commits 格式，readonly 可用）
+- `/req:commit [消息]` - 规范提交，自动关联需求编号，检查分支合规性（readonly 可用）
 - `/req:changelog <version> [--from=<tag|commit>] [--to=<tag|commit>]` - 生成版本升级说明（readonly 可用）
 
 **项目管理命令（全局缓存模式）：**
@@ -128,27 +134,39 @@ templates/                   # 需求文档模板
 | `/req:modules new` | 创建模块文档 |
 | `/req:prd-edit` | 编辑 PRD 文档 |
 
-不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`、`/req:prd`、`/req:changelog`、`/req:commit`
+不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`、`/req:prd`、`/req:changelog`、`/req:commit`、`/req:branch`
 
 **同步范围**：`docs/requirements/` 目录下的 REQ-XXX、QUICK-XXX 需求文档、模块文档（modules/）及 PRD.md，其他文件（INDEX.md、template.md）不同步。
 
 ### Git 分支管理
 
-`/req:dev` 命令自动管理开发分支：
+通过 `/req:branch init` 配置分支策略，支持三种模式：
 
-**分支命名规则**：
-- REQ-XXX → `feat/REQ-XXX-<english-slug>`
-- QUICK-XXX → `fix/QUICK-XXX-<english-slug>`
+**策略模式**：
+| 模式 | 说明 | 适用场景 |
+|------|------|---------|
+| `github-flow` | 所有分支从 main 拉，合回 main | Web 应用、持续部署、中小团队 |
+| `git-flow` | 功能分支从 develop 拉，合回 develop | 版本发布制、APP、大型项目 |
+| `trunk-based` | 短期分支，主干开发 | 成熟团队、高频发布 |
+
+**分支命名规则**（可通过策略配置自定义前缀）：
+- REQ-XXX → `<featurePrefix>REQ-XXX-<english-slug>`（默认 `feat/`）
+- QUICK-XXX → `<fixPrefix>QUICK-XXX-<english-slug>`（默认 `fix/`）
+- 紧急修复 → `<hotfixPrefix><slug>`（默认 `hotfix/`）
 - slug：需求标题的英文翻译，lowercase kebab-case，最多 5 词
+
+**策略配置**：存储在 `.claude/settings.local.json` 的 `branchStrategy` 字段，包含 `model`、`mainBranch`、`developBranch`、`branchFrom`、`mergeTarget` 等。
 
 **分支字段**：需求文档元信息中的 `branch` 字段记录分支名，确保跨会话确定性。
 
-**行为**：
-- 首次 `/req:dev`：AI 生成 slug → 用户确认 → 创建分支 → 写入文档
-- 再次 `/req:dev`：读取 `branch` 字段 → 切换到该分支
-- `/req:done`：完成报告中提醒合并分支（不自动执行）
-- 仅 `primary` 仓库执行，`readonly` 跳过
+**与命令的联动**：
+- `/req:dev`：根据 `branchFrom` 创建分支，使用配置的前缀
+- `/req:commit`：检查当前分支合规性，在主分支上提交时警告
+- `/req:done`：根据 `mergeTarget` 提示合并目标，Git Flow 的 hotfix 提示合并到 main + develop
+- `/req:branch hotfix`：始终从主分支创建紧急修复分支
+- 仅 `primary` 仓库执行分支操作，`readonly` 跳过
 - 工作区有未提交改动时拒绝操作
+- **未配置策略时**：所有命令保持原有默认行为，不报错
 
 ## 需求生命周期状态
 

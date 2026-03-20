@@ -230,6 +230,52 @@ PreToolUse Hook 在以下操作执行前自动弹出原生确认对话框：
 - 标题过于具体（如「新增XX接口」「修改XX字段」） → 建议合并或改用 QUICK
 - 不确定时询问用户业务目标，再给出建议
 
+## 分支策略配置
+
+分支策略存储在 `.claude/settings.local.json` 的 `branchStrategy` 字段中，通过 `/req:branch init` 初始化。
+
+### 配置结构
+
+```jsonc
+{
+  "branchStrategy": {
+    "model": "github-flow",       // github-flow | git-flow | trunk-based
+    "mainBranch": "main",         // 生产分支
+    "developBranch": null,        // git-flow 模式下的开发分支
+    "featurePrefix": "feat/",     // REQ-XXX 分支前缀
+    "fixPrefix": "fix/",          // QUICK-XXX 分支前缀
+    "hotfixPrefix": "hotfix/",    // 紧急修复前缀
+    "branchFrom": "main",         // 功能/修复分支的拉取基准
+    "mergeTarget": "main",        // 默认合并目标
+    "deleteBranchAfterMerge": true
+  }
+}
+```
+
+### 三种策略预设
+
+| 配置项 | GitHub Flow | Git Flow | Trunk-Based |
+|--------|------------|----------|-------------|
+| branchFrom | main | develop | main |
+| mergeTarget | main | develop | main |
+| developBranch | null | develop | null |
+| hotfix 合并目标 | main | main + develop | main |
+
+### 读取规则
+
+1. 读取 `.claude/settings.local.json` 的 `branchStrategy`
+2. **有配置** → 使用配置值
+3. **无配置** → 使用默认行为（`feat/`、`fix/` 前缀，自动检测主分支）
+
+### 各命令的策略消费
+
+| 命令 | 读取的配置 | 用途 |
+|------|-----------|------|
+| `/req:dev` | `branchFrom`、`featurePrefix`、`fixPrefix` | 创建分支时的基准和前缀 |
+| `/req:commit` | `mainBranch`、`developBranch` | 检查当前分支是否合规 |
+| `/req:done` | `mergeTarget`、`deleteBranchAfterMerge` | 合并提醒和删除建议 |
+| `/req:branch hotfix` | `mainBranch`、`hotfixPrefix` | 从主分支创建紧急修复 |
+
 ## 元信息字段
 
 | 字段 | 说明 |

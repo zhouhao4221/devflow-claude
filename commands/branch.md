@@ -1,0 +1,374 @@
+---
+description: 分支管理 - 配置分支策略、查看分支状态、创建紧急修复
+---
+
+# 分支管理
+
+管理项目的 Git 分支策略，与需求流程（dev/commit/done）联动。
+
+> 此命令**不受仓库角色限制**，readonly 仓库也可执行。
+> 不触发缓存同步。
+
+## 命令格式
+
+```
+/req:branch [子命令] [参数]
+```
+
+**子命令：**
+- `/req:branch` — 无子命令时等同于 `status`
+- `/req:branch init` — 交互式配置分支策略
+- `/req:branch status` — 查看当前策略和分支状态
+- `/req:branch hotfix [描述]` — 从主分支创建紧急修复分支
+
+---
+
+## 子命令：init
+
+交互式选择分支策略，写入 `.claude/settings.local.json`。
+
+### 执行流程
+
+#### 1. 选择策略模型
+
+```
+📋 选择分支管理策略：
+
+  1. GitHub Flow（推荐）
+     所有分支从 main 拉，合回 main
+     适合：持续部署、Web 应用、中小团队
+
+  2. Git Flow
+     功能分支从 develop 拉，合回 develop
+     适合：版本发布制、APP、大型项目
+
+  3. Trunk-Based
+     短期分支或直接在 main 开发
+     适合：成熟团队、高频发布、完善的 CI/CD
+
+请选择（1/2/3）：
+```
+
+#### 2. 确认或自定义配置
+
+根据选择生成默认配置，展示给用户确认：
+
+**GitHub Flow 默认配置：**
+```json
+{
+  "branchStrategy": {
+    "model": "github-flow",
+    "mainBranch": "main",
+    "developBranch": null,
+    "featurePrefix": "feat/",
+    "fixPrefix": "fix/",
+    "hotfixPrefix": "hotfix/",
+    "branchFrom": "main",
+    "mergeTarget": "main",
+    "deleteBranchAfterMerge": true
+  }
+}
+```
+
+**Git Flow 默认配置：**
+```json
+{
+  "branchStrategy": {
+    "model": "git-flow",
+    "mainBranch": "main",
+    "developBranch": "develop",
+    "featurePrefix": "feat/",
+    "fixPrefix": "fix/",
+    "hotfixPrefix": "hotfix/",
+    "branchFrom": "develop",
+    "mergeTarget": "develop",
+    "deleteBranchAfterMerge": true
+  }
+}
+```
+
+**Trunk-Based 默认配置：**
+```json
+{
+  "branchStrategy": {
+    "model": "trunk-based",
+    "mainBranch": "main",
+    "developBranch": null,
+    "featurePrefix": "feat/",
+    "fixPrefix": "fix/",
+    "hotfixPrefix": "hotfix/",
+    "branchFrom": "main",
+    "mergeTarget": "main",
+    "deleteBranchAfterMerge": true
+  }
+}
+```
+
+#### 3. 自动检测主分支名
+
+初始化时自动检测实际主分支名称：
+
+```bash
+# 检测主分支
+MAIN=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+if [ -z "$MAIN" ]; then
+    git rev-parse --verify origin/main &>/dev/null && MAIN="main" || MAIN="master"
+fi
+```
+
+如果检测到的主分支与默认值不同，自动更新配置：
+```
+检测到主分支为 master，已自动更新配置
+```
+
+#### 4. Git Flow 额外步骤
+
+如果选择 Git Flow，检查 develop 分支是否存在：
+
+```bash
+git rev-parse --verify origin/develop &>/dev/null
+```
+
+- 存在 → 使用
+- 不存在 → 提示创建：
+  ```
+  develop 分支不存在，是否从 main 创建？
+  ```
+
+#### 5. 写入配置
+
+将 `branchStrategy` 写入 `.claude/settings.local.json`（合并已有配置）。
+
+```
+✅ 分支策略已配置！
+
+📋 策略：GitHub Flow
+🌿 主分支：main
+🔀 功能分支：feat/REQ-XXX-slug（从 main 拉）
+🐛 修复分支：fix/QUICK-XXX-slug（从 main 拉）
+🚨 紧急修复：hotfix/xxx（从 main 拉）
+🎯 合并目标：main
+🗑️ 合并后删除分支：是
+
+💡 后续使用：
+- /req:dev 创建分支时会自动遵循此策略
+- /req:commit 会检查分支合规性
+- /req:done 会提示合并到正确的目标分支
+```
+
+---
+
+## 子命令：status
+
+查看当前分支策略和各需求分支的状态。
+
+### 执行流程
+
+#### 1. 读取策略配置
+
+从 `.claude/settings.local.json` 读取 `branchStrategy`。
+
+**未配置时：**
+```
+⚠️ 未配置分支策略，使用默认行为
+
+💡 建议执行 /req:branch init 配置分支策略
+```
+
+#### 2. 展示策略信息
+
+```
+📋 分支策略：GitHub Flow
+
+| 配置项 | 值 |
+|-------|-----|
+| 模型 | github-flow |
+| 主分支 | main |
+| 功能分支前缀 | feat/ |
+| 修复分支前缀 | fix/ |
+| 紧急修复前缀 | hotfix/ |
+| 拉取基准 | main |
+| 合并目标 | main |
+| 合并后删除 | 是 |
+```
+
+#### 3. 展示当前分支状态
+
+```bash
+CURRENT=$(git branch --show-current)
+```
+
+```
+🌿 当前分支：feat/REQ-001-user-points
+```
+
+#### 4. 展示活跃需求的分支信息
+
+扫描活跃需求文档，提取 branch 字段：
+
+```
+📊 需求分支状态：
+
+| 需求 | 分支 | 状态 | 是否当前 |
+|------|------|------|---------|
+| REQ-001 用户积分 | feat/REQ-001-user-points | 开发中 | ← 当前 |
+| QUICK-002 修复过滤 | fix/QUICK-002-order-filter | 开发中 | |
+| REQ-003 订单管理 | - (未创建) | 评审通过 | |
+```
+
+#### 5. 检查分支健康状况
+
+```
+✅ 分支健康检查：
+- 当前在需求分支，关联 REQ-001 ✓
+- 需求分支与主分支无冲突 ✓
+```
+
+或：
+
+```
+⚠️ 分支注意事项：
+- 当前在 main 分支，有 2 个活跃需求分支
+- feat/REQ-001-user-points 落后 main 3 个提交，建议 rebase
+```
+
+---
+
+## 子命令：hotfix
+
+从主分支创建紧急修复分支，用于线上紧急问题。
+
+### 执行流程
+
+#### 1. 工作区检查
+
+```bash
+git status --porcelain
+```
+
+有未提交改动时终止，提示先 commit 或 stash。
+
+#### 2. 收集信息
+
+如果未提供描述，询问用户：
+- 问题描述（必填）
+
+#### 3. 生成分支名
+
+```
+hotfix/<slug>
+```
+
+- slug：问题描述的英文翻译，lowercase kebab-case，最多 5 词
+
+#### 4. 创建分支
+
+**关键**：hotfix 始终从**主分支**拉取，无论当前使用什么策略。
+
+```bash
+# 读取策略中的主分支
+MAIN_BRANCH=$(读取 branchStrategy.mainBranch，默认 main)
+
+# 确保主分支是最新的
+git fetch origin $MAIN_BRANCH
+
+# 从主分支创建 hotfix 分支
+git checkout -b hotfix/<slug> origin/$MAIN_BRANCH
+```
+
+```
+🚨 紧急修复分支已创建
+
+🌿 分支：hotfix/fix-order-total-calc
+📌 基于：main (最新)
+🎯 完成后合并到：main
+
+💡 后续步骤：
+1. 修复问题
+2. /req:commit 修复订单金额计算错误
+3. 合并到 main：git checkout main && git merge hotfix/fix-order-total-calc
+4. 删除分支：git branch -d hotfix/fix-order-total-calc
+```
+
+#### 5. Git Flow 额外提醒
+
+如果使用 Git Flow 策略，hotfix 完成后需要合并到**两个分支**：
+
+```
+🎯 完成后需合并到：
+1. main（生产环境）
+2. develop（开发分支同步）
+
+合并命令：
+git checkout main && git merge hotfix/fix-order-total-calc
+git checkout develop && git merge hotfix/fix-order-total-calc
+git branch -d hotfix/fix-order-total-calc
+```
+
+---
+
+## 策略对各命令的影响
+
+### /req:dev 分支创建
+
+| 配置项 | 影响 |
+|-------|------|
+| `branchFrom` | `git checkout -b <branch> <branchFrom>` 的基准分支 |
+| `featurePrefix` | REQ-XXX 分支前缀（替代硬编码的 `feat/`） |
+| `fixPrefix` | QUICK-XXX 分支前缀（替代硬编码的 `fix/`） |
+
+### /req:commit 分支检查
+
+| 场景 | 行为 |
+|------|------|
+| 在 mainBranch 上，有活跃需求 | ⚠️ 警告并建议切换到需求分支 |
+| 在 mainBranch 上，无活跃需求 | 正常提交 |
+| 在 developBranch 上（Git Flow） | ⚠️ 警告，功能开发应在功能分支 |
+| 在需求分支上 | 正常提交，自动关联对应需求 |
+| 在 hotfix 分支上 | 正常提交，类型建议选「修复」 |
+
+### /req:done 合并提醒
+
+| 策略 | 合并提醒 |
+|------|---------|
+| GitHub Flow | `合并到 main` |
+| Git Flow | `合并到 develop`（hotfix 额外合并到 main） |
+| Trunk-Based | `合并到 main` |
+
+---
+
+## 配置兼容性
+
+### 未配置策略时的行为
+
+所有命令保持当前默认行为，不会报错：
+- `/req:dev`：使用硬编码的 `feat/` 和 `fix/` 前缀，自动检测主分支
+- `/req:commit`：不做分支检查
+- `/req:done`：通用合并提醒
+
+### 配置存储
+
+```jsonc
+// .claude/settings.local.json
+{
+  "requirementProject": "my-saas",
+  "requirementRole": "primary",
+  "branchStrategy": {
+    "model": "github-flow",
+    "mainBranch": "main",
+    "developBranch": null,
+    "featurePrefix": "feat/",
+    "fixPrefix": "fix/",
+    "hotfixPrefix": "hotfix/",
+    "branchFrom": "main",
+    "mergeTarget": "main",
+    "deleteBranchAfterMerge": true
+  }
+}
+```
+
+---
+
+## 用户输入
+
+$ARGUMENTS

@@ -136,13 +136,69 @@ $REQ_COMPLETED/REQ-001-部门渠道关联.md
 ═══════════════════════════════════════════════
 
 💡 后续操作：
-- 合并分支（如有）：git checkout <主分支> && git merge <branch> && git branch -d <branch>
+- 合并分支（如有）：见下方分支合并提醒
 - 查看历史需求：ls docs/requirements/completed/
 - 创建新需求：/req:new
 - 查看活跃需求：/req
 ```
 
-### 8. 可选：Git 提交关联
+### 8. 分支合并提醒
+
+> 读取 `.claude/settings.local.json` 的 `branchStrategy`，根据策略生成合并建议。
+
+```python
+strategy = read_settings("branchStrategy")
+branch = req_doc.branch  # 需求文档中的 branch 字段
+
+if not branch or branch == "-":
+    # 无分支记录，跳过
+    pass
+else:
+    if strategy:
+        merge_target = strategy["mergeTarget"]
+        delete_after = strategy.get("deleteBranchAfterMerge", True)
+        model = strategy["model"]
+    else:
+        merge_target = detect_main_branch()
+        delete_after = True
+        model = None
+```
+
+**输出格式：**
+
+```
+🔀 分支合并提醒：
+
+  当前分支：feat/REQ-001-user-points
+  合并目标：main
+
+  合并命令：
+  git checkout main && git merge feat/REQ-001-user-points
+
+  删除分支：
+  git branch -d feat/REQ-001-user-points
+```
+
+**Git Flow 额外提醒**（当 `model == "git-flow"`）：
+
+如果需求分支是 hotfix，需要合并到两个分支：
+```
+🔀 分支合并提醒（Git Flow）：
+
+  当前分支：hotfix/fix-order-calc
+  需合并到 2 个分支：
+
+  1. 合并到 develop：
+     git checkout develop && git merge hotfix/fix-order-calc
+
+  2. 合并到 main（如需发布）：
+     git checkout main && git merge hotfix/fix-order-calc
+
+  删除分支：
+  git branch -d hotfix/fix-order-calc
+```
+
+### 9. 可选：Git 提交关联
 
 如果有关联的 Git 提交，显示提交记录：
 
