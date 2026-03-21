@@ -2,6 +2,8 @@
 description: 创建测试 - 为新功能编写自动化测试用例
 ---
 
+> **重要**：本命令的测试文件位置、运行命令、代码示例均从项目 CLAUDE.md 的「测试规范」章节读取，不内置任何项目细节。
+
 # 创建测试
 
 为新开发的功能创建自动化测试用例，包括单元测试、API 测试和 E2E 测试。
@@ -40,29 +42,28 @@ description: 创建测试 - 为新功能编写自动化测试用例
 ```
 📋 分析需求文档...
 
-需求：REQ-001 部门渠道关联
+需求：REQ-001 <需求标题>
 状态：🔨 开发中
 
 📖 功能清单：
-1. 部门创建时关联渠道
-2. 渠道范围校验（上下级约束）
-3. 获取可选渠道列表
+1. <功能点 1>
+2. <功能点 2>
+3. <功能点 3>
 
 📁 涉及文件：
-├── internal/model/dept.go
-├── internal/store/dept.go
-├── internal/biz/dept.go
-├── internal/biz/dept_channel.go
-└── internal/controller/dept.go
+├── <source-file-1>
+├── <source-file-2>
+├── <source-file-3>
+└── <source-file-N>
 
 🔍 识别测试点：
 
 ┌──────────┬─────────────────────────────┬──────────┐
 │ 类型     │ 测试点                       │ 数量     │
 ├──────────┼─────────────────────────────┼──────────┤
-│ UT       │ Biz 层业务方法               │ 5        │
-│ API      │ REST 接口                   │ 3        │
-│ E2E      │ 用户流程                     │ 1        │
+│ UT       │ 业务层方法                    │ N        │
+│ API      │ 接口端点                     │ N        │
+│ E2E      │ 用户流程                     │ N        │
 └──────────┴─────────────────────────────┴──────────┘
 ```
 
@@ -72,19 +73,19 @@ description: 创建测试 - 为新功能编写自动化测试用例
 请选择要创建的测试类型：
 
 [1] 单元测试 (UT)
-    - 测试 Biz 层业务逻辑
+    - 测试业务层逻辑
     - 使用 Mock 隔离依赖
-    - 预计生成 5 个测试用例
+    - 预计生成 N 个测试用例
 
 [2] API 测试
-    - 测试 REST 接口
+    - 测试接口端点
     - 验证请求/响应/错误码
-    - 预计生成 3 个测试文件
+    - 预计生成 N 个测试文件
 
 [3] E2E 测试
     - 测试完整用户流程
     - 端到端场景验证
-    - 预计生成 1 个测试文件
+    - 预计生成 N 个测试文件
 
 [4] 全部
 
@@ -96,97 +97,46 @@ description: 创建测试 - 为新功能编写自动化测试用例
 #### 4.1 分析被测方法
 
 ```
-📦 分析 Biz 层方法...
+📦 分析业务层方法...
 
-internal/biz/dept_channel.go:
-├── func (b *DeptBiz) CreateWithChannel(ctx, req) error
-├── func (b *DeptBiz) ValidateChannelScope(ctx, deptID, channels) error
-├── func (b *DeptBiz) GetAvailableChannels(ctx, parentID) ([]Channel, error)
-├── func (b *DeptBiz) UpdateChannels(ctx, deptID, channels) error
-└── func (b *DeptBiz) InheritParentChannels(ctx, deptID) error
+<source-file>:
+├── <方法签名 1>
+├── <方法签名 2>
+├── <方法签名 3>
+└── <方法签名 N>
 ```
 
 #### 4.2 生成测试用例
 
-```go
-// 生成文件：internal/biz/dept_channel_test.go
+根据 CLAUDE.md 中定义的测试框架和规范，生成对应的测试代码。
 
-package biz
-
-import (
-    "context"
-    "testing"
-
-    "github.com/golang/mock/gomock"
-    "github.com/stretchr/testify/assert"
-)
-
-func TestDeptBiz_CreateWithChannel_Success(t *testing.T) {
-    // Arrange
-    ctrl := gomock.NewController(t)
-    defer ctrl.Finish()
-
-    mockStore := mock.NewMockDeptStore(ctrl)
-    mockStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
-
-    biz := NewDeptBiz(mockStore)
-
-    // Act
-    err := biz.CreateWithChannel(context.Background(), &CreateDeptReq{
-        Name:     "测试部门",
-        ParentID: 1,
-        Channels: []int64{1, 2, 3},
-    })
-
-    // Assert
-    assert.NoError(t, err)
-}
-
-func TestDeptBiz_CreateWithChannel_ChannelOutOfScope(t *testing.T) {
-    // 测试渠道超出范围的场景
-    ctrl := gomock.NewController(t)
-    defer ctrl.Finish()
-
-    mockStore := mock.NewMockDeptStore(ctrl)
-    mockStore.EXPECT().GetParentChannels(gomock.Any(), int64(1)).Return([]int64{1, 2}, nil)
-
-    biz := NewDeptBiz(mockStore)
-
-    err := biz.CreateWithChannel(context.Background(), &CreateDeptReq{
-        Name:     "测试部门",
-        ParentID: 1,
-        Channels: []int64{1, 2, 3}, // 3 不在父级范围内
-    })
-
-    assert.Error(t, err)
-    assert.Equal(t, errno.ErrChannelOutOfScope, err)
-}
-
-func TestDeptBiz_ValidateChannelScope_ParentNoChannel(t *testing.T) {
-    // 上级部门未设置渠道，下级可任意选择
-}
-
-func TestDeptBiz_ValidateChannelScope_MustBeSubset(t *testing.T) {
-    // 下级渠道必须是上级的子集
-}
-
-func TestDeptBiz_GetAvailableChannels_RootDept(t *testing.T) {
-    // 根部门返回所有渠道
-}
-
-func TestDeptBiz_GetAvailableChannels_SubDept(t *testing.T) {
-    // 子部门返回父级渠道的子集
-}
-```
-
-#### 4.3 生成 Mock 文件
+测试用例遵循 **Arrange-Act-Assert** 模式：
 
 ```
-📝 生成 Mock 文件...
+生成文件：<CLAUDE.md中定义的测试文件路径>
 
-go generate ./internal/store/...
+测试用例列表：
+├── <TestCase_Method1_Success>        - 正常流程
+├── <TestCase_Method1_ErrorCase>      - 异常场景
+├── <TestCase_Method2_ValidInput>     - 输入校验
+├── <TestCase_Method2_InvalidInput>   - 边界条件
+├── <TestCase_Method3_NormalCase>     - 正常流程
+└── <TestCase_Method3_EdgeCase>       - 边界条件
 
-✅ 生成：internal/store/mock/dept_store_mock.go
+每个测试用例结构：
+1. Arrange - 准备数据和 Mock 依赖
+2. Act - 执行被测方法
+3. Assert - 验证结果
+```
+
+#### 4.3 生成 Mock 文件（如需要）
+
+```
+📝 按 CLAUDE.md 测试规范生成 Mock 文件...
+
+<CLAUDE.md中定义的Mock生成命令>
+
+✅ 生成：<mock-file-path>
 ```
 
 ### 5. 生成 API 测试
@@ -197,121 +147,32 @@ go generate ./internal/store/...
 📡 提取 API 定义...
 
 从需求文档提取：
-├── POST /api/v1/dept           创建部门（带渠道）
-├── PUT /api/v1/dept/:id        更新部门渠道
-└── GET /api/v1/dept/channels   获取可选渠道
+├── <HTTP_METHOD> <endpoint-1>    <描述>
+├── <HTTP_METHOD> <endpoint-2>    <描述>
+└── <HTTP_METHOD> <endpoint-3>    <描述>
 ```
 
 #### 5.2 生成测试代码
 
-```go
-// 生成文件：tests/api/dept_channel_api_test.go
+根据 CLAUDE.md 中定义的 API 测试框架生成测试代码。
 
-//go:build integration
+每个接口的测试覆盖：
 
-package api
+```
+生成文件：<CLAUDE.md中定义的API测试文件路径>
 
-import (
-    "net/http"
-    "net/http/httptest"
-    "strings"
-    "testing"
+<endpoint-1> 测试用例：
+├── 正常请求 - 完整参数         → 期望成功响应
+├── 正常请求 - 可选参数缺省      → 期望成功响应（默认值）
+├── 异常请求 - 缺少必填字段      → 期望参数校验错误
+├── 异常请求 - 业务规则冲突      → 期望业务错误码
+└── 异常请求 - 无权限            → 期望权限错误
 
-    "github.com/stretchr/testify/assert"
-)
-
-func TestCreateDept_WithChannel(t *testing.T) {
-    router := setupTestRouter()
-
-    tests := []struct {
-        name     string
-        body     string
-        wantCode int
-        wantBody string
-    }{
-        {
-            name:     "正常创建-带渠道",
-            body:     `{"name":"测试部门","parent_id":1,"channels":[1,2]}`,
-            wantCode: http.StatusOK,
-        },
-        {
-            name:     "正常创建-不带渠道",
-            body:     `{"name":"测试部门","parent_id":1}`,
-            wantCode: http.StatusOK,
-        },
-        {
-            name:     "渠道超出范围",
-            body:     `{"name":"测试部门","parent_id":1,"channels":[1,2,99]}`,
-            wantCode: http.StatusBadRequest,
-            wantBody: `"code":"CHANNEL_OUT_OF_SCOPE"`,
-        },
-        {
-            name:     "缺少必填字段",
-            body:     `{"parent_id":1}`,
-            wantCode: http.StatusBadRequest,
-            wantBody: `"code":"INVALID_PARAMS"`,
-        },
-    }
-
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            req := httptest.NewRequest("POST", "/api/v1/dept",
-                strings.NewReader(tt.body))
-            req.Header.Set("Content-Type", "application/json")
-            req.Header.Set("Authorization", "Bearer "+testToken)
-
-            w := httptest.NewRecorder()
-            router.ServeHTTP(w, req)
-
-            assert.Equal(t, tt.wantCode, w.Code)
-            if tt.wantBody != "" {
-                assert.Contains(t, w.Body.String(), tt.wantBody)
-            }
-        })
-    }
-}
-
-func TestGetAvailableChannels(t *testing.T) {
-    router := setupTestRouter()
-
-    tests := []struct {
-        name     string
-        parentID string
-        wantCode int
-        wantLen  int
-    }{
-        {
-            name:     "根部门-返回所有渠道",
-            parentID: "0",
-            wantCode: http.StatusOK,
-            wantLen:  10, // 假设系统有10个渠道
-        },
-        {
-            name:     "子部门-返回父级子集",
-            parentID: "1",
-            wantCode: http.StatusOK,
-            wantLen:  3, // 父级有3个渠道
-        },
-    }
-
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            req := httptest.NewRequest("GET",
-                "/api/v1/dept/channels?parent_id="+tt.parentID, nil)
-            req.Header.Set("Authorization", "Bearer "+testToken)
-
-            w := httptest.NewRecorder()
-            router.ServeHTTP(w, req)
-
-            assert.Equal(t, tt.wantCode, w.Code)
-            // 验证返回数量
-        })
-    }
-}
-
-func TestUpdateDeptChannels(t *testing.T) {
-    // 测试更新渠道
-}
+采用表驱动测试模式，每组包含：
+- name: 场景描述
+- input: 请求参数
+- wantStatus: 期望状态码
+- wantBody: 期望响应内容（可选）
 ```
 
 ### 6. 生成 E2E 测试
@@ -320,7 +181,7 @@ func TestUpdateDeptChannels(t *testing.T) {
 
 ```
 ⚠️ E2E 测试需要启动测试环境：
-- Docker 容器（MySQL + Redis）
+- 依赖服务（数据库、缓存等）
 - 后端服务（本地）
 - 前端服务（本地）
 ```
@@ -330,84 +191,33 @@ func TestUpdateDeptChannels(t *testing.T) {
 ```
 🎯 识别用户流程...
 
-核心流程：部门渠道管理
-1. 管理员登录
-2. 进入部门管理页面
-3. 创建部门并选择渠道
-4. 验证渠道限制生效
-5. 修改渠道设置
+核心流程：<功能名称>
+1. <用户操作步骤 1>
+2. <用户操作步骤 2>
+3. <用户操作步骤 3>
+4. <验证步骤>
 ```
 
-#### 6.2 生成测试代码 (Playwright)
+#### 6.2 生成测试代码
 
-```typescript
-// 生成文件：tests/e2e/dept-channel.spec.ts
+根据 CLAUDE.md 中定义的 E2E 测试框架生成测试代码。
 
-import { test, expect } from '@playwright/test';
+```
+生成文件：<CLAUDE.md中定义的E2E测试文件路径>
 
-test.describe('部门渠道管理', () => {
-  test.beforeEach(async ({ page, request }) => {
-    // 重置测试数据
-    await request.post('/api/test/reset-db');
-
-    // 登录
-    await page.goto('/login');
-    await page.getByTestId('username').fill('admin');
-    await page.getByTestId('password').fill('password');
-    await page.getByTestId('submit').click();
-    await expect(page).toHaveURL(/.*dashboard/);
-  });
-
-  test('创建部门时选择渠道', async ({ page }) => {
-    // 进入部门管理
-    await page.goto('/system/dept');
-
-    // 点击新建
-    await page.getByTestId('btn-create').click();
-
-    // 填写表单
-    await page.getByTestId('input-name').fill('销售一部');
-    await page.getByTestId('select-parent').click();
-    await page.getByText('总公司').click();
-
-    // 选择渠道
-    await page.getByTestId('select-channels').click();
-    await page.getByText('天猫').click();
-    await page.getByText('京东').click();
-    await page.keyboard.press('Escape'); // 关闭下拉框
-
-    // 提交
-    await page.getByTestId('btn-submit').click();
-
-    // 验证成功
-    await expect(page.getByText('创建成功')).toBeVisible();
-    await expect(page.getByText('销售一部')).toBeVisible();
-  });
-
-  test('子部门渠道不能超出父级范围', async ({ page, request }) => {
-    // 创建有渠道限制的父部门
-    await request.post('/api/test/create-dept', {
-      data: { name: '父部门', channels: ['天猫', '京东'] }
-    });
-
-    await page.goto('/system/dept');
-    await page.getByTestId('btn-create').click();
-
-    await page.getByTestId('input-name').fill('子部门');
-    await page.getByTestId('select-parent').click();
-    await page.getByText('父部门').click();
-
-    // 渠道选择应该只显示父级的渠道
-    await page.getByTestId('select-channels').click();
-    await expect(page.getByText('天猫')).toBeVisible();
-    await expect(page.getByText('京东')).toBeVisible();
-    await expect(page.getByText('拼多多')).not.toBeVisible(); // 父级没有，不应显示
-  });
-
-  test('修改部门渠道', async ({ page }) => {
-    // 测试修改渠道
-  });
-});
+测试场景：
+├── <场景 1>: <用户流程描述>
+│   ├── 前置：<数据准备 / 登录>
+│   ├── 操作：<页面交互步骤>
+│   └── 断言：<预期结果>
+├── <场景 2>: <边界条件描述>
+│   ├── 前置：<特定状态准备>
+│   ├── 操作：<触发边界条件>
+│   └── 断言：<预期错误提示>
+└── <场景 3>: <修改流程描述>
+    ├── 前置：<已有数据>
+    ├── 操作：<修改操作>
+    └── 断言：<修改后状态>
 ```
 
 ### 7. 测试文件汇总
@@ -418,15 +228,15 @@ test.describe('部门渠道管理', () => {
 ┌──────────┬────────────────────────────────────┬──────────┐
 │ 类型     │ 文件                                │ 用例数   │
 ├──────────┼────────────────────────────────────┼──────────┤
-│ UT       │ internal/biz/dept_channel_test.go  │ 6        │
-│ API      │ tests/api/dept_channel_api_test.go │ 4        │
-│ E2E      │ cypress/e2e/dept-channel.cy.ts     │ 3        │
+│ UT       │ <ut-test-file>                     │ N        │
+│ API      │ <api-test-file>                    │ N        │
+│ E2E      │ <e2e-test-file>                    │ N        │
 ├──────────┼────────────────────────────────────┼──────────┤
-│ 合计     │ 3 个文件                            │ 13       │
+│ 合计     │ N 个文件                            │ N        │
 └──────────┴────────────────────────────────────┴──────────┘
 
-✅ 已生成 Mock 文件
-✅ 已添加测试数据 fixtures
+✅ 已生成 Mock 文件（如需要）
+✅ 已添加测试数据 fixtures（如需要）
 ```
 
 ### 8. 运行验证
@@ -434,19 +244,17 @@ test.describe('部门渠道管理', () => {
 ```
 🔄 运行新创建的测试...
 
-go test -v ./internal/biz/dept_channel_test.go
-=== RUN   TestDeptBiz_CreateWithChannel_Success
---- PASS: (0.02s)
-=== RUN   TestDeptBiz_CreateWithChannel_ChannelOutOfScope
---- PASS: (0.01s)
+<CLAUDE.md中定义的UT运行命令> <ut-test-file>
+├── <TestCase_1>    --- PASS
+├── <TestCase_2>    --- PASS
 ...
 
-go test -tags=integration -v ./tests/api/dept_channel_api_test.go
-=== RUN   TestCreateDept_WithChannel
---- PASS: (0.15s)
+<CLAUDE.md中定义的API测试运行命令> <api-test-file>
+├── <TestCase_API_1>    --- PASS
+├── <TestCase_API_2>    --- PASS
 ...
 
-📊 验证结果：13/13 通过
+📊 验证结果：N/N 通过
 
 💡 下一步：
 - 运行全量回归：/req:test_regression
@@ -463,84 +271,39 @@ go test -tags=integration -v ./tests/api/dept_channel_api_test.go
 
 | 类型 | 文件 | 用例数 | 覆盖率 |
 |-----|------|-------|-------|
-| UT | internal/biz/dept_channel_test.go | 6 | 85% |
-| API | tests/api/dept_channel_api_test.go | 4 | 100% |
-| E2E | cypress/e2e/dept-channel.cy.ts | 3 | - |
+| UT | <ut-test-file> | N | XX% |
+| API | <api-test-file> | N | XX% |
+| E2E | <e2e-test-file> | N | - |
 
-创建时间：2024-01-15
-最后运行：2024-01-15 ✅ 全部通过
+创建时间：<date>
+最后运行：<date> ✅ 全部通过
 ```
 
 ---
 
 ## 测试模板
 
-### UT 模板（Go）
+测试模板从项目 CLAUDE.md 的「测试规范」章节读取，包括：
 
-```go
-func Test{Struct}_{Method}_{Scenario}(t *testing.T) {
-    // Arrange - 准备数据和 Mock
-    ctrl := gomock.NewController(t)
-    defer ctrl.Finish()
+### UT 模板
 
-    // Act - 执行被测方法
+- 测试框架、断言库、Mock 工具由 CLAUDE.md 定义
+- 遵循 Arrange-Act-Assert 模式
+- 命名规范：`Test{被测对象}_{方法}_{场景}`
 
-    // Assert - 验证结果
-}
-```
+### API 测试模板
 
-### API 测试模板（Go）
+- 测试框架由 CLAUDE.md 定义
+- 采用表驱动测试模式
+- 覆盖正常路径、异常路径、权限校验
+- 命名规范：`Test{Endpoint}_{场景}`
 
-```go
-func Test{Endpoint}_{Scenario}(t *testing.T) {
-    tests := []struct {
-        name     string
-        method   string
-        path     string
-        body     string
-        wantCode int
-        wantBody string
-    }{
-        // 测试用例
-    }
+### E2E 测试模板
 
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            // 执行请求
-            // 验证响应
-        })
-    }
-}
-```
-
-### E2E 测试模板（Playwright）
-
-```typescript
-import { test, expect } from '@playwright/test';
-
-test.describe('功能名称', () => {
-  test.beforeEach(async ({ page, request }) => {
-    // 重置测试数据
-    await request.post('/api/test/reset-db');
-
-    // 登录（如需要）
-    await page.goto('/login');
-    await page.getByTestId('username').fill('user');
-    await page.getByTestId('password').fill('password');
-    await page.getByTestId('submit').click();
-    await expect(page).toHaveURL(/.*dashboard/);
-  });
-
-  test('场景描述', async ({ page }) => {
-    // 页面操作
-    await page.goto('/target-page');
-    await page.getByTestId('button').click();
-
-    // 断言验证
-    await expect(page.getByText('成功')).toBeVisible();
-  });
-});
-```
+- E2E 框架由 CLAUDE.md 定义
+- 包含前置数据准备（如登录、数据重置）
+- 模拟真实用户操作流程
+- 验证页面状态和交互结果
 
 ---
 

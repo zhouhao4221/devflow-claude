@@ -9,9 +9,13 @@ description: |
 仅在 `/req:dev` 命令执行时激活，负责实现方案生成、开发引导和进度跟踪。
 
 根据需求类型（后端/前端/全栈）采用不同的开发引导策略：
-- **后端**：按分层架构（Model → Store → Biz → Controller → Router）详细引导
+- **后端**：读取项目 CLAUDE.md 的分层架构，按配置的层级顺序详细引导
 - **前端**：聚焦功能点描述，依赖项目自身的技能和规范引导实现
-- **全栈**：后端部分按分层引导，前端部分按功能点引导
+- **全栈**：后端分层 + 前端功能点，分阶段引导
+
+> **重要**：本 skill 不内置任何项目架构细节。分层顺序、目录结构、命名规范、开发规范
+> 均从项目 CLAUDE.md 的「项目架构」章节读取。如 CLAUDE.md 缺少架构信息，
+> 会发出警告并建议用户通过 `/req:init --reinit` 补充。
 
 ---
 
@@ -164,6 +168,9 @@ docs/requirements/modules/<模块名>.md
 
 ### 后端项目方案
 
+> **前置步骤**：读取项目 CLAUDE.md 中的「项目架构」章节，获取分层架构表、目录结构、命名规范。
+> 如 CLAUDE.md 缺少架构信息，输出警告（见 _common.md「CLAUDE.md 架构检查」），仍继续但方案可能不够准确。
+
 #### 4.1 数据模型（10.1）
 
 分析需求中涉及的数据实体，生成：
@@ -188,58 +195,45 @@ docs/requirements/modules/<模块名>.md
 描述表间关联（一对多、多对多等）
 ```
 
-**检查要点**：
-- 包含 TenantID（多租户支持）
+**检查要点**（根据 CLAUDE.md 中的开发规范补充具体检查项）：
 - 字段类型和约束与业务规则一致
 - 索引设计（查询场景驱动）
+- CLAUDE.md 中定义的其他数据模型规范（如多租户字段、审计字段等）
 
 #### 4.2 文件改动清单（10.2）
 
-按分层架构列出需要新增/修改的文件：
+**按 CLAUDE.md 中定义的分层架构表顺序**列出需要新增/修改的文件：
 
 ```markdown
 ### 10.2 文件改动清单
 
 | 层级 | 文件路径 | 操作 | 改动说明 |
 |------|---------|------|---------|
-| Model | internal/model/xxx.go | 新增 | 数据模型定义 |
-| Store | internal/store/xxx.go | 新增 | 接口定义 + 实现 |
-| Biz | internal/biz/xxx.go | 新增 | 业务逻辑 |
-| Controller | internal/controller/xxx.go | 新增 | 接口处理 |
-| Router | internal/router/xxx.go | 修改 | 注册路由 |
+| <层1名称> | <CLAUDE.md中的目录>/xxx.<ext> | 新增 | <层1职责> |
+| <层2名称> | <CLAUDE.md中的目录>/xxx.<ext> | 新增 | <层2职责> |
+| ... | ... | ... | ... |
 ```
 
-**文件命名规范**：kebab-case（如 `sys-dept-channel.go`）
+**文件命名**：遵循 CLAUDE.md 中定义的文件命名规范。
 
 #### 4.3 实现步骤（10.3）
 
-按分层架构拆解为有序步骤：
+**按 CLAUDE.md 分层架构的顺序**拆解为有序步骤，每层一个步骤：
 
 ```markdown
 ### 10.3 实现步骤
 
-- [ ] 步骤 1：定义数据模型（Model 层）
-  - 创建 xxx 结构体，包含 TenantID
-  - 定义 TableName() 方法
-  - 注册到 AutoMigrate
+- [ ] 步骤 1：实现 <层1名称>（<层1职责>）
+  - 根据 CLAUDE.md 开发规范列出具体任务
 
-- [ ] 步骤 2：实现数据访问（Store 层）
-  - 定义 XxxStore 接口（Create/Get/List/Update/Delete）
-  - 实现接口方法
+- [ ] 步骤 2：实现 <层2名称>（<层2职责>）
+  - ...
 
-- [ ] 步骤 3：实现业务逻辑（Biz 层）
-  - 业务校验规则
-  - 核心业务操作
-
-- [ ] 步骤 4：实现接口处理（Controller 层）
-  - 参数绑定和校验
-  - Swagger 注解
-  - 调用 Biz 层
-
-- [ ] 步骤 5：注册路由（Router 层）
-  - 添加路由映射
-  - 配置权限标识
+- [ ] 步骤 N：实现 <层N名称>（<层N职责>）
+  - ...
 ```
+
+**关键原则**：步骤数量和名称完全由 CLAUDE.md 的分层架构表决定，不硬编码任何层级。
 
 ---
 
@@ -355,48 +349,25 @@ docs/requirements/modules/<模块名>.md
 
 ### 后端开发规范
 
-按 Model → Store → Biz → Controller → Router 顺序逐层实现：
+> **从 CLAUDE.md 读取**：以下规范从项目 CLAUDE.md 的「开发规范」章节获取。
+> 不同项目的规范不同，此处仅定义检查框架。
 
-#### Model 层
+按 CLAUDE.md 分层架构表中定义的顺序逐层实现。
 
-- 结构体包含 `TenantID` 字段（多租户）
-- 定义 `TableName()` 返回表名
-- 字段标签：`gorm:"column:xxx"` + `json:"xxx"`
-
-#### Store 层
-
-- 定义接口（面向 Biz 层使用）
-- 实现接口（依赖 `*gorm.DB`）
-- CRUD 方法签名统一，List 支持分页
-
-#### Biz 层
-
-- 业务校验放在操作前
-- 错误返回：`errno.ErrXxx`
-- 结构化日志：`log.Info/Error(msg, ctx, k, v...)`
-- 事务操作：`store.DB().Transaction()`
-
-#### Controller 层
-
-- 完整 Swagger 注解（Summary、Param、Success、Failure）
-- 参数绑定：`ShouldBindJSON` / `ShouldBindQuery`
-- 响应封装：`response.Success(c, data)` / `response.Error(c, err)`
-
-#### Router 层
-
-- 路由分组，RESTful 风格
-- 权限标识格式：`module:resource:action`
+**每层实现时**：
+1. 读取 CLAUDE.md 中该层的目录路径和命名规范
+2. 读取 CLAUDE.md 中的开发规范（错误处理、日志、API 风格等）
+3. 按规范实现代码
 
 #### 后端检查清单
 
-每层实现后核对：
+每层实现后，根据 CLAUDE.md「开发规范」章节核对：
 
-- [ ] 文件命名 kebab-case
-- [ ] 多租户 TenantID
-- [ ] 结构化日志（非 fmt.Println）
-- [ ] errno 错误码（非裸 error）
-- [ ] Swagger 注解完整
-- [ ] 接口定义与实现分离（Store 层）
+- [ ] 文件命名遵循项目规范
+- [ ] 错误处理遵循项目规范
+- [ ] 日志规范
+- [ ] API/接口规范
+- [ ] CLAUDE.md 中定义的其他规范项
 
 ---
 
@@ -431,15 +402,14 @@ docs/requirements/modules/<模块名>.md
 ### 开发概览格式
 
 ```
-REQ-001 部门渠道关联
+REQ-001 需求标题
 
-进度：2/5 步骤已完成
+进度：2/N 步骤已完成
 实现步骤：
-- [x] 步骤 1：定义数据模型（Model 层）
-- [x] 步骤 2：实现数据访问（Store 层）
-- [ ] 步骤 3：实现业务逻辑（Biz 层） ← 当前
-- [ ] 步骤 4：实现接口处理（Controller 层）
-- [ ] 步骤 5：注册路由（Router 层）
+- [x] 步骤 1：实现 <层1>
+- [x] 步骤 2：实现 <层2>
+- [ ] 步骤 3：实现 <层3> ← 当前
+- [ ] ...
 ```
 
 ---

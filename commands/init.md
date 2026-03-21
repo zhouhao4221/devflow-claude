@@ -191,7 +191,75 @@ mkdir -p $CACHE_ROOT/templates
 }
 ```
 
-### 8. 输出结果
+### 8. CLAUDE.md 架构引导
+
+检查项目 CLAUDE.md 是否包含架构信息，引导用户补充。
+
+#### 8.1 检查 CLAUDE.md
+
+```python
+claude_md_path = "CLAUDE.md"  # 项目根目录
+has_architecture = False
+
+if os.path.exists(claude_md_path):
+    content = read_file(claude_md_path)
+    # 检查是否包含架构关键章节
+    has_architecture = any(keyword in content for keyword in [
+        "分层架构", "目录结构", "技术栈", "项目架构",
+        "Architecture", "Tech Stack"
+    ])
+```
+
+#### 8.2 引导选择（仅当 CLAUDE.md 缺少架构信息时）
+
+```
+📋 CLAUDE.md 中未检测到项目架构描述
+   需求开发引导（/req:dev）依赖架构信息来生成实现方案
+
+   选择项目类型，生成 CLAUDE.md 建议片段：
+
+   1. Go 后端（Gin + GORM 分层架构）
+   2. Java 后端（Spring Boot 分层架构）
+   3. 前端项目（React/Vue + TypeScript）
+   4. 自定义（生成空白模板，手动填写）
+   5. 跳过（稍后手动添加）
+
+请选择（1-5）：
+```
+
+#### 8.3 生成建议片段
+
+根据用户选择，读取对应模板：
+
+```python
+snippets = {
+    "1": "<plugin-path>/templates/claude-md-snippets/go-backend.md",
+    "2": "<plugin-path>/templates/claude-md-snippets/java-backend.md",
+    "3": "<plugin-path>/templates/claude-md-snippets/frontend-react.md",
+    "4": "<plugin-path>/templates/claude-md-snippets/generic.md",
+}
+```
+
+展示片段内容，追加到项目 CLAUDE.md 末尾（如文件不存在则创建）。
+
+```
+✅ 已将架构片段追加到 CLAUDE.md
+
+💡 请根据实际项目情况修改以下内容：
+   - 技术栈版本号
+   - 分层架构的目录路径
+   - 开发规范和测试规范
+
+   后续 /req:dev 会读取这些信息引导开发
+```
+
+#### 8.4 已有架构信息时
+
+```
+✅ CLAUDE.md 已包含项目架构描述，跳过引导
+```
+
+### 9. 输出结果
 
 **初始化成功**：
 ```
@@ -222,9 +290,10 @@ mkdir -p $CACHE_ROOT/templates
    - 版本规划和里程碑
 
 💡 下一步:
-   1. 编辑 PRD.md 完善产品规划
-   2. /req:new <标题>  创建具体需求
-   3. /req             查看需求列表
+   1. 检查 CLAUDE.md 中的架构描述是否准确
+   2. 编辑 PRD.md 完善产品规划
+   3. /req:branch init  配置分支策略
+   4. /req:new <标题>   创建具体需求
 ```
 
 **重新初始化成功**（使用 `--reinit` 参数）：
