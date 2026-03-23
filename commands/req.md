@@ -30,6 +30,9 @@ description: 需求工作流管理 - 列出所有需求及其状态
 | `migrate` | 迁移本地需求到全局缓存 | `/req:migrate my-project` |
 | `cache` | 缓存管理 | `/req:cache clear my-project` |
 | `modules` | 列出所有模块 | `/req:modules` |
+| `branch` | 分支管理 | `/req:branch init` |
+| `commit` | 规范提交 | `/req:commit` |
+| `changelog` | 生成版本说明 | `/req:changelog v1.0.0` |
 
 ---
 
@@ -110,9 +113,29 @@ ls $REQ_PATH
 
 ### 3. 展示需求列表
 
-按状态分组输出：
+头部显示插件版本和项目配置状态，然后按状态分组输出需求。
+
+**头部信息**（每次 `/req` 都展示）：
+
+```python
+# 从 plugin.json 读取版本
+version = read_plugin_json("version")  # <plugin-path>/.claude-plugin/plugin.json
+
+# 从 settings.local.json 读取项目配置
+project = read_settings("requirementProject")
+role = read_settings("requirementRole")
+strategy = read_settings("branchStrategy")
+
+# 检查 CLAUDE.md 架构信息
+has_arch = check_claude_md_architecture()
+```
 
 ```
+📋 需求工作流 v<version> | 项目：<project> (<role>)
+   分支策略：<strategy.model 或 "未配置"> | CLAUDE.md 架构：✅ 或 ⚠️ 未配置
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 📋 活跃需求列表
 
 🔨 开发中
