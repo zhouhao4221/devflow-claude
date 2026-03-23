@@ -8,8 +8,9 @@
 .DS_Store
 Thumbs.db
 
-# Local settings
+# Claude Code local
 .claude/settings.local.json
+.claude/projects/
 
 # Temp files
 *.tmp
