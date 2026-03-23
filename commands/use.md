@@ -66,7 +66,60 @@ ls ~/.claude-requirements/projects/<project-name>/
 - 从旧项目的 repos 列表移除当前仓库
 - 添加到新项目的 repos 列表
 
-### 6. 输出结果
+### 6. 项目配置检查
+
+绑定完成后检查当前仓库的配置完整性。
+
+#### 6.1 CLAUDE.md 架构检查
+
+```python
+claude_md_path = "CLAUDE.md"
+architecture_keywords = [
+    "分层架构", "目录结构", "技术栈", "项目架构",
+    "Architecture", "Tech Stack", "Project Structure"
+]
+
+if os.path.exists(claude_md_path):
+    content = read_file(claude_md_path)
+    has_architecture = any(kw in content for kw in architecture_keywords)
+else:
+    has_architecture = False
+```
+
+**缺失时引导**（与 `/req:init` 步骤 8 相同）：
+
+```
+⚠️ CLAUDE.md 中未检测到项目架构描述
+
+   /req:dev 需要架构信息来生成实现方案
+
+   选择项目类型，生成 CLAUDE.md 建议片段：
+
+   1. Go 后端（Gin + GORM 分层架构）
+   2. Java 后端（Spring Boot 分层架构）
+   3. 前端项目（React/Vue + TypeScript）
+   4. 自定义（生成空白模板，手动填写）
+   5. 跳过（稍后手动添加）
+
+请选择（1-5）：
+```
+
+选择后读取 `<plugin-path>/templates/claude-md-snippets/` 对应模板，追加到 CLAUDE.md。
+
+#### 6.2 分支策略检查
+
+```python
+strategy = read_settings("branchStrategy")
+```
+
+**未配置时提示**（不阻断）：
+
+```
+💡 未配置分支策略，/req:dev 将使用默认行为
+   建议执行 /req:branch init 配置分支策略
+```
+
+### 7. 输出结果
 
 ```
 ✅ 已切换到项目 "<project-name>"
