@@ -4,19 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-这是一个 Claude Code 插件，用于需求全流程工作流管理。提供命令、技能和钩子来管理软件需求从草稿到完成的完整生命周期。
+这是一个 Claude Code 插件工具集（dev-workflow），包含多个开发流程插件。通过 marketplace.json 统一管理。
 
 ## 架构
 
-插件遵循 Claude Code 的插件结构：
+工具集采用多插件结构，每个插件独立在 `plugins/` 子目录下：
 
 ```
-.claude-plugin/plugin.json    # 插件清单和配置
-commands/                     # 命令定义（Markdown 文件）
-skills/                       # 自动触发的 AI 技能（SKILL.md 文件）
-hooks/hooks.json             # 工具拦截的事件钩子
-scripts/                     # 验证和工具脚本
-templates/                   # 需求文档模板
+.claude-plugin/marketplace.json     # 工具集清单，注册所有插件
+plugins/
+├── req/                            # 需求管理插件
+│   ├── .claude-plugin/plugin.json  # 插件清单
+│   ├── commands/                   # 命令定义（Markdown 文件）
+│   ├── skills/                     # 自动触发的 AI 技能（SKILL.md 文件）
+│   ├── hooks/hooks.json            # 工具拦截的事件钩子
+│   ├── scripts/                    # 验证和工具脚本
+│   └── templates/                  # 需求文档模板
+└── api/                            # API 对接插件
+    ├── .claude-plugin/plugin.json  # 插件清单
+    ├── commands/                   # 命令定义
+    ├── skills/                     # 自动触发技能
+    └── scripts/                    # Python 解析脚本
 ```
 
 ### 存储架构（本地优先 + 缓存同步）
@@ -112,7 +120,7 @@ templates/                   # 需求文档模板
 
 ### 钩子
 
-在 `hooks/hooks.json` 中配置的前置/后置钩子：
+在 `plugins/req/hooks/hooks.json` 中配置的前置/后置钩子：
 - **PostToolUse（Write/Edit 后）**：
   - `validate-requirement.sh` - 验证需求文档格式
   - `sync-cache.sh` - **强制自动同步**到全局缓存（无需用户确认，以本地为准）

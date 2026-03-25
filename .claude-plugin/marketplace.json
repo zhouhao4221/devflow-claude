@@ -6,13 +6,19 @@
   },
   "metadata": {
     "description": "开发流程工具集",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "req",
       "description": "需求全流程工作流管理 - 从需求分析到测试的完整生命周期管理",
-      "source": "./",
+      "source": "./plugins/req/",
+      "category": "development"
+    },
+    {
+      "name": "api",
+      "description": "前端 API 对接工具 - Swagger 解析、字段映射、代码生成",
+      "source": "./plugins/api/",
       "category": "development"
     }
   ]

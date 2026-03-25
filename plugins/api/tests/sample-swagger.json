@@ -1,0 +1,366 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "用户管理系统 API",
+    "description": "示例后端服务接口文档",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {"name": "用户管理", "description": "用户注册、登录、信息管理"},
+    {"name": "角色管理", "description": "角色 CRUD 和权限分配"},
+    {"name": "订单管理", "description": "订单创建、查询、状态流转"}
+  ],
+  "paths": {
+    "/api/v1/users": {
+      "get": {
+        "tags": ["用户管理"],
+        "summary": "获取用户列表",
+        "operationId": "getUserList",
+        "parameters": [
+          {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1}, "description": "页码"},
+          {"name": "page_size", "in": "query", "schema": {"type": "integer", "default": 20}, "description": "每页数量"},
+          {"name": "keyword", "in": "query", "schema": {"type": "string"}, "description": "搜索关键词"}
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["code", "data"],
+                  "properties": {
+                    "code": {"type": "integer", "description": "状态码"},
+                    "message": {"type": "string", "description": "消息"},
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "total": {"type": "integer", "description": "总数"},
+                        "list": {
+                          "type": "array",
+                          "items": {"$ref": "#/components/schemas/UserInfo"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["用户管理"],
+        "summary": "创建用户",
+        "operationId": "createUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/CreateUserRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "integer"},
+                    "data": {"$ref": "#/components/schemas/UserInfo"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "tags": ["用户管理"],
+        "summary": "获取用户详情",
+        "operationId": "getUserDetail",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}, "description": "用户ID"}
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "integer"},
+                    "data": {"$ref": "#/components/schemas/UserDetail"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["用户管理"],
+        "summary": "更新用户信息",
+        "operationId": "updateUser",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}, "description": "用户ID"}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/UpdateUserRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "integer"},
+                    "message": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["用户管理"],
+        "summary": "删除用户",
+        "operationId": "deleteUser",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}, "description": "用户ID"}
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功"
+          }
+        }
+      }
+    },
+    "/api/v1/roles": {
+      "get": {
+        "tags": ["角色管理"],
+        "summary": "获取角色列表",
+        "operationId": "getRoleList",
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "integer"},
+                    "data": {
+                      "type": "array",
+                      "items": {"$ref": "#/components/schemas/RoleInfo"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders": {
+      "get": {
+        "tags": ["订单管理"],
+        "summary": "获取订单列表",
+        "operationId": "getOrderList",
+        "parameters": [
+          {"name": "status", "in": "query", "schema": {"type": "string", "enum": ["pending", "paid", "shipped", "completed", "cancelled"]}, "description": "订单状态"},
+          {"name": "user_id", "in": "query", "schema": {"type": "integer"}, "description": "用户ID"}
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "integer"},
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "total": {"type": "integer"},
+                        "list": {
+                          "type": "array",
+                          "items": {"$ref": "#/components/schemas/OrderInfo"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["订单管理"],
+        "summary": "创建订单",
+        "operationId": "createOrder",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/CreateOrderRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "integer"},
+                    "data": {"$ref": "#/components/schemas/OrderInfo"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserInfo": {
+        "type": "object",
+        "required": ["id", "user_name", "email"],
+        "properties": {
+          "id": {"type": "integer", "description": "用户ID"},
+          "user_name": {"type": "string", "description": "用户名"},
+          "email": {"type": "string", "description": "邮箱"},
+          "avatar_url": {"type": "string", "description": "头像地址"},
+          "is_active": {"type": "boolean", "description": "是否激活"},
+          "created_at": {"type": "string", "format": "date-time", "description": "创建时间"}
+        }
+      },
+      "UserDetail": {
+        "allOf": [
+          {"$ref": "#/components/schemas/UserInfo"},
+          {
+            "type": "object",
+            "properties": {
+              "phone_number": {"type": "string", "description": "手机号"},
+              "last_login_at": {"type": "string", "format": "date-time", "description": "最后登录时间"},
+              "role_list": {
+                "type": "array",
+                "description": "角色列表",
+                "items": {"$ref": "#/components/schemas/RoleInfo"}
+              },
+              "department": {
+                "type": "object",
+                "description": "所属部门",
+                "required": ["dept_id", "dept_name"],
+                "properties": {
+                  "dept_id": {"type": "integer", "description": "部门ID"},
+                  "dept_name": {"type": "string", "description": "部门名称"},
+                  "parent_dept_id": {"type": "integer", "description": "上级部门ID"}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "required": ["user_name", "email", "password"],
+        "properties": {
+          "user_name": {"type": "string", "description": "用户名"},
+          "email": {"type": "string", "format": "email", "description": "邮箱"},
+          "password": {"type": "string", "description": "密码"},
+          "phone_number": {"type": "string", "description": "手机号"},
+          "role_ids": {"type": "array", "items": {"type": "integer"}, "description": "角色ID列表"}
+        }
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "user_name": {"type": "string", "description": "用户名"},
+          "email": {"type": "string", "format": "email", "description": "邮箱"},
+          "phone_number": {"type": "string", "description": "手机号"},
+          "avatar_url": {"type": "string", "description": "头像地址"},
+          "is_active": {"type": "boolean", "description": "是否激活"},
+          "role_ids": {"type": "array", "items": {"type": "integer"}, "description": "角色ID列表"}
+        }
+      },
+      "RoleInfo": {
+        "type": "object",
+        "required": ["role_id", "role_name"],
+        "properties": {
+          "role_id": {"type": "integer", "description": "角色ID"},
+          "role_name": {"type": "string", "description": "角色名称"},
+          "role_code": {"type": "string", "description": "角色编码"},
+          "description": {"type": "string", "description": "角色描述"}
+        }
+      },
+      "OrderInfo": {
+        "type": "object",
+        "required": ["order_id", "order_no", "user_id", "total_amount", "status"],
+        "properties": {
+          "order_id": {"type": "integer", "description": "订单ID"},
+          "order_no": {"type": "string", "description": "订单编号"},
+          "user_id": {"type": "integer", "description": "用户ID"},
+          "total_amount": {"type": "number", "format": "double", "description": "订单总金额"},
+          "status": {"type": "string", "enum": ["pending", "paid", "shipped", "completed", "cancelled"], "description": "订单状态"},
+          "order_items": {
+            "type": "array",
+            "description": "订单明细",
+            "items": {
+              "type": "object",
+              "required": ["product_id", "product_name", "quantity", "unit_price"],
+              "properties": {
+                "product_id": {"type": "integer", "description": "商品ID"},
+                "product_name": {"type": "string", "description": "商品名称"},
+                "quantity": {"type": "integer", "description": "数量"},
+                "unit_price": {"type": "number", "format": "double", "description": "单价"}
+              }
+            }
+          },
+          "created_at": {"type": "string", "format": "date-time", "description": "创建时间"},
+          "paid_at": {"type": "string", "format": "date-time", "description": "支付时间"}
+        }
+      },
+      "CreateOrderRequest": {
+        "type": "object",
+        "required": ["items"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["product_id", "quantity"],
+              "properties": {
+                "product_id": {"type": "integer", "description": "商品ID"},
+                "quantity": {"type": "integer", "description": "数量"}
+              }
+            }
+          },
+          "remark": {"type": "string", "description": "备注"},
+          "coupon_code": {"type": "string", "description": "优惠券码"}
+        }
+      }
+    }
+  }
+}
