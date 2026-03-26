@@ -113,18 +113,17 @@ REMOTE_URL=$(git remote get-url origin)
 ```
 
 **检查 Token**：
-```bash
-# 优先读策略中的 giteaToken 指定的变量名，默认 GITEA_TOKEN
-TOKEN_VAR=${strategy.giteaToken:-GITEA_TOKEN}
-TOKEN=${!TOKEN_VAR}
+```
+从 branchStrategy.giteaToken 读取 token 值
+TOKEN = strategy.giteaToken
 ```
 
 Token 缺失时：
 ```
-⚠️ 未配置 ${TOKEN_VAR} 环境变量
+⚠️ GITEA_TOKEN 未配置。无法通过 API 自动创建 PR。
 
-  💡 设置方式：
-  export GITEA_TOKEN=<your-token>
+  💡 设置方式：在 .claude/settings.local.json 的 branchStrategy 中配置 giteaToken：
+  "giteaToken": "<your-token>"
   生成方式：Gitea → 设置 → 应用 → 生成令牌（需 repo 权限）
 
   手动创建 PR：

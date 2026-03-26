@@ -179,7 +179,7 @@ plugins/
 | `gitea` | Gitea 自托管 | 自动调用 Gitea API 创建 PR |
 | `other` | 其他平台 | 仅展示合并命令 |
 
-Gitea 集成需要：`giteaUrl`（实例地址）+ `GITEA_TOKEN` 环境变量。
+Gitea 集成需要：`giteaUrl`（实例地址）+ `giteaToken`（API Token，直接在配置中填写）。
 
 **分支字段**：需求文档元信息中的 `branch` 字段记录分支名，确保跨会话确定性。
 

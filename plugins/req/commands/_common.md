@@ -242,7 +242,7 @@ PreToolUse Hook 在以下操作执行前自动弹出原生确认对话框：
     "model": "github-flow",       // github-flow | git-flow | trunk-based
     "repoType": "github",         // github | gitea | other（仓库托管类型）
     "giteaUrl": null,             // Gitea 实例地址（repoType=gitea 时必填，如 https://git.example.com）
-    "giteaToken": null,           // Gitea API Token 环境变量名（默认读 GITEA_TOKEN）
+    "giteaToken": null,           // Gitea API Token（直接填写 token 值）
     "mainBranch": "main",         // 生产分支
     "developBranch": null,        // git-flow 模式下的开发分支
     "featurePrefix": "feat/",     // REQ-XXX 分支前缀

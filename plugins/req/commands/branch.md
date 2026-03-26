@@ -162,7 +162,7 @@ REMOTE_URL=$(git remote get-url origin)
 **Gitea Token 说明：**
 ```
 🔑 Gitea API Token：
-   使用环境变量 GITEA_TOKEN（在 .env 或 shell profile 中设置）
+   在 branchStrategy.giteaToken 中直接配置 token 值
    生成方式：Gitea → 设置 → 应用 → 生成令牌（需 repo 权限）
 ```
 

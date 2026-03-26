@@ -132,24 +132,24 @@ claude plugins list
 
 **配置 Token：**
 
-```bash
-# 方式1：写入 shell profile（推荐，全局生效）
-echo 'export GITEA_TOKEN=your-token-here' >> ~/.zshrc
-source ~/.zshrc
+在项目的 `.claude/settings.local.json` 中，将 token 写入 `branchStrategy.giteaToken` 字段：
 
-# 方式2：项目 .env 文件（仅当前项目）
-echo 'GITEA_TOKEN=your-token-here' >> .env
-
-# 方式3：临时使用
-export GITEA_TOKEN=your-token-here
+```json
+{
+  "branchStrategy": {
+    "repoType": "gitea",
+    "giteaUrl": "https://your-gitea.com",
+    "giteaToken": "your-token-here"
+  }
+}
 ```
 
-> **安全提示**：不要将 Token 提交到 Git。`.env` 文件应加入 `.gitignore`。
+> **安全提示**：`settings.local.json` 不应提交到 Git，确认已加入 `.gitignore`。
 
 **验证 Token：**
 
 ```bash
-curl -s -H "Authorization: token $GITEA_TOKEN" \
+curl -s -H "Authorization: token your-token-here" \
   https://your-gitea.com/api/v1/user
 ```
 

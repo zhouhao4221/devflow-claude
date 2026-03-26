@@ -190,7 +190,7 @@ git push -u origin <branch>
 
 # 调用 Gitea API 创建 PR
 curl -s -X POST "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls" \
-  -H "Authorization: token ${GITEA_TOKEN}" \
+  -H "Authorization: token ${TOKEN}" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "feat(REQ-001): 用户积分规则管理",
@@ -217,11 +217,11 @@ curl -s -X POST "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls" \
 
 **GITEA_TOKEN 缺失时**：
 ```
-⚠️ 未配置 GITEA_TOKEN 环境变量，无法自动创建 PR
+⚠️ GITEA_TOKEN 未配置。无法通过 API 自动创建 PR。
 
-  💡 设置方式：
-  export GITEA_TOKEN=<your-token>
-  # 或在 .env 中添加 GITEA_TOKEN=<your-token>
+  💡 设置方式：在 .claude/settings.local.json 的 branchStrategy 中配置 giteaToken：
+  "giteaToken": "<your-token>"
+  生成方式：Gitea → 设置 → 应用 → 生成令牌（需 repo 权限）
 
   手动创建 PR：
   ${GITEA_URL}/${OWNER}/${REPO}/compare/${merge_target}...<branch>
