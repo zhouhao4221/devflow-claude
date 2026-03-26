@@ -65,7 +65,12 @@ claude plugins list
 - **Git Flow**：功能分支从 develop 拉，合回 develop
 - **Trunk-Based**：短期分支，主干开发
 
-配置后 `/req:dev`、`/req:commit`、`/req:done` 会自动遵循策略。不配置也能用，使用默认行为。
+然后选择仓库托管类型：
+- **GitHub**：`/req:pr` 时提示 `gh pr create` 命令
+- **Gitea**：`/req:pr` 时自动调用 Gitea REST API 创建 PR
+- **其他**：仅展示 `git merge` 合并命令
+
+配置后 `/req:dev`、`/req:commit`、`/req:done`、`/req:pr` 会自动遵循策略。不配置也能用，使用默认行为。
 
 ### 1.5 重新初始化
 
@@ -105,6 +110,50 @@ claude plugins list
 ```
 /req:update-template
 ```
+
+### 1.8 配置 Gitea Token（Gitea 仓库必须）
+
+如果 `/req:branch init` 选择了 Gitea 仓库类型，需要配置 API Token 才能自动创建 PR。
+
+**获取 Token：**
+
+1. 登录 Gitea → 右上角头像 → **设置**
+2. 左侧菜单 → **应用**
+3. 「管理 Access Token」→ 输入令牌名称（如 `claude-pr`）
+4. 选择权限范围：
+
+| 权限类别 | 权限项 | 必须 | 说明 |
+|---------|-------|------|------|
+| issue | 读写 | ✅ | PR 本质是 issue 的扩展，创建/查询 PR 需要 |
+| repository | 读写 | ✅ | 读取仓库信息、分支列表、推送代码 |
+| user | 读取 | 可选 | 用于验证 Token 有效性 |
+
+5. 点击 **生成令牌** → 复制保存（只显示一次）
+
+**配置 Token：**
+
+```bash
+# 方式1：写入 shell profile（推荐，全局生效）
+echo 'export GITEA_TOKEN=your-token-here' >> ~/.zshrc
+source ~/.zshrc
+
+# 方式2：项目 .env 文件（仅当前项目）
+echo 'GITEA_TOKEN=your-token-here' >> .env
+
+# 方式3：临时使用
+export GITEA_TOKEN=your-token-here
+```
+
+> **安全提示**：不要将 Token 提交到 Git。`.env` 文件应加入 `.gitignore`。
+
+**验证 Token：**
+
+```bash
+curl -s -H "Authorization: token $GITEA_TOKEN" \
+  https://your-gitea.com/api/v1/user
+```
+
+返回用户信息表示配置成功。
 
 ---
 
@@ -227,10 +276,26 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
 
 ```
 /req:branch              # 查看当前策略和分支状态
-/req:branch init         # 交互式配置分支策略
+/req:branch init         # 交互式配置分支策略 + 仓库类型
 /req:branch status       # 查看策略配置和各需求分支状态
 /req:branch hotfix 描述  # 从主分支创建紧急修复分支
 ```
+
+### 4.2.2 创建 PR
+
+开发完成后，可以手动创建 PR：
+
+```
+/req:pr              # 根据当前分支自动匹配需求，创建 PR
+/req:pr REQ-001      # 指定需求创建 PR
+```
+
+根据 `/req:branch init` 配置的仓库类型：
+- **Gitea**：自动调用 Gitea REST API 创建 PR（需配置 `GITEA_TOKEN`，见 1.8）
+- **GitHub**：调用 `gh` CLI 创建 PR
+- **其他**：推送分支到远程，展示合并命令
+
+Git Flow 的 hotfix 分支会自动创建两个 PR（→ main + → develop）。
 
 ### 4.3 继续开发
 
@@ -432,6 +497,7 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
                       ▼
                ┌─────────────┐
                │  🔨 开发中   │ ← /req:commit 提交代码
+               │             │ ← /req:pr 创建 PR
                └──────┬──────┘
                       │ /req:test
                       ▼
@@ -459,6 +525,7 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 | 通过评审 | `/req:review pass` |
 | 启动开发 | `/req:dev` |
 | 提交代码 | `/req:commit` |
+| 创建 PR | `/req:pr` |
 | 运行测试 | `/req:test` |
 | 完成归档 | `/req:done` |
 | 查看 PRD | `/req:prd` |
