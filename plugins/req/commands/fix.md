@@ -95,20 +95,74 @@ AI 搜索代码库，定位可能相关的文件：
 | src/store/user.ts | 中 | 用户状态管理 |
 ```
 
-#### 4.3 根因分析
+#### 4.3 关联需求匹配（自动，低成本）
 
-AI 阅读相关代码后给出根因判断：
+**目的**：找出可能引入此 bug 的需求，获取业务上下文辅助定位。
+
+**流程**（只读索引 + 按需读正文，控制 token 消耗）：
+
+```python
+# 第 1 步：读 INDEX.md（几十行，~500 token）
+index = read_file("docs/requirements/INDEX.md")
+
+# 第 2 步：用 bug 相关文件路径匹配需求
+#   从步骤 4.2 拿到的相关文件列表，在 INDEX.md 中模糊匹配
+#   INDEX.md 包含：编号、标题、状态、模块
+related_files = ["src/utils/auth.ts", "src/interceptors/request.ts"]
+keywords = extract_keywords(bug_description)  # "登录", "token", "超时"
+
+# 匹配策略（满足任一即命中）：
+#   a. 需求标题包含关键词（如「登录认证」）
+#   b. 需求所属模块与 bug 相关（如「用户」模块）
+matched_reqs = match_index(index, keywords)
+```
+
+```
+# 第 3 步：命中时，仅读该需求的「十、实现方案」中的文件改动清单（~1k token）
+#   未命中 → 跳过，不额外消耗
+if matched_reqs:
+    for req in matched_reqs[:2]:  # 最多读 2 个
+        file_list = read_section(req, "10.2 文件改动清单")
+```
+
+**命中时展示**：
+
+```
+📎 关联需求：
+
+| 需求 | 标题 | 关联原因 |
+|------|------|---------|
+| REQ-003 | 登录认证优化 | 修改了 src/interceptors/request.ts |
+
+💡 此 bug 可能由 REQ-003 引入，已读取其文件改动清单辅助定位。
+```
+
+**未命中时**：静默跳过，不输出任何内容，不消耗额外 token。
+
+**成本控制**：
+
+| 步骤 | Token 消耗 | 条件 |
+|------|-----------|------|
+| 读 INDEX.md | ~500 | 始终执行 |
+| 匹配关键词 | ~0 | AI 内部处理 |
+| 读命中需求节选 | ~1k/个 | 仅命中时，最多 2 个 |
+| **总计** | **500 ~ 2500** | 远低于全量读取（~50k） |
+
+#### 4.4 根因分析
+
+AI 综合代码搜索结果和关联需求上下文，给出根因判断：
 
 ```
 🎯 根因分析：
 
 在 src/interceptors/request.ts:45，响应拦截器捕获 401 状态码时
 调用了 router.push('/login')，但未调用 removeToken()。
+（REQ-003 登录认证优化 新增了 401 拦截逻辑，但遗漏了 token 清除）
 
 建议修复：在跳转登录页前清除 token。
 ```
 
-#### 4.4 修复建议
+#### 4.5 修复建议
 
 ```
 💡 修复建议：
