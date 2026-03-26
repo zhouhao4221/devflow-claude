@@ -173,8 +173,13 @@ REQ-001 部门渠道关联
 - 新增/修改文件统计
 
 下一步：
+- /req:pr REQ-001 - 创建 PR（根据仓库类型自动创建或提示命令）
 - /req:test REQ-001 - 进入测试
+- /req:commit - 提交代码
 ```
+
+> 如果配置了 `branchStrategy.repoType`（gitea/github），会提示可以创建 PR。
+> 未配置时不显示 PR 相关提示。
 
 ---
 

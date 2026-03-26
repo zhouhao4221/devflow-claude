@@ -91,9 +91,10 @@ plugins/
 
 **分支管理命令：**
 - `/req:branch` - 查看当前分支策略和状态（等同于 `status`）
-- `/req:branch init` - 交互式配置分支策略（GitHub Flow / Git Flow / Trunk-Based）
+- `/req:branch init` - 交互式配置分支策略（GitHub Flow / Git Flow / Trunk-Based）+ 仓库类型
 - `/req:branch status` - 查看策略配置和各需求分支状态
 - `/req:branch hotfix [描述]` - 从主分支创建紧急修复分支
+- `/req:pr [REQ-XXX]` - 创建 PR，根据仓库类型自动调用 Gitea API / gh CLI（readonly 可用）
 
 **版本管理命令：**
 - `/req:commit [消息]` - 规范提交，自动关联需求编号，检查分支合规性（readonly 可用）
@@ -142,7 +143,7 @@ plugins/
 | `/req:modules new` | 创建模块文档 |
 | `/req:prd-edit` | 编辑 PRD 文档 |
 
-不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`、`/req:prd`、`/req:changelog`、`/req:commit`、`/req:branch`
+不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`、`/req:prd`、`/req:changelog`、`/req:commit`、`/req:branch`、`/req:pr`
 
 **同步范围**：`docs/requirements/` 目录下的 REQ-XXX、QUICK-XXX 需求文档、模块文档（modules/）及 PRD.md，其他文件（INDEX.md、template.md）不同步。
 
