@@ -14,6 +14,8 @@
 #   - /req:upgrade    升级 QUICK 为 REQ
 #   - /req:modules new 创建模块文档
 #   - /req:prd-edit    编辑 PRD 文档
+#   - /req:specs new   创建规范文档
+#   - /req:specs edit  编辑规范文档
 #
 # 不触发缓存更新的命令（只读操作）：
 #   - /req, /req:status, /req:projects, /req:cache, /req:use
@@ -37,6 +39,7 @@ FILENAME=$(basename "$FILE_PATH")
 IS_REQUIREMENT=false
 IS_MODULE=false
 IS_PRD=false
+IS_SPEC=false
 
 # REQ 或 QUICK 需求文档
 if [[ "$FILENAME" =~ ^(REQ|QUICK)-[0-9]+ ]]; then
@@ -44,6 +47,9 @@ if [[ "$FILENAME" =~ ^(REQ|QUICK)-[0-9]+ ]]; then
 # 模块文档
 elif [[ "$FILE_PATH" =~ docs/requirements/modules/ ]]; then
     IS_MODULE=true
+# 规范文档
+elif [[ "$FILE_PATH" =~ docs/requirements/specs/ ]]; then
+    IS_SPEC=true
 # PRD 文档
 elif [[ "$FILENAME" = "PRD.md" ]]; then
     IS_PRD=true
@@ -106,6 +112,8 @@ elif [[ "$REL_PATH" =~ ^completed/ ]]; then
     TARGET_DIR="$CACHE_ROOT/completed"
 elif [[ "$REL_PATH" =~ ^modules/ ]]; then
     TARGET_DIR="$CACHE_ROOT/modules"
+elif [[ "$REL_PATH" =~ ^specs/ ]]; then
+    TARGET_DIR="$CACHE_ROOT/specs"
 else
     # 可能是根目录下的文件（如 INDEX.md），同步到缓存根目录
     TARGET_DIR="$CACHE_ROOT"

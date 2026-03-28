@@ -50,7 +50,7 @@ git diff --cached --stat
   M  internal/sys/router.go
 ```
 
-### 2. 分支合规检查
+### 2. 分支合规检查（自动切换/创建分支）
 
 > 读取 `.claude/settings.local.json` 的 `branchStrategy`，未配置时跳过此步骤。
 
@@ -61,26 +61,48 @@ current_branch = git("branch --show-current")
 if strategy:
     main_branch = strategy["mainBranch"]
     develop_branch = strategy.get("developBranch")
+    branch_from = strategy.get("branchFrom", main_branch)
 
     # 检测活跃需求（开发中/测试中）
     active_reqs = find_active_requirements()
 
-    # 情况 A：在主分支上，且有活跃需求
-    if current_branch == main_branch and active_reqs:
-        # 找到有 branch 字段的活跃需求
-        req_branches = [r for r in active_reqs if r.branch != "-"]
-        if req_branches:
-            print(f"⚠️ 当前在主分支 {main_branch}，检测到活跃需求分支：")
-            for r in req_branches:
-                print(f"  - {r.id} → {r.branch}")
-            print(f"\n建议切换到需求分支后再提交")
-            print(f"继续在 {main_branch} 提交？")
-            # 等待用户确认，用户可选择继续或切换
+    # 判断是否在保护分支上（mainBranch 或 developBranch）
+    on_protected = current_branch in [main_branch, develop_branch]
 
-    # 情况 B：在 develop 分支上（Git Flow）
-    elif current_branch == develop_branch and active_reqs:
-        print(f"⚠️ 当前在 {develop_branch} 分支，功能开发建议在功能分支进行")
-        # 同上，展示可选的需求分支
+    if on_protected and active_reqs:
+        # 只有一个活跃需求 → 自动处理
+        # 多个活跃需求 → 让用户选择
+        if len(active_reqs) == 1:
+            req = active_reqs[0]
+        else:
+            print("检测到多个活跃需求：")
+            for i, r in enumerate(active_reqs):
+                print(f"  {i+1}. {r.id} {r.title}")
+            print(f"  {len(active_reqs)+1}. 跳过，继续在 {current_branch} 提交")
+            # 等待用户选择
+            req = user_choice
+
+        if req:
+            if req.branch and req.branch != "-":
+                # 情况 A：需求已有分支 → 暂存变更，切换到需求分支
+                print(f"🔀 当前在 {current_branch}，自动切换到需求分支：{req.branch}")
+                git("stash")
+                git(f"checkout {req.branch}")
+                git("stash pop")
+            else:
+                # 情况 B：需求无分支 → 创建新分支，更新需求文档的 branch 字段
+                prefix = strategy.get("featurePrefix", "feat/") if req.id.startswith("REQ") else strategy.get("fixPrefix", "fix/")
+                slug = to_kebab_case(translate_to_english(req.title))  # 最多 5 词
+                new_branch = f"{prefix}{req.id}-{slug}"
+
+                print(f"🔀 当前在 {current_branch}，自动创建需求分支：{new_branch}")
+                git(f"checkout -b {new_branch} {branch_from}")
+                # 更新需求文档的 branch 字段
+                update_requirement_meta(req, branch=new_branch)
+
+    elif on_protected and not active_reqs:
+        # 无活跃需求，正常提交（文档、配置等非需求变更）
+        pass
 
     # 情况 C：在 hotfix 分支上
     elif current_branch.startswith(strategy.get("hotfixPrefix", "hotfix/")):
@@ -97,10 +119,11 @@ if strategy:
 
 | 当前分支 | 有活跃需求 | 行为 |
 |---------|-----------|------|
-| mainBranch | 有，且有需求分支 | ⚠️ 警告，建议切换到需求分支，用户可选择继续 |
-| mainBranch | 有，无需求分支 | 正常提交 |
+| mainBranch | 1个，已有需求分支 | 🔀 stash → 切换到需求分支 → stash pop → 提交 |
+| mainBranch | 1个，无需求分支 | 🔀 自动创建需求分支 → 切换 → 提交 |
+| mainBranch | 多个 | 让用户选择需求或跳过 |
 | mainBranch | 无 | 正常提交（文档、配置等非需求变更） |
-| developBranch | 有 | ⚠️ 警告，功能开发应在功能分支 |
+| developBranch | 有 | 同 mainBranch 逻辑 |
 | hotfix/* 分支 | — | 正常提交，自动建议「修复」类型 |
 | feat/REQ-XXX-* | — | 正常提交，自动关联对应 REQ |
 | fix/QUICK-XXX-* | — | 正常提交，自动关联对应 QUICK |

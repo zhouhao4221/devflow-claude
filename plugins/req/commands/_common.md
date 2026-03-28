@@ -7,6 +7,7 @@
 ```
 本地存储（主）: docs/requirements/
 ├── modules/      # 模块文档
+├── specs/        # 规范文档（数据类型、接口契约等，跨仓库共享）
 ├── active/       # 进行中需求
 ├── completed/    # 已完成需求
 └── INDEX.md      # 索引
@@ -56,13 +57,15 @@
 - `/req:upgrade` - 升级 QUICK 为 REQ
 - `/req:modules new` - 创建模块文档
 - `/req:prd-edit` - 编辑 PRD 文档
+- `/req:specs new` - 创建规范文档
+- `/req:specs edit` - 编辑规范文档
 
-不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:prd`、`/req:changelog`、`/req:commit`
+不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:specs`（列表/show）、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:prd`、`/req:changelog`、`/req:commit`
 
 同步配置：
 - Hook 脚本：`scripts/sync-cache.sh`
 - 触发条件：**Write 或 Edit 工具**操作 `docs/requirements/` 目录下的文件后
-- 同步范围：REQ-XXX、QUICK-XXX 需求文档、模块文档（modules/）及 PRD.md，不含 INDEX.md、template.md
+- 同步范围：REQ-XXX、QUICK-XXX 需求文档、模块文档（modules/）、规范文档（specs/）及 PRD.md，不含 INDEX.md、template.md
 - **执行方式**：静默自动执行，仅输出同步状态提示
 
 **重要原则**：
