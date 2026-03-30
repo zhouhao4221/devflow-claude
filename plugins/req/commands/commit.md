@@ -29,6 +29,8 @@ description: 规范提交 - 生成 Conventional Commits 格式的 Git 提交
 
 **本步骤必须在 git add 之前执行。** 读取 `.claude/settings.local.json` 的 `branchStrategy`，未配置时跳过本步骤。
 
+**🚫 核心规则：保护分支上严格禁止直接提交，必须先切换到功能分支。**
+
 **执行动作：**
 
 1. 读取当前分支：`git branch --show-current`
@@ -41,20 +43,30 @@ description: 规范提交 - 生成 Conventional Commits 格式的 Git 提交
 | 当前分支 == `developBranch`（如 `develop`） | **是** |
 | 其他分支（`feat/*`、`fix/*`、`hotfix/*` 等） | 否，跳到步骤 2 |
 
-4. **如果在保护分支上**，扫描活跃需求（状态为「开发中」或「测试中」）：
+4. **如果在保护分支上 → 禁止提交，必须切换分支**：
 
-   - **无活跃需求** → 跳到步骤 2，正常提交
-   - **有 1 个活跃需求** → 自动执行分支切换（见下方）
-   - **有多个活跃需求** → 展示列表让用户选择：
+   先扫描活跃需求（状态为「开发中」或「测试中」）：
+
+   - **有 1 个活跃需求** → 自动切换到该需求分支（见下方步骤 5）
+   - **有多个活跃需求** → 展示列表让用户选择（无"跳过"选项）：
      ```
-     🔀 当前在保护分支 <current_branch>，检测到活跃需求：
+     🚫 当前在保护分支 <current_branch>，不允许直接提交。请选择需求分支：
 
        1. REQ-001 用户积分规则管理
        2. REQ-002 订单状态流转
-       3. 跳过，继续在 <current_branch> 提交
 
      请选择：
      ```
+   - **无活跃需求** → 拒绝提交，提示用户先创建分支：
+     ```
+     🚫 当前在保护分支 <current_branch>，不允许直接提交。
+
+     💡 请先创建功能分支：
+       git checkout -b <分支名>
+     或通过需求创建分支：
+       /req:new → /req:dev
+     ```
+     **终止流程，不执行后续步骤。**
 
 5. **切换/创建分支**（用户选择需求后，或只有一个活跃需求时自动执行）：
 
@@ -83,12 +95,12 @@ description: 规范提交 - 生成 Conventional Commits 格式的 Git 提交
 |---------|-----------|------|
 | `main`（mainBranch） | 1个，已有需求分支 | 🔀 stash → 切换到需求分支 → stash pop |
 | `main`（mainBranch） | 1个，无需求分支 | 🔀 stash → 创建需求分支 → stash pop |
-| `main`（mainBranch） | 多个 | 让用户选择需求或跳过 |
-| `main`（mainBranch） | 无 | 正常继续 |
+| `main`（mainBranch） | 多个 | 让用户选择需求（无跳过选项） |
+| `main`（mainBranch） | 无 | 🚫 拒绝提交，提示创建分支 |
 | `develop`（developBranch） | 1个，已有需求分支 | 🔀 stash → 切换到需求分支 → stash pop |
 | `develop`（developBranch） | 1个，无需求分支 | 🔀 stash → 创建需求分支 → stash pop |
-| `develop`（developBranch） | 多个 | 让用户选择需求或跳过 |
-| `develop`（developBranch） | 无 | 正常继续 |
+| `develop`（developBranch） | 多个 | 让用户选择需求（无跳过选项） |
+| `develop`（developBranch） | 无 | 🚫 拒绝提交，提示创建分支 |
 | hotfix/* 分支 | — | 正常继续，自动建议「修复」类型 |
 | feat/REQ-XXX-* | — | 正常继续，自动关联对应 REQ |
 | fix/QUICK-XXX-* | — | 正常继续，自动关联对应 QUICK |
