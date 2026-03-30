@@ -73,6 +73,7 @@ plugins/
 - `/req:new [标题] [--type=后端|前端|全栈]` - 创建新需求
 - `/req:new-quick [标题]` - 创建快速修复（小bug/小功能，有文档记录）
 - `/req:fix <问题描述>` - 轻量修复（无文档，AI 辅助定位 bug，创建修复分支）
+- `/req:do <描述>` - 智能开发（无文档，AI 分析意图，自动选择流程和分支前缀）
 - `/req:split [需求描述]` - 需求拆分分析（只读，给出粒度和拆分建议）
 - `/req:upgrade <QUICK-XXX>` - 将快速修复升级为正式需求
 - `/req:edit` - 编辑需求
@@ -161,7 +162,7 @@ plugins/
 | `/req:specs new` | 创建规范文档 |
 | `/req:specs edit` | 编辑规范文档 |
 
-不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:specs`（列表/show）、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`、`/req:prd`、`/req:changelog`、`/req:commit`、`/req:branch`、`/req:pr`、`/req:fix`
+不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:specs`（列表/show）、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`、`/req:prd`、`/req:changelog`、`/req:commit`、`/req:branch`、`/req:pr`、`/req:fix`、`/req:do`、`/req:review-pr`
 
 **同步范围**：`docs/requirements/` 目录下的 REQ-XXX、QUICK-XXX 需求文档、模块文档（modules/）、规范文档（specs/）及 PRD.md，其他文件（INDEX.md、template.md）不同步。
 

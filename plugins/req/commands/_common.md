@@ -60,7 +60,7 @@
 - `/req:specs new` - 创建规范文档
 - `/req:specs edit` - 编辑规范文档
 
-不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:specs`（列表/show）、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:prd`、`/req:changelog`、`/req:commit`
+不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:specs`（列表/show）、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:prd`、`/req:changelog`、`/req:commit`、`/req:fix`、`/req:do`、`/req:review-pr`
 
 同步配置：
 - Hook 脚本：`scripts/sync-cache.sh`
