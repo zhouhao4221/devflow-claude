@@ -9,6 +9,18 @@ description: 规范提交 - 生成 Conventional Commits 格式的 Git 提交
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
 > 不触发缓存同步。
 
+---
+
+## 🚫 绝对禁止：在保护分支上执行 git commit
+
+**执行本命令时，第一件事是检查当前分支。如果在保护分支上，绝对不允许执行 git add 或 git commit。必须先切换到功能分支。**
+
+保护分支 = `branchStrategy.mainBranch`（如 main/master）或 `branchStrategy.developBranch`（如 develop）。
+
+未配置 `branchStrategy` 时，不做分支检查。
+
+---
+
 ## 命令格式
 
 ```
@@ -23,87 +35,58 @@ description: 规范提交 - 生成 Conventional Commits 格式的 Git 提交
 
 ## 执行流程
 
-> **⚠️ 重要：步骤 1（分支检查）必须最先执行，在任何 git add / git commit 之前完成。**
+### 1. 分支检查（在任何 git 操作之前）
 
-### 1. 🔀 分支保护检查（最高优先级，第一步执行）
+读取 `.claude/settings.local.json` 的 `branchStrategy`，未配置时跳过。
 
-**本步骤必须在 git add 之前执行。** 读取 `.claude/settings.local.json` 的 `branchStrategy`，未配置时跳过本步骤。
+```bash
+CURRENT=$(git branch --show-current)
+```
 
-**🚫 核心规则：保护分支上严格禁止直接提交，必须先切换到功能分支。**
+**判断：当前分支是否 == mainBranch 或 == developBranch？**
 
-**执行动作：**
+- **否（feat/*、fix/*、hotfix/* 等）** → 当前分支是安全的，直接跳到步骤 2 正常提交。
+- **是** → 当前在保护分支，**禁止提交**，执行以下操作：
 
-1. 读取当前分支：`git branch --show-current`
-2. 读取策略配置中的 `mainBranch`、`developBranch`、`branchFrom`
-3. **判断当前分支是否为保护分支**：
+**保护分支处理流程：**
 
-| 条件 | 是否保护分支 |
-|------|------------|
-| 当前分支 == `mainBranch`（如 `main`、`master`） | **是** |
-| 当前分支 == `developBranch`（如 `develop`） | **是** |
-| 其他分支（`feat/*`、`fix/*`、`hotfix/*` 等） | 否，跳到步骤 2 |
+扫描活跃需求（状态为「开发中」或「测试中」）。
 
-4. **如果在保护分支上 → 禁止提交，必须切换分支**：
+**有 1 个活跃需求** → 自动为该需求切换/创建分支：
 
-   先扫描活跃需求（状态为「开发中」或「测试中」）：
+```
+🚫 当前在保护分支 <CURRENT>，不允许直接提交。
+🔀 检测到活跃需求 <REQ-ID>，自动切换分支...
+```
 
-   - **有 1 个活跃需求** → 自动切换到该需求分支（见下方步骤 5）
-   - **有多个活跃需求** → 展示列表让用户选择（无"跳过"选项）：
-     ```
-     🚫 当前在保护分支 <current_branch>，不允许直接提交。请选择需求分支：
+- 需求有 branch 字段 → `git stash` → `git checkout <branch>` → `git stash pop`
+- 需求无 branch 字段 → `git stash` → `git checkout -b <新分支> <branchFrom>` → `git stash pop` → 更新需求文档 branch 字段
 
-       1. REQ-001 用户积分规则管理
-       2. REQ-002 订单状态流转
+**有多个活跃需求** → 列出让用户选择（**没有跳过选项**）：
 
-     请选择：
-     ```
-   - **无活跃需求** → 拒绝提交，提示用户先创建分支：
-     ```
-     🚫 当前在保护分支 <current_branch>，不允许直接提交。
+```
+🚫 当前在保护分支 <CURRENT>，不允许直接提交。请选择需求：
 
-     💡 请先创建功能分支：
-       git checkout -b <分支名>
-     或通过需求创建分支：
-       /req:new → /req:dev
-     ```
-     **终止流程，不执行后续步骤。**
+  1. REQ-001 用户积分规则管理
+  2. REQ-002 订单状态流转
 
-5. **切换/创建分支**（用户选择需求后，或只有一个活跃需求时自动执行）：
+请选择：
+```
 
-   **需求已有 branch 字段（非空且非 `-`）→ 切换到已有分支：**
-   ```bash
-   git stash
-   git checkout <req.branch>
-   git stash pop
-   ```
-   输出：`🔀 已从 <current_branch> 切换到 <req.branch>`
+选择后同上切换/创建分支。
 
-   **需求无 branch 字段（为 `-` 或缺失）→ 创建新分支：**
-   ```bash
-   # 分支命名：<prefix><REQ-ID>-<english-slug>
-   # 例：feat/REQ-001-user-points、fix/QUICK-003-login-error
-   git stash
-   git checkout -b <new_branch> <branchFrom>
-   git stash pop
-   # 更新需求文档的 branch 字段为 <new_branch>
-   ```
-   输出：`🔀 已从 <current_branch> 创建并切换到 <new_branch>`
+**无活跃需求** → **终止命令，不执行任何 git 操作**：
 
-**各场景行为总结：**
+```
+🚫 当前在保护分支 <CURRENT>，不允许直接提交。
 
-| 当前分支 | 有活跃需求 | 行为 |
-|---------|-----------|------|
-| `main`（mainBranch） | 1个，已有需求分支 | 🔀 stash → 切换到需求分支 → stash pop |
-| `main`（mainBranch） | 1个，无需求分支 | 🔀 stash → 创建需求分支 → stash pop |
-| `main`（mainBranch） | 多个 | 让用户选择需求（无跳过选项） |
-| `main`（mainBranch） | 无 | 🚫 拒绝提交，提示创建分支 |
-| `develop`（developBranch） | 1个，已有需求分支 | 🔀 stash → 切换到需求分支 → stash pop |
-| `develop`（developBranch） | 1个，无需求分支 | 🔀 stash → 创建需求分支 → stash pop |
-| `develop`（developBranch） | 多个 | 让用户选择需求（无跳过选项） |
-| `develop`（developBranch） | 无 | 🚫 拒绝提交，提示创建分支 |
-| hotfix/* 分支 | — | 正常继续，自动建议「修复」类型 |
-| feat/REQ-XXX-* | — | 正常继续，自动关联对应 REQ |
-| fix/QUICK-XXX-* | — | 正常继续，自动关联对应 QUICK |
+💡 请先创建功能分支：
+  git checkout -b <分支名>
+或通过需求创建分支：
+  /req:new → /req:dev
+```
+
+分支名规则：`<featurePrefix>REQ-XXX-<english-slug>` 或 `<fixPrefix>QUICK-XXX-<english-slug>`
 
 ### 2. 检查工作区状态
 
