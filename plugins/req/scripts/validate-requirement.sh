@@ -35,7 +35,7 @@ if [[ "$FILENAME" =~ ^REQ-[0-9]+ ]]; then
     grep -q "## 二、功能清单" "$FILE_PATH" || MISSING="$MISSING\n  - 二、功能清单"
     grep -q "## 三、业务规则" "$FILE_PATH" || MISSING="$MISSING\n  - 三、业务规则"
     grep -q "## 四、使用场景" "$FILE_PATH" || MISSING="$MISSING\n  - 四、使用场景"
-    grep -q "## 五、API 设计" "$FILE_PATH" || MISSING="$MISSING\n  - 五、API 设计"
+    grep -q "## 五、接口需求" "$FILE_PATH" || MISSING="$MISSING\n  - 五、接口需求"
     grep -q "## 六、测试要点" "$FILE_PATH" || MISSING="$MISSING\n  - 六、测试要点"
 
     # 流程章节（七 ~ 九）

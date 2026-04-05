@@ -184,7 +184,9 @@ git rev-parse --verify origin/develop &>/dev/null
 
 #### 5. 写入配置
 
-将 `branchStrategy` 写入 `.claude/settings.local.json`（合并已有配置）。
+**必须写入 `.claude/settings.local.json` 的 `branchStrategy` 字段**（与 `requirementProject`、`requirementRole` 同一文件）。
+
+⚠️ **禁止**创建独立的 `branchStrategy.json` 或其他文件。读取已有 `settings.local.json` 内容，合并 `branchStrategy` 字段后写回。
 
 ```
 ✅ 分支策略已配置！

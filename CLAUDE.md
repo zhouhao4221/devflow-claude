@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-这是一个 Claude Code 插件工具集（dev-workflow），包含多个开发流程插件。通过 marketplace.json 统一管理。
+这是一个 Claude Code 插件工具集（aiforge），包含多个开发流程插件。通过 marketplace.json 统一管理。
 
 ## 架构
 
@@ -328,7 +328,7 @@ REQ 模板分为三个区域，在不同阶段填充：
 
 | 区域 | 章节 | 填充阶段 | 填充方式 |
 |------|------|---------|---------|
-| 需求定义 | 一~六（需求描述、功能清单、业务规则、使用场景、API 设计、测试要点） | `/req:new` | 用户 + AI |
+| 需求定义 | 一~六（需求描述、功能清单、业务规则、使用场景、接口需求、测试要点） | `/req:new` | AI 提问 + 生成 |
 | 流程记录 | 七~九（评审记录、变更记录、关联信息） | 各命令自动 | 自动 |
 | 实现方案 | 十（数据模型、文件改动清单、实现步骤） | `/req:dev` | AI 分析代码后生成 |
 

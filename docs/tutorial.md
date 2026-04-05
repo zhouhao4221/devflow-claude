@@ -15,7 +15,7 @@
 claude plugins marketplace add https://github.com/zhouhao4221/requirement-workflow-plugin
 
 # 2. 从 marketplace 安装插件
-claude plugins install req@dev-workflow
+claude plugins install req@aiforge
 
 # 验证安装
 claude plugins list
@@ -173,7 +173,7 @@ AI 会引导你逐章完善需求文档：
 | 二、功能清单 | 可勾选的功能点列表 | 确认功能范围 |
 | 三、业务规则 | 校验规则、状态转换、权限 | 补充业务细节 |
 | 四、使用场景 | 角色、流程、异常处理 | 描述典型操作流程 |
-| 五、API 设计 | 接口路径、方法、说明 | 确认接口设计 |
+| 五、接口需求 | 接口能力、输入输出、业务语义 | 确认接口需求 |
 | 六、测试要点 | 需要验证的场景 | 补充测试关注点 |
 
 完成后生成 `docs/requirements/active/REQ-001-用户积分规则管理.md`。
@@ -244,8 +244,9 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
     ↓
 生成实现方案（Plan Mode）
     ├── 10.1 数据模型
-    ├── 10.2 文件改动清单（按 CLAUDE.md 分层架构列出）
-    └── 10.3 实现步骤（按 CLAUDE.md 分层顺序拆解）
+    ├── 10.2 API 设计（基于接口需求 + 项目代码生成）
+    ├── 10.3 文件改动清单（按 CLAUDE.md 分层架构列出）
+    └── 10.4 实现步骤（按 CLAUDE.md 分层顺序拆解）
     ↓
 确认方案 → 状态改为「开发中」
     ↓

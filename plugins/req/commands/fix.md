@@ -84,7 +84,7 @@ matched_reqs = match_index(index, keywords)
 #   未命中 → 跳过，不额外消耗
 if matched_reqs:
     for req in matched_reqs[:2]:  # 最多读 2 个
-        file_list = read_section(req, "10.2 文件改动清单")
+        file_list = read_section(req, "10.3 文件改动清单")
 ```
 
 **命中时展示**：

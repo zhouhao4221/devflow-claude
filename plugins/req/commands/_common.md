@@ -2,6 +2,39 @@
 
 > 此文档定义所有命令共用的逻辑，各命令直接引用，避免重复。
 
+## settings.local.json 写入规范
+
+所有插件配置统一存���在 `.claude/settings.local.json` 中。
+
+**写入规则（强制）**：
+
+1. **唯一配置文件**：所有配置���`requirementProject`、`requirementRole`、`branchStrategy` 等）���须写入 `.claude/settings.local.json`，**禁止**创建独立配置文件（如 `branchStrategy.json`、`requirement-config.json` 等）
+2. **合并写入**：先读取已有 `settings.local.json` 内容，���并需要更新的字段后写回，**不得覆盖已有字段**
+3. **目录检查**：`.claude/` 目录不存在时先创建
+
+```python
+# 正确写法
+import json, os
+
+path = ".claude/settings.local.json"
+os.makedirs(".claude", exist_ok=True)
+
+# 读取已有内容
+existing = {}
+if os.path.exists(path):
+    with open(path) as f:
+        existing = json.load(f)
+
+# 合并更新
+existing["branchStrategy"] = { ... }  # 只更新需要的字段
+
+# 写回
+with open(path, "w") as f:
+    json.dump(existing, f, indent=2, ensure_ascii=False)
+```
+
+---
+
 ## 存储路径解析
 
 ```
@@ -298,7 +331,7 @@ PreToolUse Hook 在以下操作执行前自动弹出原生确认对话框：
 |------|--------------|-----------|
 | `/req:dev` | 分层架构、目录结构 | 无法生成准确的实现方案和文件清单 |
 | `/req:test`、`/req:test_new` | 测试规范、测试目录 | 无法定位测试文件和生成测试代码 |
-| `/req:new`（后端/全栈类型） | API 风格 | 无法生成准确的 API 设计章节 |
+| `/req:new`（后端/全栈类型） | API 风格 | 无法生成准确的接口需求章节 |
 
 ### 检查规则
 
