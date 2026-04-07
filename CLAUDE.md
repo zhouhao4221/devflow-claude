@@ -116,6 +116,7 @@ plugins/
 **版本管理命令：**
 - `/req:commit [消息]` - 规范提交，自动关联需求编号，检查分支合规性（readonly 可用）
 - `/req:changelog <version> [--from=<tag|commit>] [--to=<tag|commit>]` - 生成版本升级说明（readonly 可用）
+- `/req:release <version> [--from=<tag>] [--to=<ref>]` - 颁布版本：合并 SQL、生成回滚、调用 changelog、打 tag、创建 Gitea/GitHub Release（readonly 可用）
 
 **项目管理命令（全局缓存模式）：**
 - `/req:init <project-name>` - 初始化项目，创建全局缓存
@@ -162,7 +163,7 @@ plugins/
 | `/req:specs new` | 创建规范文档 |
 | `/req:specs edit` | 编辑规范文档 |
 
-不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:specs`（列表/show）、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`、`/req:prd`、`/req:changelog`、`/req:commit`、`/req:branch`、`/req:pr`、`/req:fix`、`/req:do`、`/req:review-pr`
+不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:specs`（列表/show）、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:update-template`、`/req:prd`、`/req:changelog`、`/req:release`、`/req:commit`、`/req:branch`、`/req:pr`、`/req:fix`、`/req:do`、`/req:review-pr`
 
 **同步范围**：`docs/requirements/` 目录下的 REQ-XXX、QUICK-XXX 需求文档、模块文档（modules/）、规范文档（specs/）及 PRD.md，其他文件（INDEX.md、template.md）不同步。
 
