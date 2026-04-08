@@ -269,13 +269,28 @@ DROP TABLE IF EXISTS user_point_logs;
 
 2. **创建 PR：develop → main**
 
-   根据 `repoType` 调用相应接口（复用 `/req:pr` 的创建逻辑）：
+   **⚠️ 复用 PR 前必须检查状态**：
+
+   ```bash
+   # Gitea 示例：查询 develop→main 的 PR，必须过滤 state=open
+   curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls?state=open&head=${OWNER}:${develop_branch}&base=${main_branch}" \
+     -H "Authorization: token ${TOKEN}"
+   ```
+
+   判定规则：
+   - 查询结果中有 `state == "open"` 的 PR → 复用（确认 head 指向最新 develop commit）
+   - 查询结果为空，或只有 `merged`/`closed` 状态的 PR → **必须新建**
+   - **绝不能复用已 merged/closed 的 PR 编号**
+
+   根据 `repoType` 调用相应接口：
    - `gitea` → Gitea API
    - `github` → `gh pr create`
    - `other` → 输出手动命令后**终止命令**
 
    PR 标题：`chore(release): <version>`
    PR Body：包含本次发布的需求清单 + changelog 正文摘要 + 「合并后将自动在 {main_branch} 上创建 {version} 预发布」提示。
+
+   > **提交顺序关键**：必须先完成步骤 1（提交产物到 develop 并 push），再创建/复用 PR。这样 PR 的 head 就包含 changelog，合并后主分支就有 changelog，不会出现步骤 4 的 "changelog 不存在" 错误。
 
 3. **等待用户确认 PR 合并完成**
 
@@ -298,7 +313,15 @@ DROP TABLE IF EXISTS user_point_logs;
    git pull --ff-only origin <main_branch>
    ```
 
-   验证 PR 的合并提交已进入主分支（通过检查 `docs/changelogs/<version>.md` 是否存在于当前 HEAD）。若未检测到则警告并再次等待用户确认。
+   验证 PR 的合并提交已进入主分支：
+   ```bash
+   test -f docs/changelogs/<version>.md
+   ```
+
+   若文件不存在说明 PR 未真正合并或合并的是旧版本（例如复用了已合并 PR），此时：
+   - **不得**尝试 `git checkout develop -- docs/changelogs/<version>.md` 这种补丁式操作
+   - **不得**直接 push master
+   - 警告用户 PR 状态异常，回到步骤 2 重新创建新 PR，再次等待合并确认
 
 5. **继续执行步骤 9（打 tag）和步骤 10（创建 Release）**，此时：
    - tag 创建在 `main_branch` 的 HEAD 上
@@ -307,6 +330,17 @@ DROP TABLE IF EXISTS user_point_logs;
 > 对于 `flow_mode == "direct"`，跳过本步骤，直接进入步骤 9。
 
 ### 9. 创建 Git Tag
+
+**必须确认当前在正确的分支 HEAD 上**：
+
+```bash
+# tag 应该打在 tag_target 分支上（direct 模式 = 当前分支，cross-branch 模式 = main_branch）
+CURRENT=$(git branch --show-current)
+if [ "$CURRENT" != "$tag_target" ]; then
+    echo "❌ 当前分支 $CURRENT ≠ 预期 tag 目标 $tag_target，终止"
+    exit 1
+fi
+```
 
 ```bash
 TAG_MESSAGE="Release <version>
@@ -318,11 +352,16 @@ Includes:
 See docs/changelogs/<version>.md for full notes."
 
 git tag -a <version> -m "$TAG_MESSAGE"
+
+# 立即 push tag，避免 Gitea Release API 在没有 tag 时使用 target_commitish 指向错误分支
+git push origin <version>
 ```
 
-**通过 PreToolUse Hook** 自动弹出原生确认（已有 Bash 拦截机制覆盖 git 操作）。
+**`tag_target` 定义**：
+- `direct` 模式：`current_branch`（main 或 release/*）
+- `cross-branch` 模式：`main_branch`
 
-**不自动 push**，最终报告中提示用户执行 `git push origin <version>`。
+**为什么先 push tag**：Gitea/GitHub 的 Release API 在 tag 不存在时会用 `target_commitish` 现场创建 tag。如果 `target_commitish` 默认为默认分支（可能是 develop），tag 就被打错。先推已存在的 tag，Release API 会直接引用，不再创建。
 
 ### 10. 创建 Gitea / GitHub Release
 
@@ -348,19 +387,22 @@ REMOTE_URL=$(git remote get-url origin)
 
 **Token 检查**：从 `branchStrategy.giteaToken` 读取，缺失时输出提示并跳过 Release 创建（tag 仍保留）。
 
-**调用 API**：
+**调用 API**（必须显式传 `target_commitish`，防止默认分支错误）：
 ```bash
 curl -s -X POST "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/releases" \
   -H "Authorization: token ${TOKEN}" \
   -H "Content-Type: application/json" \
   -d "{
     \"tag_name\": \"<version>\",
+    \"target_commitish\": \"${tag_target}\",
     \"name\": \"<version>\",
     \"body\": \"<changelog 正文，需 JSON 转义>\",
     \"draft\": false,
     \"prerelease\": ${IS_PRERELEASE}
   }"
 ```
+
+> `target_commitish` 必须是 `tag_target`（跨分支模式下 = `main_branch`）。如果 tag 已经 push，Gitea 会直接引用已有 tag；否则按 `target_commitish` 创建 tag。
 
 **已存在时**（HTTP 409 或查询命中）：提示 Release 已存在，输出链接，不重复创建。
 
