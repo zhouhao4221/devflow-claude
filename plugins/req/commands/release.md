@@ -401,6 +401,21 @@ gh release create <version> \
 
 仅输出可手动执行的命令提示，不调用 API。
 
+### 10.5 切回起始分支
+
+无论 `flow_mode` 是 `direct` 还是 `cross-branch`，在 tag/Release 完成后都要切回命令启动时所在的分支（记录为 `start_branch`）：
+
+```bash
+if [ "$(git branch --show-current)" != "$start_branch" ]; then
+    git checkout "$start_branch"
+fi
+```
+
+**用途**：
+- 跨分支模式下从 `main` 切回 `developBranch`，避免用户残留在主分支上误操作
+- 直接模式下若当前已在 `start_branch`，等同空操作
+- 切换前若工作区有脏改动（不应该发生，但防御性检查），警告并跳过切换
+
 ### 11. 输出最终报告
 
 ```
