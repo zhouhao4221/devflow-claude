@@ -98,18 +98,28 @@ git diff --name-only   # 查看当前修改了哪些文件
 
 选择后同上切换/创建分支。
 
-**未命中任何需求** → **终止命令，不执行任何 git 操作**：
+**未命中任何需求** → **根据 `branchStrategy` 自动生成分支名并切换**：
+
+1. 根据 `git diff --cached --stat` / `git diff --name-only` 的改动文件与内容，推断：
+   - **变更性质**：
+     - 有明确修复语义（修复 bug、错误处理、异常分支等） → 使用 `fixPrefix`（默认 `fix/`）
+     - 其他（新功能、重构、优化等） → 使用 `featurePrefix`（默认 `feat/`）
+   - **英文 slug**：基于改动主题生成 lowercase kebab-case，≤5 词（如 `order-export-approval`、`dept-channel-filter`）
+
+2. 组装分支名：`<prefix><slug>`，若同名分支已存在则追加短 hash 后缀。
+
+3. 展示给用户确认，然后执行：
 
 ```
-🚫 当前在保护分支 <CURRENT>，不允许直接提交。
+🚫 当前在保护分支 <CURRENT>，未关联到活跃需求。
+🔀 根据当前改动自动生成分支：<新分支名>（基于 <branchFrom>）
 
-💡 请先创建功能分支：
-  git checkout -b <分支名>
-或通过需求创建分支：
-  /req:new → /req:dev
+确认使用该分支名？（回车确认 / 输入自定义分支名）
 ```
 
-分支名规则：`<featurePrefix>REQ-XXX-<english-slug>` 或 `<fixPrefix>QUICK-XXX-<english-slug>`
+用户确认后：`git stash` → `git checkout -b <新分支> <branchFrom>` → `git stash pop` → 继续步骤 2。
+
+**注意**：未命中需求时不写入需求文档的 branch 字段（因无需求可写）。需求关联的分支命名仍遵循 `<featurePrefix>REQ-XXX-<english-slug>` / `<fixPrefix>QUICK-XXX-<english-slug>` 规则（见「命中 1 个需求」分支）。
 
 ### 2. 检查工作区状态
 
