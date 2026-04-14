@@ -22,9 +22,15 @@
 #   - /req:init, /req:migrate, /req:test_regression, /req:test_new
 #   - /req:prd
 
-# 从 stdin JSON 中提取文件路径（PostToolUse hook 通过 stdin 传入工具信息）
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+# 文件路径来源：
+#   1. 位置参数（供 update-status.sh 等脚本直接调用）
+#   2. stdin JSON（PostToolUse hook 通过 stdin 传入工具信息）
+if [ -n "$1" ]; then
+    FILE_PATH="$1"
+elif [ ! -t 0 ]; then
+    INPUT=$(cat)
+    FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+fi
 
 # 空路径或文件不存在，静默跳过
 if [ -z "$FILE_PATH" ] || [ ! -f "$FILE_PATH" ]; then
