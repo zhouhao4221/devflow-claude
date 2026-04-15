@@ -233,7 +233,38 @@ gh pr diff ${PR_NUMBER}
 
 ### 5. 提交审查评论到平台
 
-审查完成后，**将报告摘要作为 PR 评论提交**到 Gitea/GitHub，团队成员在网页上可见。
+**上传到 PR 的是精简版，完整报告仅在本地终端展示**。PR 评论是给 reviewer 看的，只保留需要被看到的重点，过程性描述、逐文件列表、低优先级信息留在本地即可。
+
+**精简规则：**
+
+| 保留 | 去除 |
+|------|------|
+| 🔴 阻塞问题（全部） | 🔵 信息级备注 |
+| 🟡 建议中与需求/安全/正确性相关的关键项 | 🟡 风格、命名等次要建议 |
+| 📌 需求文档同步的关键缺失（接口、数据模型、功能清单覆盖不全） | 文件改动清单的双向差异、关联需求列表 |
+| 一行总结：阻塞数、建议数、文档同步项数 | 「审查文件：X 个」「可用操作」等过程信息 |
+
+- 只有"未发现明显问题"结论时，评论就一两句话，不要凑字数。
+- 评论总长度控制在 **300 字以内**为佳，超过时进一步压缩建议项。
+- 文件路径保留绝对路径和行号，便于 reviewer 跳转。
+
+**精简后示例（上传到 PR 的评论内容）：**
+
+```markdown
+### 🤖 AI 审查：1 阻塞 / 1 建议 / 2 项文档待同步
+
+**🔴 阻塞**
+- `internal/user/biz/points.go:45` 积分扣减未检查余额，可能为负 → 加 `if user.Points < amount` 校验
+
+**🟡 关键建议**
+- `internal/user/store/points_store.go:67` 批量操作未使用事务
+
+**📌 需求文档同步（REQ-001）**
+- 新增路由 `POST /api/v1/points/transfer` 未记录（第五章）
+- 文件改动清单（11.3）与实际 diff 不一致
+
+> 完整报告见本地终端输出。
+```
 
 **Gitea**：
 ```bash
@@ -241,21 +272,22 @@ curl -s -X POST "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/issues/${PR_NUMBER}/
   -H "Authorization: token ${TOKEN}" \
   -H "Content-Type: application/json" \
   -d '{
-    "body": "<审查报告 Markdown 格式>"
+    "body": "<精简版审查报告 Markdown>"
   }'
 ```
 
 **GitHub**：
 ```bash
-gh pr review ${PR_NUMBER} --comment --body "<审查报告 Markdown 格式>"
+gh pr review ${PR_NUMBER} --comment --body "<精简版审查报告 Markdown>"
 ```
 
 **repoType = "other"**：仅本地展示，不提交评论。
 
 提交成功后：
 ```
-✅ 审查报告已提交到 PR #42
+✅ 审查报告已提交到 PR #42（精简版）
    🔗 ${PR_URL}
+   📋 完整报告见上方本地输出
 ```
 
 ---
