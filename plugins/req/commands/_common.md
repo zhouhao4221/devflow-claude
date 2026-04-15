@@ -408,3 +408,4 @@ else:
 | 模块 | 所属模块 |
 | 关联需求 | 前后端对应需求 |
 | branch | 开发分支名（/req:dev 首次进入时生成） |
+| issue | 关联的 Git 平台 issue 编号（如 `#123`），无关联为 `-`。`/req:new --from-issue` 自动填充，`/req:done` 读取后可选关闭 |

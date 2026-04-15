@@ -104,10 +104,10 @@ model: claude-sonnet-4-6              # 命令使用的模型
 
 **需求管理命令（编号可选，自动识别当前需求）：**
 - `/req` - 列出所有需求
-- `/req:new [标题] [--type=后端|前端|全栈]` - 创建新需求
-- `/req:new-quick [标题]` - 创建快速修复（小bug/小功能，有文档记录）
+- `/req:new [标题] [--type=后端|前端|全栈] [--from-issue=#N]` - 创建新需求，支持从 GitHub/Gitea issue 导入
+- `/req:new-quick [标题] [--from-issue=#N]` - 创建快速修复（小bug/小功能，有文档记录）
 - `/req:fix <问题描述>` - 轻量修复（无文档，AI 辅助定位 bug，创建修复分支）
-- `/req:do <描述>` - 智能开发（无文档，AI 分析意图，自动选择流程和分支前缀）
+- `/req:do <描述> [--from-issue=#N]` - 智能开发（无文档，AI 分析意图，自动选择流程和分支前缀）
 - `/req:split [需求描述]` - 需求拆分分析（只读，给出粒度和拆分建议）
 - `/req:upgrade <QUICK-XXX>` - 将快速修复升级为正式需求
 - `/req:edit` - 编辑需求
@@ -145,6 +145,7 @@ model: claude-sonnet-4-6              # 命令使用的模型
 - `/req:pr [REQ-XXX]` - 创建 PR，根据仓库类型自动调用 Gitea API / gh CLI（readonly 可用）
 - `/req:review-pr` - 查看 PR 状态
 - `/req:review-pr review` - AI 代码审查，提交评论到 Gitea/GitHub
+- `/req:review-pr fetch-comments` - 拉取 PR 评论，AI 生成修改清单并应用到代码
 - `/req:review-pr merge` - 合并 PR，自动清理分支
 
 **版本管理命令：**
