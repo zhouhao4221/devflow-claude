@@ -1,7 +1,7 @@
 ---
 description: 快速修复 - 创建小bug修复或小功能的快速需求
-argument-hint: "[标题] [--module=模块名]"
-allowed-tools: Read, Write, Edit, Glob, Grep
+argument-hint: "[标题] [--module=模块名] [--from-issue=#编号]"
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(gh:*, curl:*)
 ---
 
 # 快速修复需求
@@ -64,6 +64,15 @@ CACHE_MAX=$(ls $CACHE_ACTIVE/ $CACHE_COMPLETED/ 2>/dev/null | grep -oE 'QUICK-[0
 MAX_NUM=$(echo -e "$LOCAL_MAX\n$CACHE_MAX" | sort -t'-' -k2 -n | tail -1)
 ```
 
+### 1.5 （可选）从 issue 导入
+
+若命令带 `--from-issue=#N`，先拉取 issue（Gitea API / `gh issue view`）：
+- issue 标题作为默认标题
+- issue 正文作为「问题/需求描述」的初始输入
+- 元信息 `issue` 字段填 `#N`（否则填 `-`）
+
+`repoType` 为 `other` 或未配置时提示并退出。
+
 ### 2. 收集基本信息
 
 如果未提供标题，询问用户：
@@ -108,6 +117,7 @@ MAX_NUM=$(echo -e "$LOCAL_MAX\n$CACHE_MAX" | sort -t'-' -k2 -n | tail -1)
 **初始化内容：**
 - 填充元信息（编号、标题、类型、状态=草稿、日期）
 - **模块字段设为「快速修复」**
+- `issue` 字段：从 issue 导入时填 `#N`，否则填 `-`
 - 生命周期勾选「草稿」
 
 **步骤 4.2：同步到全局缓存**

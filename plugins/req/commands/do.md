@@ -1,7 +1,7 @@
 ---
 description: 智能开发 - AI 分析意图，自动选择流程，生成方案并执行
-argument-hint: "<描述>"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*)
+argument-hint: "<描述> [--from-issue=#编号]"
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 ---
 
 # 智能开发
@@ -14,7 +14,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*)
 ## 命令格式
 
 ```
-/req:do <描述>
+/req:do <描述> [--from-issue=#编号]
 ```
 
 示例：
@@ -23,10 +23,17 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*)
 - `/req:do 升级 Go 到 1.23`
 - `/req:do 统一错误码格式`
 - `/req:do 给商品列表加个搜索功能`
+- `/req:do --from-issue=#42` - 从 issue 读取描述后分析
 
 ---
 
 ## 执行流程
+
+### 0. （可选）从 issue 读取描述
+
+若命令带 `--from-issue=#N`，先拉取 issue（Gitea API / `gh issue view`），把 issue 标题 + 正文拼成用户描述传入步骤 1。`repoType` 为 `other` 或未配置时，提示「请先 `/req:branch init`」并退出。
+
+本命令不创建需求文档，因此**不写入 `issue` 字段**；若需要追踪关联请改用 `/req:new-quick --from-issue` 或 `/req:new --from-issue`。
 
 ### 1. AI 分析意图
 

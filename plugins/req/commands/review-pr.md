@@ -1,7 +1,7 @@
 ---
 description: PR 审查与合并 - AI 代码审查、提交评论、合并 PR
-argument-hint: "[review|merge] [PR-ID]"
-allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, curl:*)
+argument-hint: "[review|merge|fetch-comments] [PR-ID]"
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 ---
 
 # PR 审查与合并
@@ -23,6 +23,7 @@ allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, curl:*)
 |--------|------|------|
 | (空) | 查看 PR 状态 | `/req:review-pr` |
 | `review` | AI 代码审查 | `/req:review-pr review` |
+| `fetch-comments` | 拉取 PR 评论，AI 生成修改清单并应用 | `/req:review-pr fetch-comments` |
 | `merge` | 合并 PR | `/req:review-pr merge` |
 
 - 省略编号时从当前分支自动匹配需求
@@ -259,6 +260,135 @@ gh pr review ${PR_NUMBER} --comment --body "<审查报告 Markdown 格式>"
 
 ---
 
+## 执行流程（fetch-comments - 拉取评论并修改代码）
+
+> 用途：PR 已被人工或 AI 审查并留下评论，开发者用此子命令拉取评论、让 AI 分析并应用修改。
+
+### 1. 识别需求和 PR
+
+与「查看状态」流程相同（支持从当前分支名反查）。
+
+### 2. 拉取 PR 评论
+
+同时拉取两类评论：
+- **Issue Comments（整体讨论评论）**：针对 PR 整体的讨论
+- **Review Comments（行内评论）**：针对 diff 具体行的评论，含 `path` 和 `position`/`line` 字段
+
+**Gitea**：
+```bash
+# Issue comments
+curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/issues/${PR_NUMBER}/comments" \
+  -H "Authorization: token ${TOKEN}"
+
+# Review comments（行内）
+curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/reviews" \
+  -H "Authorization: token ${TOKEN}"
+# 对每条 review 再拉 review 下的行评论：
+curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/reviews/${REVIEW_ID}/comments" \
+  -H "Authorization: token ${TOKEN}"
+```
+
+**GitHub**：
+```bash
+# Issue comments
+gh api "repos/${OWNER}/${REPO}/issues/${PR_NUMBER}/comments"
+
+# Review comments
+gh api "repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/comments"
+```
+
+**repoType = "other"**：提示不支持，结束。
+
+### 3. 过滤评论
+
+排除以下评论，避免无效循环：
+- 作者为当前 git 用户（`git config user.name` / `git config user.email`）的评论
+- 已 resolved / outdated 状态的行评论（Gitea 字段 `resolved`，GitHub 字段无需过滤，按时间戳排序）
+- AI 自动提交的审查报告（body 以 `📝 AI 代码审查报告` 开头）
+
+可用「上次 fetch-comments 执行时间」作为增量标记（存储在需求文档「开发记录」或 `.claude/settings.local.json` 的 `reviewPrLastFetch` 字段）。**首次执行时拉取全部**。
+
+### 4. 展示评论清单
+
+分组展示，带编号供后续引用：
+
+```
+💬 PR #42 评论（7 条，已过滤 2 条 AI 自提交）
+
+🧵 整体讨论：
+
+  [1] @reviewer-a (2026-04-15 10:21)
+      整体逻辑 OK，但 user_points 表建议加软删除字段，方便回滚。
+
+📍 行内评论：
+
+  [2] @reviewer-b (2026-04-15 10:30)
+      📄 internal/user/biz/points.go:45
+      余额检查应该放在事务开头，现在位置会有并发问题。
+
+  [3] @reviewer-b (2026-04-15 10:32)
+      📄 internal/user/controller/v1/points.go:23
+      这里返回 500 不合适，参数错误应该返回 400。
+```
+
+### 5. AI 分析并生成修改清单
+
+对每条评论：
+1. 读取评论引用的源码位置（使用 Read，范围为评论行的 ±20 行上下文）
+2. 判断评论是否**可执行**（改代码）或**需讨论**（需要人判断）
+3. 生成修改方案
+
+输出格式：
+
+```
+🔧 修改方案
+
+[1] ✅ 可执行 — 加软删除字段
+   📄 internal/user/model/points_record.go
+   📝 在 PointsRecord 结构体追加 `DeletedAt gorm.DeletedAt` 字段，并在 migration SQL 增补列。
+
+[2] ✅ 可执行 — 调整余额校验位置
+   📄 internal/user/biz/points.go:42-50
+   📝 把余额检查从方法末尾移到事务 `tx.Begin()` 之后、`UPDATE` 之前。
+
+[3] ⚠️ 需确认 — 错误码调整
+   📄 internal/user/controller/v1/points.go:23
+   📝 原代码统一返回 500，建议改为 400。**但项目 CLAUDE.md 约定由中间件统一处理 400 错误**，需确认是手工返回还是调中间件。
+
+是否按以上方案执行？（回复序号跳过某项，如 "跳过 3"；或直接回复 y 全部执行）
+```
+
+### 6. 执行修改
+
+用户确认后：
+1. 按方案修改代码（Edit 工具）
+2. 对跳过项不做改动
+3. 对「需确认」项，等用户进一步说明
+
+### 7. 完成提示
+
+```
+✅ 已应用 2 项修改（跳过 1 项待确认）
+
+📝 修改文件：
+- internal/user/model/points_record.go（+2 -0）
+- internal/user/biz/points.go（+5 -3）
+
+💡 下一步：
+- /req:commit        提交修改（建议在 commit message 中引用 PR #42 review）
+- /req:review-pr review   可选：再次 AI 自审查
+```
+
+提交建议的 commit message 格式：
+```
+review: 处理 PR #42 的审查评论
+
+- 加软删除字段 (reviewer-a)
+- 调整余额校验位置到事务开头 (reviewer-b)
+```
+
+---
+
 ## 执行流程（merge - 合并 PR）
 
 ### 1. 前置检查
@@ -385,9 +515,15 @@ gh pr merge ${PR_NUMBER} --<mergeMethod>
     ↓
 /req:pr         创建 PR
     ↓
-/req:review-pr review   AI 审查代码 + 提交评论
+/req:review-pr review          AI 审查代码 + 提交评论
     ↓
-/req:review-pr merge    合并 PR + 清理分支
+（他人/AI 留下评论）
+    ↓
+/req:review-pr fetch-comments  拉取评论 + AI 应用修改
+    ↓
+/req:commit                    提交修改
+    ↓
+/req:review-pr merge           合并 PR + 清理分支
     ↓
 /req:done       归档需求
 ```

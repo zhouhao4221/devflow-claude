@@ -91,6 +91,45 @@ gh pr create --title "feat(REQ-XXX): <标题>" --base <mergeTarget>
 
 **Git Flow + hotfix 分支**：合并到 `main` 和 `develop` 两处，Gitea/GitHub 创建两个 PR，other 输出两组命令。
 
+### 8. 关联 issue 关闭提醒
+
+读取需求文档元信息的 `issue` 字段。若为 `-` 或为空 → 跳过本步。
+
+否则询问用户：
+
+```
+🔗 检测到关联 issue: #123
+   是否关闭该 issue？(y/n)
+```
+
+**用户确认（y）**，按 `repoType` 调用对应 API：
+
+**gitea**：
+```bash
+curl -s -X PATCH "${giteaUrl}/api/v1/repos/${OWNER}/${REPO}/issues/${ISSUE_NUM}" \
+  -H "Authorization: token ${giteaToken}" \
+  -H "Content-Type: application/json" \
+  -d '{"state":"closed"}'
+```
+
+**github**：
+```bash
+gh issue close ${ISSUE_NUM} --comment "Closed by REQ-XXX"
+```
+
+**other**：输出提示让用户手工关闭：
+```
+💡 请手动关闭 issue #123
+```
+
+**用户拒绝（n）**：跳过，不做任何操作。
+
+成功关闭后输出：
+```
+✅ Issue #123 已关闭
+   🔗 ${ISSUE_URL}
+```
+
 ---
 
 ## 与 `/req:release` 的区别

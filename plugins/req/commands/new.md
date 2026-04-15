@@ -1,7 +1,7 @@
 ---
 description: 创建新需求 - 基于模板创建需求文档
-argument-hint: "[标题] [--type=后端|前端|全栈] [--module=模块名]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*)
+argument-hint: "[标题] [--type=后端|前端|全栈] [--module=模块名] [--from-issue=#编号]"
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 ---
 
 # 创建新需求
@@ -13,17 +13,44 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*)
 ## 命令格式
 
 ```
-/req:new [需求标题] [--type=类型] [--module=模块名]
+/req:new [需求标题] [--type=类型] [--module=模块名] [--from-issue=#编号]
 ```
 
 **示例：**
 - `/req:new 用户积分系统` - 交互选择类型和模块
 - `/req:new 用户积分-后端 --type=后端 --module=用户模块`
 - `/req:new 订单优惠券 --type=全栈 --module=订单模块,支付模块`
+- `/req:new --from-issue=#123` - 从 GitHub/Gitea issue 创建，标题/正文作为讨论起点
 
 ---
 
 ## 执行流程
+
+### 0. （可选）从 issue 导入
+
+若命令带 `--from-issue=#N`，先拉取 issue：
+
+**Gitea**：
+```bash
+curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/issues/${N}" \
+  -H "Authorization: token ${TOKEN}"
+```
+
+**GitHub**：
+```bash
+gh issue view ${N} --json title,body,number,url,labels
+```
+
+**repoType = "other" 或未配置**：
+```
+❌ 未配置支持的 Git 平台（需 repoType=github 或 gitea）
+💡 请先执行 /req:branch init 配置
+```
+
+拉取成功后：
+- **默认标题**：issue 标题（用户未传标题时直接采用，传了则以用户标题为准）
+- **issue 字段**：记录 `#N`，稍后写入文档元信息
+- **讨论上下文**：将 issue 正文作为「问题与现状」的初始输入，跳过阶段一的第一个主题追问，直接展示解析结果让用户确认或补充
 
 ### 1. 生成编号
 扫描 active/ 和 completed/ 目录，最大编号 +1 → `REQ-XXX`
@@ -84,8 +111,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*)
 
 1. **严格按模板结构**创建文档，保留所有章节标题和占位内容
 2. 填充元信息（编号、类型、模块、状态=草稿、日期）
-3. 写入 `docs/requirements/active/REQ-XXX-标题.md`
-4. 同步到全局缓存（如已绑定项目）
+3. 若从 issue 导入 → 元信息 `issue` 字段填 `#N`；否则填 `-`
+4. 写入 `docs/requirements/active/REQ-XXX-标题.md`
+5. 同步到全局缓存（如已绑定项目）
 
 **格式约束（强制）：**
 - 章节标题、编号、层级必须与模板完全一致
