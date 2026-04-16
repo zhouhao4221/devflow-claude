@@ -89,12 +89,40 @@ description: |
 
 - "一键修"、"一键修复"、"直接修"、"自动修"、"自动修复"
 - "修完直接发 PR"、"改完自动提交"、"修好就发 PR"
+- "不用确认"、"别问我"、"自动来"、"跑完再说"
 - 显式带 "--auto"
 
 **示例**：
 - "一键修复登录超时" → `/req:fix 登录超时 --auto`
 - "直接修 Excel 导出乱码并发 PR" → `/req:fix Excel 导出乱码 --auto`
 - "自动修 #42" → `/req:fix --from-issue=#42 --auto`
+- "修下登录超时，不用确认" → `/req:fix 登录超时 --auto`
+
+**识别到 `--auto` 意图时，回复必须明确说明能力边界**（让用户知道还会有什么弹框）：
+
+```
+🧠 识别：/req:fix <问题> --auto
+
+⚙️ --auto 会自动跳过：
+  ✓ 修复方案确认
+  ✓ git commit 前的原生确认弹框（通过 .claude/.req-auto marker）
+  ✓ /req:commit 的类型交互式选择（AI 推断为"修复"）
+  ✓ --from-issue 时的关闭 issue 询问
+  ✓ /req:pr 创建后的分支清理询问
+  ✓ 手工串联 commit → push → PR
+
+🔒 无法跳过（Claude Code harness 层，需你本地设置）：
+  - 首次调用 Bash/Write/Edit 的工具权限确认
+  - Plan Mode approval（若你开了 Plan Mode）
+
+🛑 不会跳过（安全红线）：
+  - 保护分支（main/master/develop）上的提交 —— 必须切分支
+  - AI 对代码的实际分析与修改（核心执行，非确认）
+
+开始执行？
+```
+
+若用户话里明确说了"完全不用问我"、"一切自动"这类**强确认**语气，可以省略最后那句"开始执行？"，直接开干。
 
 **不触发**：
 - "这个 bug 怎么修"（提问）
