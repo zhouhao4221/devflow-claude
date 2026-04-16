@@ -185,6 +185,8 @@ model: claude-sonnet-4-6              # 命令使用的模型
 
 - **SessionStart（会话启动时）**：
   - `session-context.sh` - 自动注入当前需求上下文（项目绑定、分支对应的 REQ/QUICK 编号、需求状态、进行中需求总数），省去每次开场手动查询
+    - **未初始化仓库**：输出欢迎引导，提示新用户两步启动（`/req:init` + `/req:branch init`）
+    - **已绑定但未配置分支策略**：在上下文末尾追加 ⚠️ 提示，引导执行 `/req:branch init`
 
 - **PreToolUse（工具调用前）**：
   - `confirm-before-write.sh` - 写入需求文档前弹出确认（timeout: 120s）

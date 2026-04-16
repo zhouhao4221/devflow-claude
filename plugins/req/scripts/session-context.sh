@@ -49,10 +49,28 @@ try:
 except Exception:
     pass
 " 2>/dev/null)
+
+    HAS_BRANCH_STRATEGY=$(python3 -c "
+import json
+try:
+    with open('$SETTINGS_FILE') as f:
+        d = json.load(f)
+    print('1' if d.get('branchStrategy') else '')
+except Exception:
+    pass
+" 2>/dev/null)
 fi
 
-# 未绑定项目，静默退出
+# 未绑定项目 → 输出欢迎引导
 if [ -z "$PROJECT_NAME" ]; then
+    echo "# DevFlow 需求工作流 · 欢迎使用 🎉"
+    echo ""
+    echo "当前仓库尚未初始化。只需两步即可开始："
+    echo ""
+    echo "1. \`/req:init <project-name>\` — 初始化需求项目（创建 \`docs/requirements/\`、生成 PRD、绑定仓库）"
+    echo "2. \`/req:branch init\` — 配置分支策略（GitHub Flow / Git Flow / Trunk-Based）"
+    echo ""
+    echo "💡 完成后即可 \`/req:new <标题>\` 创建第一个需求。输入 \`/req:help\` 查看完整教程。"
     exit 0
 fi
 
@@ -132,5 +150,11 @@ else
 fi
 
 echo "- 进行中需求：$ACTIVE_COUNT 条"
+
+if [ -z "$HAS_BRANCH_STRATEGY" ]; then
+    echo ""
+    echo "⚠️ 尚未配置分支策略，建议执行 \`/req:branch init\` 选择分支模型（GitHub Flow / Git Flow / Trunk-Based）"
+fi
+
 echo ""
 echo "💡 可用命令：\`/req\` 列表 · \`/req:status\` 详情 · \`/req:dev\` 继续开发"
