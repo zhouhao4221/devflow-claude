@@ -106,7 +106,7 @@ model: claude-sonnet-4-6              # 命令使用的模型
 - `/req` - 列出所有需求
 - `/req:new [标题] [--type=后端|前端|全栈] [--from-issue=#N]` - 创建新需求，支持从 GitHub/Gitea issue 导入
 - `/req:new-quick [标题] [--from-issue=#N]` - 创建快速修复（小bug/小功能，有文档记录）
-- `/req:fix <问题描述>` - 轻量修复（无文档，AI 辅助定位 bug，创建修复分支）
+- `/req:fix <问题描述> [--from-issue=#N] [--auto]` - 轻量修复（无文档，AI 辅助定位 bug，创建修复分支，支持从 GitHub/Gitea issue 导入；`--auto` 跳过方案确认并自动串联 commit + PR）
 - `/req:do <描述> [--from-issue=#N]` - 智能开发（无文档，AI 分析意图，自动选择流程和分支前缀）
 - `/req:split [需求描述]` - 需求拆分分析（只读，给出粒度和拆分建议）
 - `/req:upgrade <QUICK-XXX>` - 将快速修复升级为正式需求
@@ -177,6 +177,7 @@ model: claude-sonnet-4-6              # 命令使用的模型
   - `/req:test_regression` - 运行已有自动化测试，生成回归报告
   - `/req:test_new` - 创建新测试用例（UT/API/E2E）
 - `changelog-generator` - 执行 `/req:changelog` 时触发，根据 Git 记录生成版本说明
+- `natural-language-dispatcher` - 用户用自然语言描述操作时触发，映射到对应 `/req:*` 命令（需求新增/修改、修 bug、优化/重构、状态流转、PR 操作等），并识别 issue/PR URL（如 `owner/repo/issues/169`）
 
 ### 钩子
 
@@ -194,6 +195,8 @@ model: claude-sonnet-4-6              # 命令使用的模型
   - `sync-cache.sh` - **强制自动同步**到全局缓存（timeout: 5s，无需用户确认，以本地为准）
 
 **超时策略**：交互型 hook（需等待用户确认）设 120s，非交互型 hook（自动执行）保持 5s。
+
+**auto 模式放行**：两个 PreToolUse confirm hook 会检测项目内 `.claude/.req-auto` 标记文件，若存在且 mtime 在 10 分钟内，直接 `exit 0` 放行不弹确认。由 `/req:fix --auto` 等命令在流程开始时创建、结束时清理，10 分钟 TTL 防止异常退出残留标记长期生效。`.claude/.req-auto` 已加入 `.gitignore`。
 
 **缓存同步触发规则**：
 

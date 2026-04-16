@@ -107,7 +107,9 @@ git push -u origin <branch>
 
 ### 8. 分支清理提示
 
-`deleteBranchAfterMerge != false` 时询问：
+**auto 模式跳过**：若项目内存在 `.claude/.req-auto` 且 mtime 在 10 分钟内（由 `/req:fix --auto` 等上游命令创建），直接跳过本步骤，不询问也不切分支——PR 刚创建还没合并，此时删本地分支不合理，合并后用 `/req:review-pr merge` 自然处理。
+
+非 auto 模式下，`deleteBranchAfterMerge != false` 时询问：
 ```
 是否切回 <target> 并删除本地分支 <branch>？
 ```
