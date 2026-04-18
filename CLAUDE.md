@@ -89,9 +89,10 @@ model: claude-sonnet-4-6              # 命令使用的模型
 - 用户为省钱把默认切到 Sonnet / Haiku，强制 opus 违背用户意图
 - 用户默认一般 ≥ Sonnet，自然满足大多数命令
 
-**显式 haiku 的命令清单**（17 个）：
+**显式 haiku 的命令清单**（18 个）：
 - 查看类：`/req`、`/req:status`、`/req:show`、`/req:prd`、`/req:projects`、`/req:cache`、`/req:use`
 - 归档/同步：`/req:done`、`/req:update-template`
+- 生成类（规则明确）：`/req:changelog`
 - 帮助：`/req:help`、`/api:help`、`/pm:help`
 - 展示入口：`/pm:pm`、`/pm:standup`、`/pm:export`
 - 检索：`/api:api`、`/api:search`
