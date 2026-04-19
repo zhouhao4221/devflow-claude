@@ -21,21 +21,26 @@ fi
 CWD=$(echo "$INPUT" | jq -r '.cwd // empty')
 [ -z "$CWD" ] && CWD=$(pwd)
 
+# 解析仓库根：marker 是仓库级偏好，用户可能从子目录执行 git commit，
+# 直接用 CWD 会漏掉根目录上的 marker。fallback 到 CWD 以兼容非 git 目录。
+REPO_ROOT=$(git -C "$CWD" rev-parse --show-toplevel 2>/dev/null)
+[ -z "$REPO_ROOT" ] && REPO_ROOT="$CWD"
+
 # 确认开关：项目内 .claude/.req-confirm-commit 标记文件
 #   - 不存在（默认）→ 全部放行，不弹确认
 #   - 存在           → 走下方原有拦截逻辑（git commit / mv / rm 需求文件）
 #
 # Claude 根据用户自然语言意图维护该文件（"开启提交确认" / "不用确认了"），
 # 同时在 auto-memory 中落一条 feedback，无需用户手动编辑 settings.local.json。
-CONFIRM_MARKER="$CWD/.claude/.req-confirm-commit"
+CONFIRM_MARKER="$REPO_ROOT/.claude/.req-confirm-commit"
 if [ ! -f "$CONFIRM_MARKER" ]; then
     exit 0
 fi
 
-# --auto 模式放行：项目内存在 .claude/.req-auto 且 mtime 在 10 分钟内
+# --auto 模式放行：仓库内存在 .claude/.req-auto 且 mtime 在 10 分钟内
 # 由 /req:fix --auto（未来可能还有其他命令）在流程开始时创建、结束时清理
 # TTL 10 分钟用于防止异常退出后残留标记长期放行
-MARKER="$CWD/.claude/.req-auto"
+MARKER="$REPO_ROOT/.claude/.req-auto"
 if [ -f "$MARKER" ]; then
     NOW=$(date +%s)
     # macOS: stat -f %m; Linux: stat -c %Y
