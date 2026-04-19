@@ -13,16 +13,6 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/confirm-before-write.sh",
-            "timeout": 120
-          }
-        ]
-      },
-      {
         "matcher": "Bash",
         "hooks": [
           {

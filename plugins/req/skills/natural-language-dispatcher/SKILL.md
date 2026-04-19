@@ -9,17 +9,19 @@ description: |
   - Issue 操作：提/建/开 issue、评论讨论、关闭/重开/查看/列出 issue
   - URL 识别：识别 issue/PR 链接并映射到对应命令（如 owner/repo/issues/169、
     owner/repo/pulls/158、https://github.com/owner/repo/pull/1）
+  - 确认偏好：开启/关闭/查询 git commit 前的原生确认弹框（直接维护 marker + memory，不走命令）
   示例："新增需求 用户积分管理"、"修改025需求"、"修个登录超时的 bug"、
   "优化订单查询性能"、"开始开发025"、"025 评审通过"、"完成 025"、"创建 PR"、"审查 PR"、
   "提个 issue 登录超时"、"给 #42 回复 已修复"、"关闭 issue 42"、
-  "修 pipexerp/diciai/issues/169"、"审查 pipexerp/diciai/pulls/158"。
+  "修 pipexerp/diciai/issues/169"、"审查 pipexerp/diciai/pulls/158"、
+  "开启提交确认"、"不用确认了"。
 ---
 
 # 自然语言需求调度器
 
 当用户用自然语言描述需求/开发操作时，解析意图并执行对应的命令流程。
 
-> 本技能只做**意图识别与命令映射**，不自行实现命令逻辑。解析完成后读取 `commands/<command>.md` 按原命令流程执行。
+> 本技能主要做**意图识别与命令映射**，不自行实现命令逻辑——解析完成后读取 `commands/<command>.md` 按原命令流程执行。唯一例外是 §七「确认偏好开关」，该偏好不对应任何 `/req:*` 命令，由本技能直接执行文件动作并更新 memory。
 
 ---
 
@@ -107,7 +109,7 @@ description: |
 
 ⚙️ --auto 会自动跳过：
   ✓ 修复方案确认
-  ✓ git commit 前的原生确认弹框（通过 .claude/.req-auto marker）
+  ✓ git commit 前的原生确认弹框（默认就不存在；若已开启提交确认，通过 .claude/.req-auto marker 放行）
   ✓ /req:commit 的类型交互式选择（AI 推断为"修复"）
   ✓ --from-issue 时的关闭 issue 询问
   ✓ /req:pr 创建后的分支清理询问
@@ -455,6 +457,32 @@ gh pr view --json number 2>/dev/null  # GitHub
 3. **动词 + 需求编号**（无 URL）→ 走 §一~§五 的原有规则
 
 例："修 pipexerp/diciai/issues/169" → 动词"修" + Issue URL → `/req:fix --from-issue=#169`，不再询问其它选项。
+
+---
+
+## 七、确认偏好开关（直接动作，非命令映射）
+
+用户可用自然语言开/关 Bash 原生确认弹框（git commit / mv / rm 需求文件）。本项由 Claude 直接执行文件动作并写入 memory，不走 `/req:*` 命令。
+
+**触发词**：
+
+| 意图 | 关键词 |
+|------|-------|
+| 开启 | "开启提交确认"、"commit 前帮我确认"、"以后 commit 要弹框"、"提交前问我一下" |
+| 关闭 | "关闭提交确认"、"不用确认了"、"别再弹框"、"不要提交确认" |
+| 查询 | "现在弹确认吗"、"提交确认开着吗"、"查看确认状态" |
+
+**执行动作**：
+
+- 开启 → `mkdir -p .claude && touch .claude/.req-confirm-commit`；在 auto-memory 中写入/更新一条 feedback 记录"该用户偏好 git commit 拦截已开启"。
+- 关闭 → `rm -f .claude/.req-confirm-commit`；在 memory 中把对应偏好改为"关闭"或删除该条。
+- 查询 → 直接检查 `.claude/.req-confirm-commit` 是否存在，告知当前状态，不修改任何文件。
+
+**边界**：
+
+- 只影响 Bash 侧 Hook，不拦截 Write/Edit
+- 仅当 req 插件已安装时有效；downstream 项目的 `req` hook 会读取该 marker
+- marker 已加入 `.gitignore`，每台机器独立
 
 ---
 

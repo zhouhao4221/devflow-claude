@@ -281,7 +281,7 @@ else:
 
 ```
 
-展示预览后直接执行提交（Hook 会弹出原生确认对话框）：
+展示预览后直接执行提交（默认直通；仅当项目内存在 `.claude/.req-confirm-commit` marker 时，Hook 才会弹出原生确认对话框——该 marker 由 Claude 按用户自然语言意图维护）：
 
 ```bash
 git commit -m "新功能: 实现部门渠道关联 (REQ-001)"
