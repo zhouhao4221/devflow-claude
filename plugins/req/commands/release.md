@@ -722,7 +722,7 @@ DROP TABLE IF EXISTS user_point_logs;
 
 **实现方式**：直接执行 changelog 命令的核心逻辑（读取 commit、分类、关联需求、写入 `docs/changelogs/<version>.md`），不要求用户重复输入。
 
-若 `docs/changelogs/<version>.md` 已存在 → 通过 Hook 弹出确认对话框。
+若 `docs/changelogs/<version>.md` 已存在 → 直接覆盖（文档写入不再走 Hook 拦截，如需重新生成请在调用 `/req:release` 前手动备份或删除旧文件）。
 
 ### 8.5 跨分支流程（仅 `flow_mode == "cross-branch"`）
 

@@ -251,7 +251,7 @@ AI 按确认的方案修改代码。
 
 #### 4.5.0 建立 auto 标记（跳过 hook 确认）
 
-在 commit/push/PR 前，先创建 `.claude/.req-auto` 标记文件，让 PreToolUse hook（`confirm-before-commit.sh` / `confirm-before-write.sh`）在检测到该文件且 mtime 在 10 分钟内时自动放行，不再弹出原生确认对话框：
+在 commit/push/PR 前，先创建 `.claude/.req-auto` 标记文件，让 PreToolUse hook（`confirm-before-commit.sh`）在检测到该文件且 mtime 在 10 分钟内时自动放行，不再弹出原生确认对话框：
 
 ```bash
 mkdir -p .claude

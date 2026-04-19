@@ -12,6 +12,7 @@ Thumbs.db
 .claude/settings.local.json
 .claude/projects/
 .claude/.req-auto
+.claude/.req-confirm-commit
 
 # Temp files
 *.tmp

@@ -126,26 +126,35 @@ with open(path, "w") as f:
 
 ## 确认操作规范
 
-确认操作通过 **PreToolUse Hook** 自动保障，不依赖文本提示。
+默认**不弹任何原生确认对话框**——命令已通过多轮讨论 / 显式参数 / y/n 完成意图确认，Claude Code 本身也足够稳定，无需再叠加一层打断。用户可按需通过自然语言开启 Bash 侧拦截，**无需手动编辑任何配置文件**。
 
-### Hook 原生确认（自动触发）
+### 开启/关闭拦截（记忆 + marker 文件）
 
-PreToolUse Hook 在以下操作执行前自动弹出原生确认对话框：
+开关由项目内 `.claude/.req-confirm-commit` 标记文件承载。Claude 根据用户自然语言意图维护该文件并在 memory 中落 feedback：
+
+| 用户说 | Claude 动作 |
+|-------|-------------|
+| "以后 git commit 前帮我确认" / "开启提交确认" / "commit 前弹一下" | `mkdir -p .claude && touch .claude/.req-confirm-commit`，保存/更新 feedback memory 记录偏好 |
+| "不用确认了" / "关闭提交确认" / "别再弹框了" | `rm -f .claude/.req-confirm-commit`，更新 memory |
+
+标记文件已加入 `.gitignore`（每台机器独立）。Claude 在新会话首次感知到偏好与 marker 状态不一致时，可按 memory 中的 feedback 自动补 `touch`，用户无需重复交代。
+
+### Hook 原生确认（仅在 marker 存在时生效）
 
 | 操作 | Hook 脚本 | 触发条件 |
 |------|----------|---------|
-| 写入需求文档 | confirm-before-write.sh | Write/Edit 目标为 docs/requirements/ |
-| 覆盖模板 | confirm-before-write.sh | Write/Edit 目标为 templates/ |
-| 覆盖版本说明 | confirm-before-write.sh | Write/Edit 已存在的 changelogs/ 文件 |
 | git commit | confirm-before-commit.sh | Bash 命令包含 git commit |
 | 移动需求文件 | confirm-before-commit.sh | Bash 命令包含 mv ... REQ-/QUICK- |
 | 删除需求文件 | confirm-before-commit.sh | Bash 命令包含 rm ... REQ-/QUICK- |
 
+> `--auto` 模式标记（`.claude/.req-auto`）仍由 `/req:fix --auto` 等流程负责建立/清理；在 marker 启用拦截时它负责让 Hook 放行自动化流水线。
+
 ### 执行规则
 
 1. **展示预览后直接执行** — 不输出"回车继续"等文本确认提示
-2. **Hook 自动拦截** — 关键操作由 Hook 弹出原生对话框，用户在对话框中确认
-3. **需要用户输入的场景仍需等待** — 选择章节编号、选择目标需求、描述修改意图等
+2. **默认直通** — 任何 Write/Edit/Bash 都不走 Hook 原生对话框
+3. **需要用户输入的场景仍需等待** — 选择章节编号、选择目标需求、描述修改意图等由命令层负责
+4. **`/req:done` 等显式 y/n 场景** — 由命令层提示，不依赖 Hook
 
 ## 需求编号生成
 

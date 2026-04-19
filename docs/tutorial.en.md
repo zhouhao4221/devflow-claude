@@ -701,6 +701,8 @@ Pasting a URL without a verb shows a menu to pick the action.
 
 `/req:fix --auto` skips every confirmation and chains commit → push → PR.
 
+> **Preamble**: the req plugin's confirmations are **off by default** — all Write/Edit/Bash calls go through without prompting. Only users who have told Claude (in natural language) to enable commit confirmation — which makes Claude create `.claude/.req-confirm-commit` and save a feedback memory — see native dialogs before `git commit` / `mv` / `rm` on REQ files; for them, `--auto` drops a `.claude/.req-auto` marker so the hook lets those through. **Even with the default setting, `--auto` still helps** — it skips the command-level text prompts (fix-plan confirm, type picker, close-issue question, etc.) and chains the follow-up steps automatically.
+
 **How to trigger**
 
 ```
@@ -718,7 +720,7 @@ Natural-language triggers: `one-shot fix` / `auto fix` / `just fix and open a PR
 | Confirmation | How it's skipped |
 |--------------|------------------|
 | Fix plan confirmation | Built into the command |
-| Native confirm dialog before `git commit` | `.claude/.req-auto` marker (hook lets it through) |
+| Native confirm dialog before `git commit` | Off by default; if you opted in via natural language (so `.claude/.req-confirm-commit` exists), the `.claude/.req-auto` marker lets the hook through |
 | `/req:commit` interactive type picker | AI infers "fix" |
 | `--from-issue` close-issue question | Defaults to close |
 | `/req:pr` post-create branch cleanup question | Defaults to keep |
@@ -736,7 +738,7 @@ Natural-language triggers: `one-shot fix` / `auto fix` / `just fix and open a PR
 
 **Under the hood**
 
-`--auto` creates a `.claude/.req-auto` marker file on start (mtime 10-minute TTL). The PreToolUse confirm hooks check for a valid marker and let the call through without prompting for `git commit` confirmation. The marker is cleaned up at the end of the flow; if the process exits abnormally, the TTL expires and the marker stops allowing passes.
+`--auto` creates a `.claude/.req-auto` marker file on start (mtime 10-minute TTL). With the default setup (no `.claude/.req-confirm-commit` marker) there is no native confirm dialog to begin with, so `.req-auto` is inert. Once a user has asked Claude to enable commit confirmation — creating `.req-confirm-commit` — the hook checks `.req-auto` and lets `git commit` through without prompting while an `--auto` flow is live. The marker is cleaned up at the end of the flow; if the process exits abnormally, the TTL expires and the marker stops allowing passes.
 
 `.claude/.req-auto` is already in `.gitignore` — it won't be committed.
 

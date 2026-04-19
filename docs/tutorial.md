@@ -702,6 +702,8 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 
 `/req:fix --auto` 跳过所有确认交互，自动串联 commit → push → PR。
 
+> **前置说明**：req 插件的确认默认就是**全部直通**。只有曾用自然语言告诉 Claude"开启提交确认"（由 Claude 创建 `.claude/.req-confirm-commit` marker 并写入 memory feedback）的用户，才会看到 `git commit` / `mv` / `rm` REQ 的原生确认弹框；对这部分用户，`--auto` 通过 `.claude/.req-auto` marker 让 Hook 放行。**默认设置下 `--auto` 仍有价值**——它会一并跳过命令层面的文本交互（方案确认、类型选择、issue 关闭询问等）并自动串联后续步骤。
+
 **触发方式**
 
 ```
@@ -719,7 +721,7 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 | 确认点 | 跳过方式 |
 |-------|---------|
 | 修复方案确认 | 命令内置跳过 |
-| `git commit` 前的原生确认弹框 | `.claude/.req-auto` marker（Hook 放行） |
+| `git commit` 前的原生确认弹框 | 默认不存在；若通过自然语言开启（`.claude/.req-confirm-commit` marker），则由 `.claude/.req-auto` marker 让 Hook 放行 |
 | `/req:commit` 的类型交互式选择 | AI 自动推断为「修复」 |
 | `--from-issue` 时的关闭 issue 询问 | 默认关闭 |
 | `/req:pr` 创建后的分支清理询问 | 默认保留 |
@@ -737,7 +739,7 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 
 **底层机制**
 
-`--auto` 启动时创建 `.claude/.req-auto` 标记文件（mtime 10 分钟 TTL）。PreToolUse confirm hook 检测到有效 marker 时直接放行，无需手动确认 `git commit` 弹框。流程结束时清理标记；异常退出时 TTL 自动失效，避免残留长期放行。
+`--auto` 启动时创建 `.claude/.req-auto` 标记文件（mtime 10 分钟 TTL）。默认状态（无 `.claude/.req-confirm-commit` marker）下本就没有原生确认弹框，`.req-auto` 不影响行为；当用户曾让 Claude 开启提交确认（创建了 `.req-confirm-commit` marker）时，`confirm-before-commit.sh` 检测到有效 `.req-auto` 标记直接放行 `git commit` 弹框。流程结束时清理标记；异常退出时 TTL 自动失效，避免残留长期放行。
 
 `.claude/.req-auto` 已加入 `.gitignore`，不会入库。
 
