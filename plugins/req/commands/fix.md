@@ -33,9 +33,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*, mkdir:*,
 
 ### 0. （可选）从 issue 读取问题描述
 
-若命令带 `--from-issue=#N`，按 [_common.md 的 Issue 拉取规范](./_common.md#issue-拉取规范) 拉取 issue，把 issue 标题 + 正文拼成用户问题描述传入步骤 1。
+若命令带 `--from-issue=#N`，按 [_issue.md 的 Issue 拉取规范](./_issue.md#issue-拉取规范) 拉取 issue，把 issue 标题 + 正文拼成用户问题描述传入步骤 1。
 
-本命令不创建需求文档，issue 编号通过**分支名 `-iN` 后缀**持久化（步骤 2.3 创建分支时追加），供 `/req:commit`、步骤 5 关闭 issue 等后续操作识别。参见 [_common.md 的 Issue 与分支关联](./_common.md#issue-与分支提交的关联)。
+本命令不创建需求文档，issue 编号通过**分支名 `-iN` 后缀**持久化（步骤 2.3 创建分支时追加），供 `/req:commit`、步骤 5 关闭 issue 等后续操作识别。参见 [_issue.md 的 Issue 与分支关联](./_issue.md#issue-与分支提交的关联)。
 
 用户同时提供了描述和 `--from-issue` 时，以用户描述为主，issue 内容作为补充上下文。
 
@@ -193,7 +193,7 @@ else:
 
 AI 根据问题描述生成英文 slug（lowercase kebab-case，最多 5 词）。
 
-**有 `--from-issue=#N`**：分支名末尾追加 `-i<N>`（参见 [_common.md 的 Issue 与分支关联](./_common.md#issue-与分支提交的关联)）。
+**有 `--from-issue=#N`**：分支名末尾追加 `-i<N>`（参见 [_issue.md 的 Issue 与分支关联](./_issue.md#issue-与分支提交的关联)）。
 
 ```
 🌿 创建修复分支：fix/login-token-not-cleared-i42
@@ -318,7 +318,7 @@ rm -f .claude/.req-auto
    是否关闭该 issue？(y/n)
 ```
 
-**用户确认（y）**，按 [_common.md 的 Issue 拉取规范](./_common.md#issue-拉取规范) 中的 `repoType` 调用对应 API：
+**用户确认（y）**，按 [_issue.md 的 Issue 拉取规范](./_issue.md#issue-拉取规范) 中的 `repoType` 调用对应 API：
 
 **gitea**：
 ```bash

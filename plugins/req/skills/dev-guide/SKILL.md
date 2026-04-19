@@ -171,7 +171,7 @@ docs/requirements/modules/<模块名>.md
 ### 后端项目方案
 
 > **前置步骤**：读取项目 CLAUDE.md 中的「项目架构」章节，获取分层架构表、目录结构、命名规范。
-> 如 CLAUDE.md 缺少架构信息，输出警告（见 _common.md「CLAUDE.md 架构检查」），仍继续但方案可能不够准确。
+> 如 CLAUDE.md 缺少架构信息，输出警告（见 [_claude-md.md](../../commands/_claude-md.md)），仍继续但方案可能不够准确。
 
 #### 4.1 数据模型（11.1）
 

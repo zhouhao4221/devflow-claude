@@ -9,7 +9,7 @@ model: claude-haiku-4-5-20251001
 
 将插件 `templates/` 目录下的最新模板同步到项目本地 `docs/requirements/`，覆盖旧版本。
 
-> 存储路径规则见 [_common.md](./_common.md)
+> 存储路径规则见 [_storage.md](./_storage.md)
 
 ## 命令格式
 

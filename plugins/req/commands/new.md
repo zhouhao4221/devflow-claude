@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 
 基于模板创建新的需求文档，引导用户完成需求分析。
 
-> 存储路径规则见 [_common.md](./_common.md)
+> 存储路径规则见 [_storage.md](./_storage.md)
 
 ## 命令格式
 
@@ -28,7 +28,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 
 ### 0. （可选）从 issue 导入
 
-若命令带 `--from-issue=#N`，按 [_common.md 的 Issue 拉取规范](./_common.md#issue-拉取规范) 拉取 issue。
+若命令带 `--from-issue=#N`，按 [_issue.md 的 Issue 拉取规范](./_issue.md#issue-拉取规范) 拉取 issue。
 
 拉取成功后：
 - **默认标题**：issue 标题（用户未传标题时直接采用，传了则以用户标题为准）

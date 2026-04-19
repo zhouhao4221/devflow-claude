@@ -414,7 +414,7 @@ git remote get-url origin
 ```bash
 # 获取当前分支对应的 PR 编号
 gh pr view --json number 2>/dev/null  # GitHub
-# 或通过 Gitea API 按 head branch 查询（参考 _common.md 的 Issue 拉取规范）
+# 或通过 Gitea API 按 head branch 查询（参考 _issue.md 的 Issue 拉取规范）
 ```
 
 - **当前分支的 PR 编号 = URL 中的编号** → 可直接执行对应子命令

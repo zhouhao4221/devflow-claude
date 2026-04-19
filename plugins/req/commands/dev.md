@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*)
 
 启动或继续需求开发，先生成实现方案，确认后逐步实现。
 
-> 存储路径规则见 [_common.md](./_common.md)
+> 存储路径规则见 [_storage.md](./_storage.md)
 
 ## 命令格式
 
@@ -59,7 +59,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*)
 ### 2.5 分支管理
 
 > 仅 `primary` 仓库执行，`readonly` 仓库跳过此步骤。
-> 分支策略配置见 [_common.md](./_common.md) 的「分支策略配置」章节。
+> 分支策略配置见 [_branch.md](./_branch.md)。
 
 #### 工作区检查
 
@@ -106,7 +106,7 @@ else:
 2. 拼接分支名（使用策略配置的前缀）：
    - REQ-XXX → `<FEATURE_PREFIX>REQ-XXX-<slug>`（默认 `feat/REQ-XXX-<slug>`）
    - QUICK-XXX → `<FIX_PREFIX>QUICK-XXX-<slug>`（默认 `fix/QUICK-XXX-<slug>`）
-3. 若需求文档元信息 `issue` 字段非 `-` 且非空（如 `#12`），在分支名末尾追加 `-i<N>`（如 `-i12`），参见 [_common.md 的 Issue 与分支关联](./_common.md#issue-与分支提交的关联)
+3. 若需求文档元信息 `issue` 字段非 `-` 且非空（如 `#12`），在分支名末尾追加 `-i<N>`（如 `-i12`），参见 [_issue.md 的 Issue 与分支关联](./_issue.md#issue-与分支提交的关联)
 4. 展示分支名供用户确认（可修改）：
    ```
    将创建开发分支：feat/REQ-001-user-points-i12
@@ -123,7 +123,7 @@ else:
 ### 4. 生成实现方案（Plan Mode）
 
 > **前置**：读取项目 CLAUDE.md 的「项目架构」章节，获取分层架构、目录结构、开发规范。
-> 缺少时发出警告（见 _common.md「CLAUDE.md 架构检查」）。
+> 缺少时发出警告（见 [_claude-md.md](./_claude-md.md)）。
 
 进入 Plan Mode，基于需求文档和 CLAUDE.md 架构信息生成实现方案，填充「十一、实现方案」章节：
 

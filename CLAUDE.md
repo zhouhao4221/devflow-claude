@@ -101,6 +101,8 @@ model: claude-sonnet-4-6              # 命令使用的模型
 
 **allowed-tools 约束**：每个命令仅允许其必需的工具集，只读命令不能触发 Write/Edit/Bash，防止误操作。
 
+**Token 节约**：新增/修改命令前，参考 [`docs/design/token-optimization.md`](./docs/design/token-optimization.md)。重点规则：单命令文件 < 30 KB；> 50 KB 必须拆主+rationale（参考 `release.md` / `release-rationale.md`）；引用共享 `_*.md` 时尽量指向具体章节而非整个 `_common.md`。
+
 命令通过 `/req` 子命令模式调用：
 
 **需求管理命令（编号可选，自动识别当前需求）：**

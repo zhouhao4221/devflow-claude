@@ -64,7 +64,7 @@ REMOTE=$(git remote get-url origin)
 # 去掉 .git，取最后两段
 ```
 
-解析规则详见 [_common.md 的 OWNER/REPO 解析](./_common.md#ownerrepo-解析)。
+解析规则详见 [_issue.md 的 OWNER/REPO 解析](./_issue.md#ownerrepo-解析)。
 
 ---
 
@@ -83,7 +83,7 @@ if not req_id:
     req_id = m.group(1) if m else None
 ```
 
-命中后读需求文档（复用 [_common.md 存储路径解析](./_common.md#存储路径解析)），提取：元信息的「标题 / 类型 / 模块 / 状态」+「二、功能清单」首段作摘要。
+命中后读需求文档（复用 [_storage.md 存储路径解析](./_storage.md#存储路径解析)），提取：元信息的「标题 / 类型 / 模块 / 状态」+「二、功能清单」首段作摘要。
 
 ### 2.2 标签匹配（fuzzy match live labels）
 
