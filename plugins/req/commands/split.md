@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Grep
 
 纯分析命令，帮助用户在创建需求前判断粒度是否合适，给出拆分或合并建议。
 
-> 粒度规则参考 [_common.md](./_common.md)
+> 粒度规则参考 [_granularity.md](./_granularity.md)
 
 ## 命令格式
 

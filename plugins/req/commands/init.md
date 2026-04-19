@@ -184,7 +184,7 @@ mkdir -p $CACHE_ROOT/templates
 
 ### 7. 绑定当前仓库
 
-> 写入规范见 [_common.md](./_common.md) 的「settings.local.json 写入规范」。
+> 写入规范见 [_storage.md](./_storage.md#settingslocaljson-写入规范)。
 
 读取已有 `.claude/settings.local.json`，合并以下��段后写回（不覆盖已有的 `branchStrategy` 等字段）：
 

@@ -9,7 +9,7 @@ model: claude-haiku-4-5-20251001
 
 标记需求为已完成，归档文档。
 
-> 存储路径和缓存同步规则见 [_common.md](./_common.md)
+> 存储路径和缓存同步规则见 [_storage.md](./_storage.md)
 
 ## 命令格式
 
@@ -93,7 +93,7 @@ gh pr create --title "feat(REQ-XXX): <标题>" --base <mergeTarget>
 
 ### 8. 关联 issue 关闭提醒
 
-按 [_common.md 的 Issue 读取优先级](./_common.md#issue-编号的读取优先级) 获取 issue 编号：先查需求文档元信息 `issue` 字段，若为 `-` 或为空则查分支名 `-iN` 后缀。均未找到 → 跳过本步。
+按 [_issue.md 的 Issue 读取优先级](./_issue.md#issue-编号的读取优先级) 获取 issue 编号：先查需求文档元信息 `issue` 字段，若为 `-` 或为空则查分支名 `-iN` 后缀。均未找到 → 跳过本步。
 
 否则询问用户：
 

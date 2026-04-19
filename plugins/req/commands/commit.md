@@ -246,7 +246,7 @@ else:
 | `构建` | 构建/工具/依赖 | 其他变更 (Others) |
 | `样式` | 代码格式 | 其他变更 (Others) |
 
-**Issue 关联：** 按 [_common.md 的 Issue 读取优先级](./_common.md#issue-编号的读取优先级) 获取 issue 编号：先查需求文档 `issue` 字段，再查分支名 `-iN` 后缀。检测到 issue 编号时，在 commit message 末尾追加 `closes #N`。
+**Issue 关联：** 按 [_issue.md 的 Issue 读取优先级](./_issue.md#issue-编号的读取优先级) 获取 issue 编号：先查需求文档 `issue` 字段，再查分支名 `-iN` 后缀。检测到 issue 编号时，在 commit message 末尾追加 `closes #N`。
 
 **示例：**
 ```

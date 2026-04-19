@@ -9,7 +9,7 @@ model: claude-haiku-4-5-20251001
 
 查看产品需求文档（PRD）的填充情况、各章节完成度、需求追踪统计。
 
-> 存储路径规则见 [_common.md](./_common.md)
+> 存储路径规则见 [_storage.md](./_storage.md)
 
 ## 命令格式
 

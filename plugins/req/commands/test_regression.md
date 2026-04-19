@@ -10,7 +10,7 @@ allowed-tools: Read, Glob, Grep, Bash
 
 运行项目中已存在的自动化测试用例，验证功能正确性。
 
-> 存储路径和缓存同步规则见 [_common.md](./_common.md)
+> 存储路径和缓存同步规则见 [_storage.md](./_storage.md)
 
 ## 命令格式
 

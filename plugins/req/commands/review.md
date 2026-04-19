@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Glob
 
 提交需求评审或记录评审结果。
 
-> 存储路径和缓存同步规则见 [_common.md](./_common.md)
+> 存储路径和缓存同步规则见 [_storage.md](./_storage.md)
 
 ## 命令格式
 

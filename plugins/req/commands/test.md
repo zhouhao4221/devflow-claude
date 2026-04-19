@@ -10,7 +10,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 针对指定需求执行综合测试，包含三个层次：运行已有测试、引导创建新测试、交互验证测试要点。
 
-> 存储路径和缓存同步规则见 [_common.md](./_common.md)
+> 存储路径和缓存同步规则见 [_storage.md](./_storage.md)
 
 ## 命令格式
 

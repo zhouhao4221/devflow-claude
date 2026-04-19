@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 编辑已有需求文档，仅修改内容，不触发开发流程。
 
-> 存储路径和缓存同步规则见 [_common.md](./_common.md)
+> 存储路径和缓存同步规则见 [_storage.md](./_storage.md)
 
 ## 命令格式
 
@@ -70,7 +70,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 - 原 REQ 在 `开发中`/`测试中` 且新功能影响已写代码 → 建议新建，避免范围蔓延
 - 新功能是原需求的自然延伸 → 继续编辑
 
-> 详细规则见 [_common.md](./_common.md) 「已有需求的功能扩展」
+> 详细规则见 [_granularity.md](./_granularity.md) 「已有需求的功能扩展」
 
 ### 4. 状态提示
 

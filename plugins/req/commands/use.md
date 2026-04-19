@@ -52,7 +52,7 @@ ls ~/.claude-requirements/projects/<project-name>/
 
 ### 4. 更新仓库绑定
 
-> 写入规范见 [_common.md](./_common.md) 的「settings.local.json 写入规范」。
+> 写入规范见 [_storage.md](./_storage.md#settingslocaljson-写入规范)。
 
 读取已有 `.claude/settings.local.json`，合并以下字段后写回（不覆盖已有的 `branchStrategy` 等字段）：
 
