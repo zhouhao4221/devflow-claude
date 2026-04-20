@@ -39,7 +39,7 @@ if diag_config_exists; then
         jq -r --arg h "$HOST" '(.services // []) | map(select(.host == $h)) | .[0].name // ""')
 fi
 
-jq -n \
+jq -cn \
     --arg ts "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
     --arg host "$HOST" \
     --arg service "$SERVICE" \

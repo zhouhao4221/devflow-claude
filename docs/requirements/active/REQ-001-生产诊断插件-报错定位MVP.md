@@ -93,18 +93,18 @@
 
 > 列出所有功能点，开发完成后勾选
 
-- [ ] **F1 `/diag:init` 命令**：初始化 `~/.claude-diag/` 目录结构，生成服务清单模板（`services.yaml`），引导用户补齐主机/日志路径
-- [ ] **F2 `/diag:diagnose <描述>` 命令**：报错定位主流程（读取配置 → SSH 拉日志 → 解析堆栈 → 本地 grep 代码 → 生成诊断报告）
-- [ ] **F3 `/diag:audit` 命令**：查询审计日志，支持按时间/主机/风险等级过滤
-- [ ] **F4 Hook: SSH 命令白名单**：PreToolUse on Bash，SSH 命令参数只允许 `tail/head/cat/grep/awk/sed/less/wc/find -name/ls/ps/df/free/uptime`，其他阻断
-- [ ] **F5 Hook: 目标主机白名单**：PreToolUse on Bash，SSH 目标主机必须在 `services.yaml` 中登记，否则阻断
-- [ ] **F6 Hook: 写类命令阻断**：PreToolUse on Bash，管道写入文件（`> / >> / tee`）、写类命令（rm/mv/cp/chmod/chown/kill/systemctl/service/docker 写操作/kubectl 写操作）直接阻断
-- [ ] **F7 Hook: 敏感输入拦截**：UserPromptSubmit，检测用户消息中的疑似 token/密码/密钥，拦截并提示安全注入方式
-- [ ] **F8 Hook: 完整性校验**：PreToolUse on Bash（每会话首次），验证上述 Hook 全部注册且脚本可执行，缺失则告警
-- [ ] **F9 审计日志落地**：PostToolUse on Bash，所有 SSH 命令、拉取日志片段、产出建议写入 JSONL
-- [ ] **F10 AI 自适应堆栈解析**：不写死语言/框架规则，由 AI 从日志片段中识别异常堆栈格式（Java/Node/Python/Go 等）
-- [ ] **F11 本地代码关联**：基于堆栈中的类名/方法名/文件名，在当前仓库 Grep 定位源码位置
-- [ ] **F12 诊断报告输出**：固定格式（原因 + 相关代码 + 修复建议 + 审计提醒），修复建议纯文字、不触发 Edit
+- [x] **F1 `/diag:init` 命令**：初始化 `~/.claude-diag/` 目录结构，生成服务清单模板（`services.yaml`），引导用户补齐主机/日志路径
+- [x] **F2 `/diag:diagnose <描述>` 命令**：报错定位主流程（读取配置 → SSH 拉日志 → 解析堆栈 → 本地 grep 代码 → 生成诊断报告）
+- [x] **F3 `/diag:audit` 命令**：查询审计日志，支持按时间/主机/风险等级过滤
+- [x] **F4 Hook: SSH 命令白名单**：PreToolUse on Bash，SSH 命令参数只允许 `tail/head/cat/grep/awk/sed/less/wc/find -name/ls/ps/df/free/uptime`，其他阻断
+- [x] **F5 Hook: 目标主机白名单**：PreToolUse on Bash，SSH 目标主机必须在 `services.yaml` 中登记，否则阻断
+- [x] **F6 Hook: 写类命令阻断**：PreToolUse on Bash，管道写入文件（`> / >> / tee`）、写类命令（rm/mv/cp/chmod/chown/kill/systemctl/service/docker 写操作/kubectl 写操作）直接阻断
+- [x] **F7 Hook: 敏感输入拦截**：UserPromptSubmit，检测用户消息中的疑似 token/密码/密钥，拦截并提示安全注入方式
+- [x] **F8 Hook: 完整性校验**：PreToolUse on Bash（每会话首次），验证上述 Hook 全部注册且脚本可执行，缺失则告警
+- [x] **F9 审计日志落地**：PostToolUse on Bash，所有 SSH 命令、拉取日志片段、产出建议写入 JSONL
+- [x] **F10 AI 自适应堆栈解析**：不写死语言/框架规则，由 AI 从日志片段中识别异常堆栈格式（Java/Node/Python/Go 等）
+- [x] **F11 本地代码关联**：基于堆栈中的类名/方法名/文件名，在当前仓库 Grep 定位源码位置
+- [x] **F12 诊断报告输出**：固定格式（原因 + 相关代码 + 修复建议 + 审计提醒），修复建议纯文字、不触发 Edit
 
 ---
 
@@ -225,16 +225,18 @@ services:
 
 ### 6.1 技术测试
 
-- [ ] **T1 主机白名单拦截**：构造不在 `services.yaml` 中的主机，执行 SSH 命令 → 应被 Hook 阻断
-- [ ] **T2 命令白名单拦截**：在白名单主机上尝试执行 `rm -rf /tmp/test` → 应被阻断且提示具体规则
-- [ ] **T3 写类命令阻断**：尝试 `tail x.log > /tmp/out` → 应被阻断（重定向）
-- [ ] **T4 敏感输入拦截**：在对话中输入"密码是 abc123" → UserPromptSubmit Hook 拦截
-- [ ] **T5 Hook 完整性**：手动删除一个 Hook 脚本后启动会话 → 首次 Bash 调用前告警
-- [ ] **T6 堆栈解析兼容性**：分别用 Java(Spring)、Node(Nest)、Python(Django)、Go(Gin) 的日志样本测试 AI 堆栈识别
-- [ ] **T7 代码关联**：堆栈中的类名/方法名能在本地仓库 Grep 到对应源码位置
-- [ ] **T8 零改动验证**：诊断流程中任何工具调用都不应触发 Edit/Write 到仓库代码
-- [ ] **T9 审计完整性**：一次完整 `/diag:diagnose` 后检查 JSONL 包含全部字段
-- [ ] **T10 审计查询**：`/diag:audit --host=X --from=Y` 过滤正确
+- [x] **T1 主机白名单拦截**（smoke.sh T1a-c）：登记通过 / 未登记拒绝 / 非 ssh 忽略
+- [x] **T2 命令白名单拦截**（smoke.sh T2a-e）：tail 通过 / grep 管道通过 / curl 拒绝 / 登录 shell 拒绝 / rm 拒绝
+- [x] **T3 写类命令阻断**（smoke.sh T3a-j）：重定向 / tee / systemctl / docker rm / kubectl delete / mysql INSERT / sudo / find -delete / apt install 全部拒绝
+- [x] **T4 敏感输入拦截**（smoke.sh T4a-e）：password / bearer / AWS / sk-key 拒绝，普通消息通过
+- [x] **T5 Hook 完整性**（smoke.sh T5a-b）：全部存在放行 / 删除一个后拒绝
+- [ ] **T6 堆栈解析兼容性**：分别用 Java(Spring)、Node(Nest)、Python(Django)、Go(Gin) 的日志样本测试 AI 堆栈识别（**依赖 AI 行为 + 真实日志样本，测试阶段人工验证**）
+- [ ] **T7 代码关联**：堆栈中的类名/方法名能在本地仓库 Grep 到对应源码位置（**依赖真实代码仓库，测试阶段人工验证**）
+- [ ] **T8 零改动验证**：诊断流程中任何工具调用都不应触发 Edit/Write 到仓库代码（**靠 command 的 allowed-tools 约束 + 命令文档明示，测试阶段人工验证**）
+- [x] **T9 审计完整性**（smoke.sh T9）：一次完整 SSH 调用后 JSONL 字段齐全（timestamp/session_id/operator/host/service/command/exit_code/stdout_length/log_snippet_hash/hooks_passed）
+- [ ] **T10 审计查询**：`/diag:audit --host=X --from=Y` 过滤正确（**命令已实现，测试阶段运行真实 `/diag:audit` 验证**）
+
+**自动化测试**：`bash plugins/diag/tests/smoke.sh` → 26/26 通过
 
 ### 6.2 验收标准
 
@@ -306,6 +308,7 @@ flowchart LR
 | 2026-04-20 | 提交评审（草稿 → 待评审） | 状态流转 |
 | 2026-04-20 | 评审通过（待评审 → 评审通过） | 状态流转 |
 | 2026-04-20 | 启动开发（评审通过 → 开发中），创建分支 feat/REQ-001-diag-plugin-mvp，填充实现方案 | 状态流转 + 实现方案 |
+| 2026-04-20 | Stage 1-4 全部完成，12 功能点全部实现，smoke.sh 26/26 通过；T6-T8/T10 待测试阶段人工验证 | 开发完成 |
 
 ---
 
