@@ -9,6 +9,12 @@ source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 CMD=$(diag_read_command "$INPUT")
 [ -z "$CMD" ] && exit 0
 
+# 独立于 SSH 的本地提权阻断：防止 `sudo ssh ...` / `su -c ssh ...` 等
+# 以本地提升权限执行，无论后续 ssh 是否被识别
+if echo "$CMD" | grep -qE '^[[:space:]]*(sudo|su|doas|chroot|unshare|nsenter)([[:space:]]|$)'; then
+    diag_deny "本地命令以提权工具开头（sudo / su / doas / chroot / unshare / nsenter），已阻断。Diag 插件禁止提权执行。"
+fi
+
 PARSED=$(diag_parse_ssh "$CMD")
 diag_is_ssh "$PARSED" || exit 0
 

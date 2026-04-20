@@ -115,6 +115,28 @@ assert_deny "T2d command-whitelist: interactive login denied" \
 assert_deny "T2e command-whitelist: rm denied" \
     "ssh prod-web-01 rm -rf /tmp/test" "command-whitelist"
 
+# ===== 追加：本地包装器 SSH 绕过检测 =====
+assert_deny "T2f-wrap-nohup: nohup ssh host rm denied" \
+    "nohup ssh prod-web-01 rm -rf /tmp/test" "command-whitelist"
+assert_deny "T2g-wrap-env: env VAR ssh host rm denied" \
+    "env FOO=bar ssh prod-web-01 rm -rf /tmp/test" "command-whitelist"
+assert_deny "T2h-wrap-timeout: timeout 60 ssh host rm denied" \
+    "timeout 60 ssh prod-web-01 rm -rf /tmp/test" "command-whitelist"
+assert_deny "T2i-wrap-nested: nohup env timeout ssh host rm denied" \
+    "nohup env FOO=bar timeout 60 ssh prod-web-01 rm -rf /tmp/test" "command-whitelist"
+assert_allow "T2j-fp-grep: grep ssh /etc/hosts not treated as ssh" \
+    "grep ssh /etc/hosts" "command-whitelist"
+assert_allow "T2k-fp-man: man ssh not treated as ssh" \
+    "man ssh" "command-whitelist"
+
+# ===== 追加：本地提权工具阻断 =====
+assert_deny "T3-priv-sudo: sudo ssh denied locally" \
+    "sudo ssh prod-web-01 tail /var/log/app.log" "write-guard"
+assert_deny "T3-priv-doas: doas ssh denied locally" \
+    "doas ssh prod-web-01 tail /var/log/app.log" "write-guard"
+assert_deny "T3-priv-chroot: chroot ssh denied locally" \
+    "chroot /tmp ssh prod-web-01 tail /var/log/app.log" "write-guard"
+
 # ===== T3: 写操作阻断 =====
 assert_allow "T3a write-guard: pure tail allowed" \
     "ssh prod-web-01 tail -n 100 /var/log/app/order.log" "write-guard"

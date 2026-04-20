@@ -23,6 +23,38 @@ OPTS_WITH_ARG = {
 
 SEPARATORS = {"|", "||", "&&", ";", "&"}
 
+# 已知本地包装器，允许出现在 ssh 之前而不影响 ssh 的识别
+# (例: `nohup ssh host cmd`、`env FOO=bar ssh ...`、`timeout 60 ssh ...`)
+# sudo / su / doas 等提权工具不在此列，由 write-guard 的本地提权检查独立阻断
+SAFE_WRAPPERS = {
+    "nohup", "exec", "setsid", "time", "chronic",
+    "env", "timeout", "nice", "ionice", "taskset",
+    "stdbuf", "tsp",
+}
+
+
+def _is_safe_prefix(tokens):
+    """判断 ssh 之前的 tokens 是否全部是安全包装器 / 环境变量赋值 / 选项 / 数值参数。
+
+    True  → 可以把 ssh 当作命令动词
+    False → 前缀里有未知命令（避免 `grep ssh file` / `man ssh` 误判为 ssh 调用）
+    """
+    for t in tokens:
+        if t in SAFE_WRAPPERS:
+            continue
+        if t.startswith("-"):
+            continue
+        # 环境变量赋值 VAR=value
+        if "=" in t and not t.startswith("="):
+            name = t.split("=", 1)[0]
+            if name and name[0].isalpha() and all(c.isalnum() or c == "_" for c in name):
+                continue
+        # 数值参数 (如 timeout 60 / nice 10)
+        if t.replace(".", "", 1).isdigit():
+            continue
+        return False
+    return True
+
 
 def parse(cmd: str) -> dict:
     try:
@@ -41,17 +73,23 @@ def parse(cmd: str) -> dict:
             cur.append(t)
     segments.append(cur)
 
+    # 在每个段中找 ssh 命令动词（允许前缀有 nohup/env/timeout 等安全包装器）
     ssh_seg = None
+    ssh_start = 0
     for seg in segments:
-        if seg and seg[0] == "ssh":
-            ssh_seg = seg
+        for idx, tok in enumerate(seg):
+            if tok == "ssh" and _is_safe_prefix(seg[:idx]):
+                ssh_seg = seg
+                ssh_start = idx
+                break
+        if ssh_seg is not None:
             break
 
     if ssh_seg is None:
         return {"is_ssh": False}
 
     tokens = ssh_seg
-    i = 1  # skip "ssh"
+    i = ssh_start + 1  # skip "ssh"
     while i < len(tokens):
         t = tokens[i]
         if t == "--":
@@ -74,7 +112,10 @@ def parse(cmd: str) -> dict:
     remote_tokens = tokens[i + 1:]
     remote = " ".join(remote_tokens)
 
-    return {"is_ssh": True, "host": host, "remote": remote}
+    result = {"is_ssh": True, "host": host, "remote": remote}
+    if ssh_start > 0:
+        result["local_prefix"] = " ".join(tokens[:ssh_start])
+    return result
 
 
 if __name__ == "__main__":
