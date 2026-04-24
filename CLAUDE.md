@@ -103,11 +103,11 @@ model: claude-sonnet-4-6              # 命令使用的模型
 - 帮助：`/req:help`、`/api:help`、`/pm:help`
 - 展示入口：`/pm:pm`、`/pm:standup`、`/pm:export`
 - 检索：`/api:api`、`/api:search`
-- Git/状态流转：`/req:commit`、`/req:review`、`/req:upgrade`、`/req:branch`
+- Git/状态流转：`/req:commit`、`/req:review`、`/req:upgrade`、`/req:branch`、`/req:release`
 - 文档/项目 CRUD：`/req:modules`、`/req:specs`、`/req:init`、`/req:migrate`
 - 测试编排：`/req:test_regression`
 
-**保持默认的命令**：`/req:new`、`/req:do`、`/req:fix`、`/req:dev`、`/req:test`、`/req:test_new`、`/req:review-pr`、`/req:prd-edit`、`/req:release`、`/req:edit`、`/req:new-quick`、`/req:pr`、`/req:issue`、`/req:split`。
+**保持默认的命令**：`/req:new`、`/req:do`、`/req:fix`、`/req:dev`、`/req:test`、`/req:test_new`、`/req:review-pr`、`/req:prd-edit`、`/req:edit`、`/req:new-quick`、`/req:pr`、`/req:issue`、`/req:split`。
 
 **allowed-tools 约束**：每个命令仅允许其必需的工具集，只读命令不能触发 Write/Edit/Bash，防止误操作。
 

@@ -2,6 +2,7 @@
 description: 颁布版本 - 合并 SQL、生成回滚、打 tag、创建 Release
 argument-hint: "<version> [--from=<tag>] [--to=<ref>]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
+model: claude-haiku-4-5-20251001
 ---
 
 # 颁布版本
