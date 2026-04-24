@@ -1,7 +1,7 @@
 ---
 description: PR 审查与合并 - AI 代码审查、提交评论、合并 PR
 argument-hint: "[review|merge|fetch-comments] [PR-ID] [--auto]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 ---
 
 # PR 审查与合并
@@ -10,6 +10,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
 > 不触发缓存同步。
+>
+> **CLI 优先级**：GitHub 走 `gh pr` / `gh api`；Gitea 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`：**列表/查看/合并** 走 `tea pulls ls|<N>|merge`，**评论** 走 `tea comment <PR-N>`；但 **PR diff、行内 review 评论、reviews 详情**等 tea 未覆盖的接口仍走本文中的 curl 示例。
 
 ## 命令格式
 

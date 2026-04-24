@@ -1,7 +1,7 @@
 ---
 description: 轻量修复 - 无文档的 bug 修复流程，AI 辅助定位问题
 argument-hint: "<问题描述> [--from-issue=#编号] [--auto]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*, mkdir:*, touch:*, rm:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, mkdir:*, touch:*, rm:*)
 ---
 
 # 轻量修复
@@ -10,6 +10,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*, mkdir:*,
 
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
 > 不触发缓存同步（无需求文档）。
+>
+> **CLI 优先级**：GitHub 用 `gh`；Gitea 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`，可用即走 `tea`，否则回退本文 curl 示例。
 
 ## 命令格式
 

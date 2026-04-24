@@ -2,7 +2,9 @@
 
 > 此文档定义 `--from-issue` 拉取规范、OWNER/REPO 解析、Issue 与分支/提交的关联规则、Issue 编号读取优先级、关闭策略。
 >
-> 同伴文档：[`_storage.md`](./_storage.md)、[`_branch.md`](./_branch.md)、[`_template.md`](./_template.md)、[`_granularity.md`](./_granularity.md)、[`_claude-md.md`](./_claude-md.md)。
+> 同伴文档：[`_storage.md`](./_storage.md)、[`_branch.md`](./_branch.md)、[`_template.md`](./_template.md)、[`_granularity.md`](./_granularity.md)、[`_claude-md.md`](./_claude-md.md)、[`_gitea_cli.md`](./_gitea_cli.md)。
+>
+> **CLI 优先级**：所有 Gitea 调用先按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`，可用即走 `tea`；本文中的 `curl` 示例视为 `USE_TEA=0` 时的回退路径。
 
 ## Issue 拉取规范
 
@@ -32,6 +34,10 @@ https://github.com/owner/repo.git                 →  owner/repo
 
 **repoType = "gitea"**：
 ```bash
+# tea 可用 + 已 login（详见 _gitea_cli.md）
+tea issues --login "${TEA_LOGIN}" "${N}" --output json
+
+# 回退：curl
 curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/issues/${N}" \
   -H "Authorization: token ${TOKEN}"
 ```

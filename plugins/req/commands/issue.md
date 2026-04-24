@@ -1,7 +1,7 @@
 ---
 description: Issue 工作流 - 创建/编辑/关闭/列表/查看/评论 issue
 argument-hint: "<new|edit|close|reopen|list|show|comment> [参数...]"
-allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, curl:*, python3:*, jq:*)
+allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, python3:*, jq:*)
 ---
 
 # Issue 工作流
@@ -9,6 +9,8 @@ allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, curl:*, python3:*, jq:*)
 统一管理 GitHub / Gitea issue 的全生命周期：创建、编辑、关闭、重开、列表、查看、评论讨论。
 
 > 此命令**不受仓库角色限制**，readonly 也可执行。不触发缓存同步。
+>
+> **CLI 优先级**：GitHub 走 `gh`；Gitea 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`，可用且已 login 即走 `tea`，否则回退本文中的 `curl` 示例。`tea` 不支持的子操作（issue 评论列表、标签增删等）始终走 curl。
 
 ---
 
@@ -52,7 +54,7 @@ gitea_token = bs.get("giteaToken")
 
 | repoType | 前置要求 | 失败处理 |
 |---------|---------|---------|
-| `gitea` | `giteaUrl` + `giteaToken` 必须非空 | `❌ Gitea 未配置，请先执行 /req:branch init` 后终止 |
+| `gitea` | `giteaUrl` + `giteaToken` 必须非空；可选检测 `tea` 是否可用并已 login（[`_gitea_cli.md`](./_gitea_cli.md)），可用置 `USE_TEA=1` + 记录 `TEA_LOGIN` | `❌ Gitea 未配置，请先执行 /req:branch init` 后终止 |
 | `github` | `command -v gh` 可用 | `❌ 未找到 gh CLI：https://cli.github.com/` 后终止 |
 | `other` / 未配置 | 无 | 仅 `list` / `show` 报 `❌ other 类型不支持 list/show`；写操作改为输出手动提交提示 |
 

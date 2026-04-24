@@ -1,7 +1,7 @@
 ---
 description: 颁布版本 - 合并 SQL、生成回滚、打 tag、创建 Release
 argument-hint: "<version> [--from=<tag>] [--to=<ref>]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 ---
 
 # 颁布版本
@@ -10,6 +10,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
 > 输出目录 `docs/migrations/released/`，不触发缓存同步。
+>
+> **CLI 优先级**：GitHub 走 `gh release create`；Gitea 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`，**Release 主体**（`tea releases create --tag --title --note`）可用即走 `tea`，但 **SQL 资产上传**和 PR 状态查询等 tea 覆盖不全的接口仍走 curl。draft / tag 顺序约束（rationale §12）不受影响。
 
 > 📖 **设计原理与边界情况速查见 [`release-rationale.md`](./release-rationale.md)**。本命令的"为什么"段落、行为矩阵详解、完整边界情况大表全部迁到该伴随文档；正常发版流程不需要读它。出错或追问"为什么"时按需引用对应章节（§1~§12）。
 
