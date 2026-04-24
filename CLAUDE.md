@@ -275,6 +275,8 @@ model: claude-sonnet-4-6              # 命令使用的模型
 
 Gitea 集成需要：`giteaUrl`（实例地址）+ `giteaToken`（API Token，直接在配置中填写）。
 
+**CLI 优先策略**：所有 GitHub 操作走 `gh`；Gitea 操作按 [`plugins/req/commands/_gitea_cli.md`](./plugins/req/commands/_gitea_cli.md) 检测 `tea`：本机存在 `tea` 且已 `tea login add` 当前实例 → 优先 `tea`；否则回退 `curl + giteaToken`。命令**不会自动 `tea login add`**（避免把 token 写入 `~/.config/tea`），用户需主动启用。
+
 **分支字段**：需求文档元信息中的 `branch` 字段记录分支名，确保跨会话确定性。
 
 **与命令的联动**：

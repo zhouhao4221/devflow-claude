@@ -1,7 +1,7 @@
 ---
 description: 完成需求 - 标记完成并归档
 argument-hint: "[REQ-XXX]"
-allowed-tools: Read, Write, Edit, Glob, Bash(git:*, mv:*, gh:*, curl:*)
+allowed-tools: Read, Write, Edit, Glob, Bash(git:*, mv:*, gh:*, tea:*, curl:*)
 model: claude-haiku-4-5-20251001
 ---
 
@@ -10,6 +10,8 @@ model: claude-haiku-4-5-20251001
 标记需求为已完成，归档文档。
 
 > 存储路径和缓存同步规则见 [_storage.md](./_storage.md)
+>
+> **CLI 优先级**：GitHub 走 `gh`；Gitea 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`，可用即走 `tea pulls create` / `tea issues close`，否则回退本文 curl 示例。
 
 ## 命令格式
 
