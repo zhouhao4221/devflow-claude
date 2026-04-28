@@ -411,16 +411,16 @@ has_reviewer = bool(pr_reviewers or config_reviewers)
 
 **无审核人**（`has_reviewer = False`）→ 跳到 6.2，仅展示合并选项。
 
-**6.1 有审核人时——提示是否审核通过**
+**6.1 有审核人时——提示是否提交审核通过状态**
 
 ```
 ✅ 审查完成，PR #42 无阻塞问题
 
 审核人：@alice, @bob
 
-是否标记为审核通过（Approved）？
-  [y] 审核通过  — 在平台提交 Approved 评审
-  [n] 暂不处理  — 保留当前状态
+是否在平台提交「审核通过」状态？
+  [y] 提交审核通过  — 在 GitHub/Gitea 将你的 Review 状态更新为 Approved
+  [n] 暂不处理     — 保留当前审核状态不变
 
 请输入（y/n，回车默认不处理）：
 ```
@@ -454,8 +454,9 @@ gh pr review ${PR_NUMBER} --approve
 
 成功后输出：
 ```
-✅ PR #42 已标记为审核通过
+✅ PR #42 审核状态已更新为「已通过（Approved）」
    🔗 ${PR_URL}
+   （审核通过 ≠ 合并，PR 仍处于 Open 状态）
 
 💡 如需合并：/req:review-pr merge
 ```
