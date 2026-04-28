@@ -147,11 +147,11 @@ v3.0.0 前版本号必须由用户手写，容易出错——尤其 minor vs pat
 
 ---
 
-## 9. step 5.5 最终预览的存在意义
+## 9. step 5.5 产物预览的存在意义
 
 发布的大部分动作都不可逆（提交、push、tag、平台 Release）。用户必须在实际执行前看清所有将要发生的事——尤其是在 `--no-draft`、`cross-branch` 这些会改变最终行为的条件下，用户的心智模型和命令默认行为常常不一致。明确的预览消除"以为会 X，实际做了 Y"的事故。
 
-这是 step 6+ 之前的最后一道闸门。**任何"为了加速"或"因为前面步骤很顺"直接跳过本步进入 step 6 的行为都等同于违规执行 release 命令**。本步的渲染和等待是 /req:release 的不可协商契约；即使所有前置 step 都没有交互，本步也必须交互。
+预览**必须完整渲染**，但不等待用户 y/n 确认——自动继续执行 step 6+。用户如需中止请按 Ctrl+C。如需覆盖版本号请在命令中显式传参（`/req:release v1.4.0` 或 `--bump=minor`）。
 
 ---
 
@@ -187,8 +187,8 @@ curl 用 `--data-binary @file` 上传，按二进制流，不做换行/编码转
 | release-branch 流程 PR2 用户选"跳过" | tag 和 Release 已完成，命令直接进入最终报告；PR2 保留等用户手动合并，报告中标记 ⏸️ 待合并 |
 | 没有 git tag | 从首次提交开始，显示警告 |
 | 范围内无 commit | 终止操作 |
-| 范围内无候选需求 | 提示后询问是否继续（仅打 tag + changelog） |
-| 用户未选择任何需求 | 取消整个发布 |
+| 范围内无候选需求 | 提示后自动继续（仅打 tag + 纯 commit changelog） |
+| git 范围内只有未完成需求 | 询问一次是否纳入；全部跳过则继续纯 commit changelog 流程 |
 | 选中需求都无 SQL | 跳过 SQL 步骤，仅执行 changelog/tag/release |
 | `docs/migrations/released/<version>.sql` 已存在 | Hook 弹确认 |
 | `docs/changelogs/<version>.md` 已存在 | Hook 弹确认 |
@@ -201,4 +201,5 @@ curl 用 `--data-binary @file` 上传，按二进制流，不做换行/编码转
 | draft 模式下 draft 创建后用户迟迟未 publish | 命令已终止，责任在用户。建议记在团队 checklist 里，或用 cron 巡检未 publish 的 draft |
 | Gitea Release API 返回 `Release is has no Tag`（422） | 仅发生在 **draft + gitea** 场景（此时 `PUSH_TAG_FIRST=true`）。step 9 的本地 `git push origin <tag>` 失败或未执行。排查：`git ls-remote --tags origin \| grep <version>` 确认远程是否有 tag；检查 Gitea 对 tag 是否配了保护规则拦截了 push。非 draft + gitea 不会触发此错（API 从 target_commitish 自己生成 tag） |
 | `--no-draft` 在受保护主分支 + cross-branch/release-branch 流程 | **按 repoType 分叉**：<br>• **github**：step 9a 会本地 `git tag -a` + `git push origin <tag>`；若 GitHub 对 tag 配了保护规则，push 会失败。改默认 draft 模式同样 push（draft+github 是 `PUSH_TAG_FIRST=false`，不 push）——**推荐回到默认 draft 以绕开 tag 保护**<br>• **gitea**：step 9 **不** push tag（`PUSH_TAG_FIRST=false`），API 在服务器侧创建 lightweight tag。若 Gitea 对 tag 有保护规则，API 会返回权限错误。改回默认 draft 模式**无效**（draft+gitea 反而要 push tag），需先解除 tag 保护或用其他路径<br>• **other**：step 9a 本地 + push，同 github 处理 |
-| 用户传 `--draft`（老语法） | 接受但不报错，因为它现在是默认行为的冗余别名；`args.draft` 变量不参与逻辑，`is_draft` 只看 `args.no_draft` |
+| 用户传 `--draft`（老语法） | 接受但不报错，冗余别名；`args.draft` 变量不参与逻辑，`is_draft` 只看 `args.no_draft` |
+| 未指定 `--tag` | step 9/10/10.6/10.7 全部跳过；PR 流程（8.5/8.7）正常执行；最终报告走 §11c |
