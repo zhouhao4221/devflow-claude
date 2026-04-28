@@ -435,22 +435,36 @@ has_reviewer = bool(pr_reviewers or config_reviewers)
 
 **y — 审核通过**（仅 `has_reviewer = True` 时出现）
 
-在平台提交「Approved」评审：
+在平台提交「Approved」评审，并检查返回结果：
 
 **Gitea**：
 ```bash
-curl -s -X POST "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/reviews" \
+RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+  "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/reviews" \
   -H "Authorization: token ${TOKEN}" \
   -H "Content-Type: application/json" \
-  -d '{"event": "APPROVED", "body": ""}'
+  -d '{"event": "APPROVED", "body": ""}')
+
+HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+BODY=$(echo "$RESPONSE" | head -1)
+
+if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
+  echo "✅ 审核通过状态已提交"
+else
+  echo "❌ 提交失败（HTTP $HTTP_CODE）：$BODY"
+fi
 ```
 
 **GitHub**：
 ```bash
-gh pr review ${PR_NUMBER} --approve
+if gh pr review ${PR_NUMBER} --approve; then
+  echo "✅ 审核通过状态已提交"
+else
+  echo "❌ 提交失败，请检查权限或网络"
+fi
 ```
 
-**repoType = "other"**：跳过 API 调用，仅告知用户在平台手动审核通过。
+**repoType = "other"**：跳过 API 调用，仅告知用户在平台手动操作。
 
 成功后输出：
 ```
@@ -459,6 +473,18 @@ gh pr review ${PR_NUMBER} --approve
    （审核通过 ≠ 合并，PR 仍处于 Open 状态）
 
 💡 如需合并：/req:review-pr merge
+```
+
+失败时输出：
+```
+❌ 审核状态提交失败
+
+可能原因：
+- Token 权限不足（需要 repo 写入权限）
+- 当前用户不在 PR 审核人列表
+- 网络问题
+
+💡 请在平台手动操作：${PR_URL}
 ```
 
 **n / 回车 — 暂不处理**（`has_reviewer = True`）
