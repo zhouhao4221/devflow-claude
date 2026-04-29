@@ -162,9 +162,26 @@ find docs/migrations -maxdepth 2 -name "*.sql" ! -path "docs/migrations/released
 
 **release-branch**：同 cross-branch，但 PR1 是 `<release_branch>` → `<main_branch>`，PR2（步骤 14）同样自动合并。
 
+### 步骤 10.9：主分支强制验证（步骤 11/12 前必须通过）
+
+**无论 flow_mode 是 direct / cross-branch / release-branch，执行 tag 或 Release 前必须硬性确认当前在 `main_branch` 上：**
+
+```bash
+CURRENT=$(git branch --show-current)
+if [ "$CURRENT" != "$main_branch" ]; then
+    echo "❌ 当前分支 $CURRENT ≠ 主分支 $main_branch"
+    echo "   Release 只能从 $main_branch 发布（branchStrategy.mainBranch）"
+    echo "   请手动执行：git checkout $main_branch && git pull --ff-only"
+    echo "   然后重新运行本命令"
+    exit 1
+fi
+```
+
+`target_commitish` 后续所有步骤统一使用 `main_branch`，**不使用 develop / release 分支**。
+
 ### 步骤 11：创建 Git Tag（仅 `--tag`）
 
-确认当前在 `tag_target`（= `main_branch`）。`push_tag_first` 决策（详见 rationale §6）：
+确认当前在 `main_branch`（步骤 10.9 已保证）。`push_tag_first` 决策（详见 rationale §6）：
 
 | 组合 | push_tag_first | 行为 |
 |------|---------------|------|
@@ -175,10 +192,10 @@ find docs/migrations -maxdepth 2 -name "*.sql" ! -path "docs/migrations/released
 
 ### 步骤 12：创建平台 Release（`skip_release=false` 时执行）
 
-Release notes 取 `docs/changelogs/<version>.md`。
+Release notes 取 `docs/changelogs/<version>.md`。**`target_commitish` 固定为 `main_branch`（由步骤 10.9 保证），绝不使用 develop / release 分支。**
 
-- **gitea**：解析 remote URL，读 `branchStrategy.giteaToken`，`POST /api/v1/repos/.../releases`（body 用 `jq --rawfile`，详见 rationale §11），成功后上传 SQL 资产
-- **github**：`gh release create <version> [--draft --target <tag_target>] --notes-file docs/changelogs/<version>.md [sql 文件...]`
+- **gitea**：解析 remote URL，读 `branchStrategy.giteaToken`，`POST /api/v1/repos/.../releases`（body 用 `jq --rawfile`，详见 rationale §11），`target_commitish: main_branch`，成功后上传 SQL 资产
+- **github**：`gh release create <version> [--draft] --target <main_branch> --notes-file docs/changelogs/<version>.md [sql 文件...]`
 - **other**：打印手动命令
 
 已存在（HTTP 409）时打印链接，不重复创建。
