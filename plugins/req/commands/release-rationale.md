@@ -46,7 +46,7 @@ v3.0.0+ 改为强制交互确认，把"我要放弃 draft 闸门"这个决定变
 
 git-flow 的 `mainBranch` 通常设有保护规则。step 8.8 的 `chore(release): prepare` 提交会被直接 push 拒绝，用户被迫手动 reset → 切 develop → cherry-pick → 新 PR → 等合并 → 回主分支 → tag，绕一大圈。
 
-step 1.5 的守门会把这种"误起步"在最早环节挡下，给出 cross-branch / release-branch 两种推荐路径。
+步骤 1（策略合规检查）的守门会把这种"误起步"在最早环节挡下，给出 cross-branch / release-branch 两种推荐路径。
 
 ---
 
@@ -81,13 +81,15 @@ GitHub Release API 在 tag 不存在时会用 `target_commitish` 现场创建 ta
 
 ### 6.2 为什么非 draft + gitea 不 push tag
 
-Gitea Release API 在 `draft=false` 时会从 `target_commitish` 现场生成 lightweight tag，而我们在 step 10 显式把 `target_commitish` 设为 `tag_target`（主分支名），不会打错分支。
+Gitea Release API 在 `draft=false` 时会从 `target_commitish` 现场生成 lightweight tag，而步骤 12（创建平台 Release）显式把 `target_commitish` 设为 `tag_target`（主分支名），不会打错分支。
 
 本地再 push annotated tag 是**冗余**——会出现"本地 annotated、远程 lightweight"两种类型 tag 同名冲突（或者被 push 覆盖）。省掉这一步既简化流程、又与用户直觉一致（tag 在创建 Release 时一并出现）。
 
 ### 6.3 为什么 Gitea 的 draft 模式反而要先 push tag
 
 Gitea Release API 在 `draft=true` 时不会为你创建 tag——必须先存在，否则返回 `422 Release is has no Tag`。
+
+步骤 11（创建 Git Tag）的本地 `git push origin <tag>` 如果失败或未执行，就会触发此错误。排查：`git ls-remote --tags origin | grep <version>` 确认远程是否有 tag；检查 Gitea 对 tag 是否配了保护规则。
 
 这是 Gitea 与 GitHub 的关键差异（GitHub 的 draft release 可以引用未来的 tag，Gitea 不可以）。因此 Gitea 上的 draft 闸门价值比 GitHub 弱一些：放弃 draft 需同时清理 tag。
 
@@ -147,7 +149,7 @@ v3.0.0 前版本号必须由用户手写，容易出错——尤其 minor vs pat
 
 ---
 
-## 9. step 5.5 产物预览的存在意义
+## 9. 步骤 6 产物预览的存在意义
 
 发布的大部分动作都不可逆（提交、push、tag、平台 Release）。用户必须在实际执行前看清所有将要发生的事——尤其是在 `--no-draft`、`cross-branch` 这些会改变最终行为的条件下，用户的心智模型和命令默认行为常常不一致。明确的预览消除"以为会 X，实际做了 Y"的事故。
 
@@ -160,7 +162,7 @@ v3.0.0 前版本号必须由用户手写，容易出错——尤其 minor vs pat
 step 6.5 在合并 SQL 后立即 `git rm` 源文件。设计原因：
 
 - 已合并的 SQL 不应保留在 `docs/migrations/` 顶层，否则下次 release 会重复扫描到
-- 用 `git rm` 而非 `rm` 是为了把删除放进暂存区，让 step 8.5.1 / 8.7 / 8.8 一次性 commit 干净
+- 用 `git rm` 而非 `rm` 是为了把删除放进暂存区，让步骤 10 各分支流程（direct/cross-branch/release-branch）一次性 commit 干净
 - 仅删除**被选中并成功合并**的文件，未选中需求的 SQL 保留——给用户"分批发版"的灵活性
 - 若 `released/<version>.sql` 写入失败则不得执行，避免源文件丢失
 
@@ -196,10 +198,10 @@ curl 用 `--data-binary @file` 上传，按二进制流，不做换行/编码转
 | Gitea token 缺失 | 跳过 Release，保留 tag |
 | gh CLI 缺失 | 输出命令让用户手动执行 |
 | `repoType` 未配置 | 仅输出手动命令 |
-| 默认 draft 模式 + `repoType == other` | step 1.5 强制交互确认降级为 `--no-draft`（不再静默降级），用户取消则中止 |
+| 默认 draft 模式 + `repoType == other` | 步骤 1（参数校验）强制交互确认降级为 `--no-draft`（不再静默降级），用户取消则中止 |
 | draft 模式 draft 创建成功但 release notes 错误 | 在平台编辑 draft，或删除 draft 后重跑命令（gitea 场景需同时删 tag：`git push --delete origin <version> && git tag -d <version>`；github 场景 draft 一删即清） |
 | draft 模式下 draft 创建后用户迟迟未 publish | 命令已终止，责任在用户。建议记在团队 checklist 里，或用 cron 巡检未 publish 的 draft |
-| Gitea Release API 返回 `Release is has no Tag`（422） | 仅发生在 **draft + gitea** 场景（此时 `PUSH_TAG_FIRST=true`）。step 9 的本地 `git push origin <tag>` 失败或未执行。排查：`git ls-remote --tags origin \| grep <version>` 确认远程是否有 tag；检查 Gitea 对 tag 是否配了保护规则拦截了 push。非 draft + gitea 不会触发此错（API 从 target_commitish 自己生成 tag） |
-| `--no-draft` 在受保护主分支 + cross-branch/release-branch 流程 | **按 repoType 分叉**：<br>• **github**：step 9a 会本地 `git tag -a` + `git push origin <tag>`；若 GitHub 对 tag 配了保护规则，push 会失败。改默认 draft 模式同样 push（draft+github 是 `PUSH_TAG_FIRST=false`，不 push）——**推荐回到默认 draft 以绕开 tag 保护**<br>• **gitea**：step 9 **不** push tag（`PUSH_TAG_FIRST=false`），API 在服务器侧创建 lightweight tag。若 Gitea 对 tag 有保护规则，API 会返回权限错误。改回默认 draft 模式**无效**（draft+gitea 反而要 push tag），需先解除 tag 保护或用其他路径<br>• **other**：step 9a 本地 + push，同 github 处理 |
+| Gitea Release API 返回 `Release is has no Tag`（422） | 仅发生在 **draft + gitea** 场景（此时 `PUSH_TAG_FIRST=true`）。步骤 11（创建 Git Tag）的本地 `git push origin <tag>` 失败或未执行。排查：`git ls-remote --tags origin \| grep <version>` 确认远程是否有 tag；检查 Gitea 对 tag 是否配了保护规则拦截了 push。非 draft + gitea 不会触发此错（API 从 target_commitish 自己生成 tag） |
+| `--no-draft` 在受保护主分支 + cross-branch/release-branch 流程 | **按 repoType 分叉**：<br>• **github**：步骤 11 会本地 `git tag -a` + `git push origin <tag>`；若 GitHub 对 tag 配了保护规则，push 会失败。改默认 draft 模式同样 push（draft+github 是 `PUSH_TAG_FIRST=false`，不 push）——**推荐回到默认 draft 以绕开 tag 保护**<br>• **gitea**：步骤 11 **不** push tag（`PUSH_TAG_FIRST=false`），API 在服务器侧创建 lightweight tag。若 Gitea 对 tag 有保护规则，API 会返回权限错误。改回默认 draft 模式**无效**（draft+gitea 反而要 push tag），需先解除 tag 保护或用其他路径<br>• **other**：步骤 11 本地 + push，同 github 处理 |
 | 用户传 `--draft`（老语法） | 接受但不报错，冗余别名；`args.draft` 变量不参与逻辑，`is_draft` 只看 `args.no_draft` |
-| 未指定 `--tag` | step 9/10/10.6/10.7 全部跳过；PR 流程（8.5/8.7）正常执行；最终报告走 §11c |
+| 未指定 `--tag` | 步骤 11/12/14/15 全部跳过；PR 流程（步骤 10）正常执行；最终报告走 §16c |

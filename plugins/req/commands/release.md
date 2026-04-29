@@ -50,7 +50,8 @@ model: claude-haiku-4-5-20251001
 - **readonly**：
   - 从全局缓存 `~/.claude-requirements/projects/<requirementProject>/` 读取需求文档
   - **禁止修改任何 `docs/requirements/` 下的文件**（包括状态更新、关联信息追加等）
-  - 其余步骤（SQL 合并、changelog、git commit、PR、tag）照常执行
+  - SQL 合并（`docs/migrations/released/`）和 changelog（`docs/changelogs/`）的写入**不受此限**——这些是版本产物，不是需求文档；目录不存在时自动创建
+  - 其余步骤（git commit、PR、tag）照常执行
 - **primary / 未配置**：正常读写本地 `docs/requirements/`
 
 ### 步骤 1：参数校验 + 分支判定
@@ -151,9 +152,9 @@ find docs/migrations -maxdepth 2 -name "*.sql" ! -path "docs/migrations/released
    - `gitea`：`POST /api/v1/repos/{owner}/{repo}/pulls/{index}/merge`（`{"Do":"merge"}`）
    - 合并失败（分支保护/CI 未通过）→ 打印 PR URL，等待用户手动合并后回复「继续」（**强制交互**）
 4. `git checkout <main_branch> && git pull --ff-only`（验证 changelog 存在，异常见 rationale §7.4）
-5. 若 `!create_tag`：进入步骤 13c
+5. 若 `!create_tag`：进入步骤 16c
 
-**release-branch**：同 cross-branch，但 PR1 是 `<release_branch>` → `<main_branch>`，PR2（步骤 10.6）同样自动合并。
+**release-branch**：同 cross-branch，但 PR1 是 `<release_branch>` → `<main_branch>`，PR2（步骤 14）同样自动合并。
 
 ### 步骤 11：创建 Git Tag（仅 `--tag`）
 
@@ -176,23 +177,23 @@ Release notes 取 `docs/changelogs/<version>.md`。
 
 已存在（HTTP 409）时打印链接，不重复创建。
 
-### 步骤 10.5：切回起始分支
+### 步骤 13：切回起始分支
 
 ```bash
 git checkout "$start_branch"
 ```
 
-### 步骤 10.6：PR2 回流（仅 release-branch 且 `--tag`）
+### 步骤 14：PR2 回流（仅 release-branch 且 `--tag`）
 
 创建 PR2: `<release_branch>` → `<develop_branch>`，等待用户确认（**非阻塞**，可跳过）。
 
-### 步骤 10.7：清理 release 分支（仅 release-branch 且 `--tag`）
+### 步骤 15：清理 release 分支（仅 release-branch 且 `--tag`）
 
 PR2 merged → `git branch -D <release_branch>` + `git push origin --delete <release_branch>`。`remote ref does not exist` 视为成功。PR2 pending 时保留分支。
 
-### 步骤 13：最终报告
+### 步骤 16：最终报告
 
-**13a 非 draft（`--tag --no-draft`）**：
+**16a 非 draft（`--tag --no-draft`）**：
 ```
 ✅ 版本 <version> 已颁布！
 📋 需求清单 / 📄 SQL 脚本 / 📝 版本说明
@@ -200,7 +201,7 @@ PR2 merged → `git branch -D <release_branch>` + `git push origin --delete <rel
 💡 检查回滚 SQL：cat docs/migrations/released/<version>.rollback.sql
 ```
 
-**13b draft（`--tag`）**：
+**16b draft（`--tag`）**：
 ```
 ⚠️ DRAFT：<version> 草稿已创建，需手工 Publish
 📋/📄/📝 同上
@@ -210,7 +211,7 @@ PR2 merged → `git branch -D <release_branch>` + `git push origin --delete <rel
 💡 放弃：gitea 需删 draft + tag；github 只删 draft
 ```
 
-**13c 无 tag（默认）**：
+**16c 无 tag（默认）**：
 ```
 ✅ 版本 <version> 产物已就绪！
 📋/📄/📝 同上
@@ -233,7 +234,7 @@ PR2 merged → `git branch -D <release_branch>` + `git push origin --delete <rel
 | PR 未合并用户中止 | 保留已生成产物，不打 tag |
 | 无 candidate 需求 / 全跳过未完成 | 继续纯 commit changelog |
 | `--no-draft` 未搭配 `--tag` | 警告忽略 |
-| 未指定 `--tag` | 步骤 11/12/10.6/10.7 跳过 |
+| 未指定 `--tag` | 步骤 11/12/14/15 跳过 |
 | Gitea draft 422（Release is has no Tag） | 详见 rationale §12 |
 | `--draft`（老语法） | 接受但忽略（默认已是 draft） |
 
