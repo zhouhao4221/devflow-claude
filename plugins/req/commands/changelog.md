@@ -186,7 +186,7 @@ fi
 
 ### 7. 生成版本说明文档
 
-使用 Write 工具生成 `docs/changelogs/<version>.md`，格式如下：
+使用 Write 工具生成 `$OUTPUT_DIR/<version>.md`，格式如下：
 
 ```markdown
 # <version> 版本说明
@@ -259,12 +259,12 @@ fi
 └── QUICK-003 快速修复标题
 
 📁 文件位置
-docs/changelogs/<version>.md
+$OUTPUT_DIR/<version>.md
 
 ═══════════════════════════════════════════════
 
 💡 后续操作：
-- 查看文件：cat docs/changelogs/<version>.md
+- 查看文件：cat $OUTPUT_DIR/<version>.md
 - 重新生成：/req:changelog <version> --from=<tag>
 - 创建 git tag：git tag <version>
 ```
@@ -280,7 +280,7 @@ docs/changelogs/<version>.md
 | 文件已存在 | 询问用户是否覆盖 |
 | 无关联需求 | 省略「关联需求」章节 |
 | commit 不遵循 conventional commits | 归入「其他变更」 |
-| docs/changelogs/ 目录不存在 | 自动创建 |
+| changelog 目录不存在 | 自动创建 `docs/changelogs/` |
 
 ## 用户输入
 
