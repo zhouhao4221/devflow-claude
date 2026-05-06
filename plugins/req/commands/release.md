@@ -46,16 +46,41 @@ model: claude-haiku-4-5-20251001
 
 ## 执行流程
 
-### 步骤 0：角色检查
+### 步骤 0：角色检查 + 目录配置
 
 读取 `.claude/settings.local.json` 中的 `requirementRole`：
 
 - **readonly**：
   - 从全局缓存 `~/.claude-requirements/projects/<requirementProject>/` 读取需求文档
   - **禁止修改任何 `docs/requirements/` 下的文件**（包括状态更新、关联信息追加等）
-  - SQL 合并（`docs/migrations/released/`）和 changelog（`docs/changelogs/`）的写入**不受此限**——这些是版本产物，不是需求文档；目录不存在时自动创建
+  - SQL 合并（`<MIGRATIONS_DIR>/released/`）和 changelog（`docs/changelogs/`）的写入**不受此限**——这些是版本产物，不是需求文档；目录不存在时自动创建
   - 其余步骤（git commit、PR、tag）照常执行
 - **primary / 未配置**：正常读写本地 `docs/requirements/`
+
+**目录变量解析**：
+
+- `CHANGELOG_DIR`：固定为 `docs/changelogs`，不需要配置
+- `MIGRATIONS_DIR`：按优先级解析，后续步骤统一使用此变量
+
+| 优先级 | 来源 | 方式 |
+|--------|------|------|
+| 1 | 项目内配置 | Read `.claude/skills/migration.md`，解析其中的 `MIGRATIONS_DIR` 行 |
+| 2 | 自动检测 | 扫描 `db/migrations`、`database/migrations`、`migrations`、`src/migrations`，取第一个存在的 |
+| 3 | 兜底默认 | `docs/migrations` |
+
+**「后端项目 + 未配置优先级 1」时**，打印一次提醒（非阻塞，可忽略，创建文件后消失）：
+
+> 后端项目判断依据：存在 `.sql` 文件或 migration 相关目录。
+
+```
+💡 未找到 .claude/skills/migration.md，当前使用 MIGRATIONS_DIR=<auto-detected or default>
+
+建议在项目内创建 .claude/skills/migration.md 固定路径，下次执行将优先读取：
+
+  # Migration 路径配置
+
+  - **MIGRATIONS_DIR**: `<当前检测到的路径>`
+```
 
 ### 步骤 1：参数校验 + 分支判定
 
@@ -102,7 +127,7 @@ git log $FROM_REF..$TO_REF --pretty=format:"%s%n%b" --no-merges \
 ### 步骤 4：扫描 migration SQL
 
 ```bash
-find docs/migrations -maxdepth 2 -name "*.sql" ! -path "docs/migrations/released/*"
+find $MIGRATIONS_DIR -maxdepth 2 -name "*.sql" ! -path "$MIGRATIONS_DIR/released/*"
 ```
 
 文件名含 `REQ-XXX` / `QUICK-XXX` 即归属对应需求。
@@ -121,13 +146,13 @@ find docs/migrations -maxdepth 2 -name "*.sql" ! -path "docs/migrations/released
 
 ### 步骤 7：合并 SQL（有 SQL 时执行）
 
-输出 `docs/migrations/released/<version>.sql`，文件头注释含 Release/Date/Range/Includes，每段前加来源注释，按选中顺序排列。
+输出 `$MIGRATIONS_DIR/released/<version>.sql`，文件头注释含 Release/Date/Range/Includes，每段前加来源注释，按选中顺序排列。
 
 **写入成功后立即 `git rm` 所有已合并的源 SQL 文件**（详见 rationale §10），放入暂存区由后续 commit 统一提交。
 
 ### 步骤 8：生成回滚 SQL
 
-输出 `docs/migrations/released/<version>.rollback.sql`，倒序排列（后建的先回滚）：
+输出 `$MIGRATIONS_DIR/released/<version>.rollback.sql`，倒序排列（后建的先回滚）：
 
 | 正向语句 | 自动生成回滚 |
 |---------|------------|
@@ -158,7 +183,7 @@ find docs/migrations -maxdepth 2 -name "*.sql" ! -path "docs/migrations/released
    - `github`：`gh pr merge <PR_NUMBER> --merge --delete-branch`
    - `gitea`：`POST /api/v1/repos/{owner}/{repo}/pulls/{index}/merge`（`{"Do":"merge"}`）
    - 合并失败（分支保护/CI 未通过）→ 打印 PR URL，等待用户手动合并后回复「继续」（**强制交互**）
-4. `git checkout <main_branch> && git pull --ff-only`（验证 changelog 存在，异常见 rationale §7.4）
+4. `git checkout <main_branch> && git pull --ff-only`（验证 `docs/changelogs/<version>.md` 存在，异常见 rationale §7.4）
 5. 继续步骤 11（若 `create_tag`）和步骤 12（若 `!skip_release`）
 
 **release-branch**：同 cross-branch，但 PR1 是 `<release_branch>` → `<main_branch>`，PR2（步骤 14）同样自动合并。
@@ -234,7 +259,7 @@ PR2 merged → `git branch -D <release_branch>` + `git push origin --delete <rel
 📋 需求清单 / 📄 SQL 脚本 / 📝 版本说明
 🏷️ <若 --tag：✅ annotated tag 已推送 | 否则：— 无本地 tag（平台自动生成 lightweight tag）>
 🚀 <Release URL>
-💡 检查回滚 SQL：cat docs/migrations/released/<version>.rollback.sql
+💡 检查回滚 SQL：cat $MIGRATIONS_DIR/released/<version>.rollback.sql
 ```
 
 **16b draft Release（默认）**：

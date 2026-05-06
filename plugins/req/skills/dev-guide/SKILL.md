@@ -177,6 +177,24 @@ docs/requirements/modules/<模块名>.md
 
 分析需求中涉及的数据实体，生成：
 
+> **需要生成 migration SQL 时（后端 / 全栈项目）**，先解析 `MIGRATIONS_DIR`：
+> 1. Read `.claude/skills/migration.md` → 解析 `MIGRATIONS_DIR` 行
+> 2. 自动检测（`db/migrations`、`database/migrations`、`migrations`、`src/migrations`）
+> 3. 兜底：`docs/migrations`
+>
+> **未找到 `.claude/skills/migration.md` 时**，在生成 SQL 前打印一次提醒（非阻塞）：
+>
+> ```
+> 💡 未找到 .claude/skills/migration.md。
+> 建议在项目内创建 .claude/skills/migration.md：
+>
+>   # Migration 路径配置
+>
+>   - **MIGRATIONS_DIR**: `<当前检测到的路径>`
+> ```
+>
+> SQL 文件写入路径：`$MIGRATIONS_DIR/<req-id>-<描述>.sql`
+
 ```markdown
 ### 11.1 数据模型
 
