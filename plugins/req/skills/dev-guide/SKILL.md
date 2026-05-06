@@ -182,15 +182,12 @@ docs/requirements/modules/<模块名>.md
 > 2. 自动检测（`db/migrations`、`database/migrations`、`migrations`、`src/migrations`）
 > 3. 兜底：`docs/migrations`
 >
-> **未找到 `.claude/skills/migration.md` 时**，在生成 SQL 前打印一次提醒（非阻塞）：
+> **未找到 `.claude/skills/migration.md` 时**，在生成 SQL 前打印一次警告（非阻塞，继续执行）：
 >
 > ```
-> 💡 未找到 .claude/skills/migration.md。
-> 建议在项目内创建 .claude/skills/migration.md：
->
->   # Migration 路径配置
->
->   - **MIGRATIONS_DIR**: `<当前检测到的路径>`
+> ⚠️  未找到 .claude/skills/migration.md，当前使用 MIGRATIONS_DIR=<auto-detected or default>
+>     如需固定路径，创建 .claude/skills/migration.md 并写入：
+>     - **MIGRATIONS_DIR**: `<路径>`
 > ```
 >
 > SQL 文件写入路径：`$MIGRATIONS_DIR/<req-id>-<描述>.sql`
