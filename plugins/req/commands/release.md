@@ -68,18 +68,14 @@ model: claude-haiku-4-5-20251001
 | 2 | 自动检测 | 扫描 `db/migrations`、`database/migrations`、`migrations`、`src/migrations`，取第一个存在的 |
 | 3 | 兜底默认 | `docs/migrations` |
 
-**「后端项目 + 未配置优先级 1」时**，打印一次提醒（非阻塞，可忽略，创建文件后消失）：
+**「后端项目 + 未配置优先级 1」时**，打印一次警告（非阻塞，继续执行）：
 
 > 后端项目判断依据：存在 `.sql` 文件或 migration 相关目录。
 
 ```
-💡 未找到 .claude/skills/migration.md，当前使用 MIGRATIONS_DIR=<auto-detected or default>
-
-建议在项目内创建 .claude/skills/migration.md 固定路径，下次执行将优先读取：
-
-  # Migration 路径配置
-
-  - **MIGRATIONS_DIR**: `<当前检测到的路径>`
+⚠️  未找到 .claude/skills/migration.md，当前使用 MIGRATIONS_DIR=<auto-detected or default>
+    如需固定路径，创建 .claude/skills/migration.md 并写入：
+    - **MIGRATIONS_DIR**: `<路径>`
 ```
 
 ### 步骤 1：参数校验 + 分支判定
