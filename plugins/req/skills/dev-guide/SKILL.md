@@ -9,12 +9,12 @@ description: |
 仅在 `/req:dev` 命令执行时激活，负责实现方案生成、开发引导和进度跟踪。
 
 根据需求类型（后端/前端/全栈）采用不同的开发引导策略：
-- **后端**：读取项目 CLAUDE.md 的分层架构，按配置的层级顺序详细引导
+- **后端**：读取 docs/prompt/architecture.md 的分层架构，按配置的层级顺序详细引导
 - **前端**：聚焦功能点描述，依赖项目自身的技能和规范引导实现
 - **全栈**：后端分层 + 前端功能点，分阶段引导
 
 > **重要**：本 skill 不内置任何项目架构细节。分层顺序、目录结构、命名规范、开发规范
-> 均从项目 CLAUDE.md 的「项目架构」章节读取。如 CLAUDE.md 缺少架构信息，
+> 均从 docs/prompt/architecture.md 读取。如文件不存在，
 > 会发出警告并建议用户通过 `/req:init --reinit` 补充。
 
 ---
@@ -60,15 +60,24 @@ docs/requirements/modules/<模块名>.md
 | `primary` | 本地读写，修改后自动同步缓存 |
 | `readonly` | 从缓存读取，允许基于已完成需求开发，不写入需求文档 |
 
-### 5. 加载项目扩展 Skills
+### 5. 加载项目知识
 
-扫描 `.claude/skills/` 目录，读取所有 `.md` 文件，作为项目特有知识注入上下文。
+**架构文件（prompt）**：Read `docs/prompt/architecture.md`，获取技术栈、分层架构、开发规范、测试规范。
 
-- 目录存在且有文件 → 全部读取，静默注入，不打印提示
+- 文件存在 → 读取，静默注入
+- 文件不存在 → 打印一次提示（非阻塞）：
+  ```
+  ⚠️  未找到 docs/prompt/architecture.md
+      /req:dev 依赖此文件了解项目分层和开发规范
+      可执行 /req:init --reinit 自动生成
+  ```
+
+**项目 Skills（具体约定）**：扫描 `.claude/skills/` 目录，读取所有 `.md` 文件。
+
+- 目录存在且有文件 → 全部读取，静默注入
 - 目录不存在或为空 → 静默跳过
 
-> 项目 Skills 声明项目特有的约定（如 `migration.md` 声明 `MIGRATIONS_DIR`），
-> 工具后续步骤直接使用，无需重复读取。
+> `docs/prompt/architecture.md` 提供宽泛的架构知识；`.claude/skills/` 提供窄的具体约定（如路径变量）。两者互补，后续步骤直接使用，无需重复读取。
 
 ---
 
@@ -192,8 +201,8 @@ docs/requirements/modules/<模块名>.md
 
 ### 后端项目方案
 
-> **前置步骤**：读取项目 CLAUDE.md 中的「项目架构」章节，获取分层架构表、目录结构、命名规范。
-> 如 CLAUDE.md 缺少架构信息，输出警告（见 [_claude-md.md](../../commands/_claude-md.md)），仍继续但方案可能不够准确。
+> **前置步骤**：读取 docs/prompt/architecture.md，获取分层架构表、目录结构、命名规范。
+> 步骤 5 未找到该文件时已输出警告，此处仍继续但方案可能不够准确。
 
 #### 4.1 数据模型（11.1）
 
@@ -234,10 +243,10 @@ docs/requirements/modules/<模块名>.md
 描述表间关联（一对多、多对多等）
 ```
 
-**检查要点**（根据 CLAUDE.md 中的开发规范补充具体检查项）：
+**检查要点**（根据 architecture.md 中的开发规范补充具体检查项）：
 - 字段类型和约束与业务规则一致
 - 索引设计（查询场景驱动）
-- CLAUDE.md 中定义的其他数据模型规范（如多租户字段、审计字段等）
+- architecture.md 中定义的其他数据模型规范（如多租户字段、审计字段等）
 
 #### 4.2 API 设计（11.2）
 
@@ -253,13 +262,13 @@ docs/requirements/modules/<模块名>.md
 ```
 
 **生成依据**：
-- 路径风格：遵循 CLAUDE.md 中的 API 风格（RESTful / GraphQL 等）
+- 路径风格：遵循 architecture.md 中的 API 风格（RESTful / GraphQL 等）
 - 参数设计：从业务规则中的数据校验提取字段约束
 - 错误码：按项目规范定义异常响应
 
 #### 4.3 文件改动清单（11.3）
 
-**按 CLAUDE.md 中定义的分层架构表顺序**列出需要新增/修改的文件：
+**按 docs/prompt/architecture.md 中定义的分层架构表顺序**列出需要新增/修改的文件：
 
 ```markdown
 ### 11.3 文件改动清单
@@ -271,11 +280,11 @@ docs/requirements/modules/<模块名>.md
 | ... | ... | ... | ... |
 ```
 
-**文件命名**：遵循 CLAUDE.md 中定义的文件命名规范。
+**文件命名**：遵循 architecture.md 中定义的文件命名规范。
 
 #### 4.4 实现步骤（11.4）
 
-**按 CLAUDE.md 分层架构的顺序**拆解为有序步骤，每层一个步骤：
+**按 architecture.md 分层架构的顺序**拆解为有序步骤，每层一个步骤：
 
 ```markdown
 ### 11.4 实现步骤
@@ -290,7 +299,7 @@ docs/requirements/modules/<模块名>.md
   - ...
 ```
 
-**关键原则**：步骤数量和名称完全由 CLAUDE.md 的分层架构表决定，不硬编码任何层级。
+**关键原则**：步骤数量和名称完全由 architecture.md 的分层架构表决定，不硬编码任何层级。
 
 ---
 
@@ -409,14 +418,14 @@ docs/requirements/modules/<模块名>.md
 
 ### 后端开发规范
 
-> **从 CLAUDE.md 读取**：以下规范从项目 CLAUDE.md 的「开发规范」章节获取。
+> **从 CLAUDE.md 读取**：以下规范从 docs/prompt/architecture.md 的「开发规范」章节获取。
 > 不同项目的规范不同，此处仅定义检查框架。
 
-按 CLAUDE.md 分层架构表中定义的顺序逐层实现。
+按 docs/prompt/architecture.md 分层架构表中定义的顺序逐层实现。
 
 **每层实现时**：
-1. 读取 CLAUDE.md 中该层的目录路径和命名规范
-2. 读取 CLAUDE.md 中的开发规范（错误处理、日志、API 风格等）
+1. 读取 architecture.md 中该层的目录路径和命名规范
+2. 读取 architecture.md 中的开发规范（错误处理、日志、API 风格等）
 3. 按规范实现代码
 
 #### 后端检查清单
@@ -427,7 +436,7 @@ docs/requirements/modules/<模块名>.md
 - [ ] 错误处理遵循项目规范
 - [ ] 日志规范
 - [ ] API/接口规范
-- [ ] CLAUDE.md 中定义的其他规范项
+- [ ] architecture.md 中定义的其他规范项
 
 ---
 

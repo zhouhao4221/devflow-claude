@@ -198,13 +198,13 @@ mkdir -p $CACHE_ROOT/templates
 
 ### 8. 生成项目架构文件
 
-扫描项目现有结构，自动生成 `.claude/skills/architecture.md`，并在 CLAUDE.md 中添加引用。
+扫描项目现有结构，自动生成 `docs/prompt/architecture.md`，并在 CLAUDE.md 中添加引用。
 `/req:dev` 和 `/req:test` 运行时会自动读取该文件，无需手动传入。
 
 #### 8.1 检查是否已有架构文件
 
 ```
-.claude/skills/architecture.md 已存在 → 跳过，不覆盖
+docs/prompt/architecture.md 已存在 → 跳过，不覆盖
 CLAUDE.md 中已包含架构章节       → 跳过，不覆盖
 ```
 
@@ -229,7 +229,7 @@ CLAUDE.md 中已包含架构章节       → 跳过，不覆盖
 
 #### 8.3 生成架构文件
 
-基于扫描结果，AI 生成 `.claude/skills/architecture.md`，结构固定为：
+基于扫描结果，AI 生成 `docs/prompt/architecture.md`，结构固定为：
 
 ```markdown
 ## 技术栈
@@ -262,7 +262,7 @@ CLAUDE.md 中已包含架构章节       → 跳过，不覆盖
    分层：Model → Store → Biz → Controller → Router
    测试：*_test.go，运行 go test ./...
 
-   草稿已写入 .claude/skills/architecture.md
+   草稿已写入 docs/prompt/architecture.md
 
    内容是否准确？(y/n，默认 y，n 则打开文件手动修改)
 ```
@@ -274,7 +274,7 @@ CLAUDE.md 中已包含架构章节       → 跳过，不覆盖
 ```markdown
 ## 项目架构
 
-详见 `.claude/skills/architecture.md`，`/req:dev` 和 `/req:test` 会自动读取。
+详见 `docs/prompt/architecture.md`，`/req:dev` 和 `/req:test` 会自动读取。
 ```
 
 CLAUDE.md 不包含架构内容本身，只持有指针。
@@ -282,7 +282,7 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 #### 8.5 已有架构文件时
 
 ```
-✅ .claude/skills/architecture.md 已存在，跳过生成
+✅ docs/prompt/architecture.md 已存在，跳过生成
 ```
 
 ### 9. 项目 Skills 初始化
@@ -390,7 +390,7 @@ mkdir -p .claude/skills
    - 版本规划和里程碑
 
 💡 下一步:
-   1. 检查 .claude/skills/architecture.md 内容是否准确
+   1. 检查 docs/prompt/architecture.md 内容是否准确
    2. 确认 .claude/skills/migration.md 中的路径是否正确（如已创建）
    3. 编辑 PRD.md 完善产品规划
    4. /req:branch init  配置分支策略
