@@ -264,7 +264,81 @@ snippets = {
 ✅ CLAUDE.md 已包含项目架构描述，跳过引导
 ```
 
-### 9. 输出结果
+### 9. 项目 Skills 初始化
+
+创建 `.claude/skills/` 目录（不存在时），并根据项目类型引导创建常用 Skill 文件。
+
+#### 9.1 创建目录
+
+```bash
+mkdir -p .claude/skills
+```
+
+#### 9.2 引导创建 Skill 文件
+
+**目录为空时**，根据步骤 8 选择的项目类型展示对应提示：
+
+**后端项目（Go / Java / 其他服务端）**：
+
+```
+💡 后端项目通常需要声明 migration SQL 目录路径：
+
+   .claude/skills/migration.md
+   /req:dev 生成数据库变更 SQL 时会自动读取
+
+   是否创建？(y/n，默认 y)
+```
+
+用户选择 `y` → 创建 `.claude/skills/migration.md`：
+
+```markdown
+# Migration Skill
+
+声明项目的 migration SQL 存放目录，供 /req:dev 自动使用。
+
+- **MIGRATIONS_DIR**: `db/migrations`
+```
+
+并提示用户修改路径：
+
+```
+✅ 已创建 .claude/skills/migration.md
+   请将 MIGRATIONS_DIR 修改为项目实际路径，如：
+   - db/migrations（GORM 默认）
+   - database/migrations（Laravel 默认）
+   - src/migrations（自定义）
+```
+
+**前端项目**：
+
+```
+✅ 已创建 .claude/skills/ 目录
+
+   前端项目通常不需要预置 Skill 文件。
+   如有项目特有约定（组件规范、接口路径约定等），
+   可在此目录创建 .md 文件，/req:dev 会自动读取。
+```
+
+**自定义项目**：
+
+```
+✅ 已创建 .claude/skills/ 目录
+
+   将项目特有知识写成 Skill 文件放在此目录，/req:dev 和 /req:test 会自动读取。
+   示例：
+   - migration.md  — 声明数据库 migration 目录
+   - testing.md    — 声明项目特有的测试约定
+```
+
+**目录已有文件时**，列出现有 Skill 并跳过引导：
+
+```
+✅ .claude/skills/ 已有以下 Skill 文件：
+   - migration.md
+   跳过 Skills 引导
+```
+
+### 10. 输出结果
 
 **初始化成功**：
 ```
@@ -296,9 +370,10 @@ snippets = {
 
 💡 下一步:
    1. 检查 CLAUDE.md 中的架构描述是否准确
-   2. 编辑 PRD.md 完善产品规划
-   3. /req:branch init  配置分支策略
-   4. /req:new <标题>   创建具体需求
+   2. 确认 .claude/skills/ 中的 Skill 文件路径正确
+   3. 编辑 PRD.md 完善产品规划
+   4. /req:branch init  配置分支策略
+   5. /req:new <标题>   创建具体需求
 ```
 
 **重新初始化成功**（使用 `--reinit` 参数）：
@@ -315,6 +390,7 @@ snippets = {
    + docs/requirements/templates/prd-template.md          已复制
    + docs/requirements/modules/quick-fix.md  已生成（新增）
    + docs/requirements/PRD.md       已生成（新增）
+   ✓ .claude/skills/                已检查（如为空可按引导创建 Skill 文件）
 
 🔗 当前仓库已绑定到此项目
 
