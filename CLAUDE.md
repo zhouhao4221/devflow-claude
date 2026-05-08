@@ -96,19 +96,21 @@ Write/Edit/Bash 默认全部直通。用户说"开启提交确认"→ Claude 创
 
 ## 项目架构适配
 
-插件不内置项目架构细节，从项目的 CLAUDE.md 和 `.claude/skills/` 读取。
+插件不内置项目架构细节，从项目的 `docs/prompt/` 和 `.claude/skills/` 读取。
 
-**CLAUDE.md 架构要求**：项目需包含「项目架构」章节（技术栈、分层架构、文件命名、开发规范、测试规范），供 `/req:dev`、`/req:test` 读取。`/req:init` 会检查并在缺失时引导选择预置模板（`templates/claude-md-snippets/`）。
+**项目架构文件**：`/req:init` 扫描项目结构自动生成 `docs/prompt/architecture.md`（技术栈、分层架构、文件命名、开发规范、测试规范），`/req:dev`、`/req:test` 运行时显式 Read 此文件。CLAUDE.md 只保留一行引用指针，不内嵌架构内容。
 
-**项目级 Skill 扩展**：插件命令不硬编码项目特有知识，由项目在 `.claude/skills/` 下创建 skill 文件注入。
+**项目级 Skill 扩展**：插件命令不硬编码项目特有知识，由项目在 `.claude/skills/` 下创建 skill 文件注入（单一职责的具体约定，如路径变量）。
 
-| 位置 | 内容 |
-|------|------|
-| `CLAUDE.md` | AI 行为指令：架构规范、开发规范 |
-| `settings.local.json` | 结构化配置：分支策略、仓库角色、平台 token |
-| `.claude/skills/<concern>.md` | 单一职责的项目特有 AI 知识（如路径约定） |
+| 位置 | 内容 | 加载方式 |
+|------|------|---------|
+| `CLAUDE.md` | AI 行为指令（通用规则、引用指针） | 每次会话自动加载 |
+| `docs/prompt/architecture.md` | 项目架构知识（分层、规范、技术栈） | 命令显式 Read |
+| `docs/requirements/specs/` | 领域规约（业务规则、接口契约） | 命令按仓库角色注入 |
+| `settings.local.json` | 结构化配置（分支策略、仓库角色、token） | 命令读取配置字段 |
+| `.claude/skills/<concern>.md` | 具体约定（路径变量等窄知识） | 命令扫描全量注入 |
 
-规范：文件名反映关注点（`migration.md` ✅，`config.md` ❌）；命令用 `Read` 显式加载，缺失时自动检测/默认兜底并打印创建提示。
+规范：skill 文件名反映关注点（`migration.md` ✅，`config.md` ❌）；`docs/prompt/` 文件按需显式 Read，缺失时打印创建提示（非阻塞）。
 
 现有示例：`.claude/skills/migration.md` → 声明 `MIGRATIONS_DIR`（migration SQL 存放目录），供 `/req:dev` 写入、`/req:release` 扫描合并。Changelog 目录固定为 `docs/changelogs/`，不参与配置。
 
