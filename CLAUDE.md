@@ -48,6 +48,8 @@ haiku 命令：`/req`、`/req:status/show/prd/projects/cache/use/done/update-tem
 
 **allowed-tools**：只读命令不触发 Write/Edit/Bash。**Token 节约**：单文件 < 30 KB；> 50 KB 拆主+rationale；详见 [`docs/design/token-optimization.md`](./docs/design/token-optimization.md)。
 
+**命令文件写法原则**：只写 Claude 不能从训练数据推断的内容——平台差异约束、非显而易见的业务规则、输出格式。不写 curl/gh/tea 的完整实现命令、Python 代码、URL 模板。判断标准：这条内容 Claude 能从 API 文档或常识推断吗？能 → 不写；不能（如"Gitea labels 必须走独立端点"）→ 写。
+
 ## 技能与钩子
 
 **自动触发技能**：`requirement-analyzer`（新建/编辑需求）· `dev-guide`（`/req:dev`）· `prd-analyzer`（`/req:prd-edit`）· `code-impact-analyzer`（需求变更）· `test-guide`（测试命令）· `changelog-generator`（`/req:changelog`）· `natural-language-dispatcher`（自然语言操作）
