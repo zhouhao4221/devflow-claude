@@ -54,19 +54,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 
 ### 2. 查询 PR 信息
 
-根据 `repoType` 查询 PR：
-
-**Gitea**：
-```bash
-# 从需求的 branch 字段获取分支名，查询关联的 open PR
-curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls?state=open&head=${OWNER}:${branch}" \
-  -H "Authorization: token ${TOKEN}"
-```
-
-**GitHub**：
-```bash
-gh pr list --head <branch> --json number,title,state,reviews,mergeable,url
-```
+根据 `repoType` 查询 PR：从需求文档 `branch` 字段取分支名，按平台 API 查询关联的 open PR（Gitea 需指定 `head=OWNER:branch`）。
 
 ### 3. 展示状态
 
@@ -90,16 +78,7 @@ gh pr list --head <branch> --json number,title,state,reviews,mergeable,url
 
 ### 1. 获取 PR diff
 
-**Gitea**：
-```bash
-curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}.diff" \
-  -H "Authorization: token ${TOKEN}"
-```
-
-**GitHub**：
-```bash
-gh pr diff ${PR_NUMBER}
-```
+按平台获取 PR diff（Gitea：`GET /pulls/{N}.diff`；GitHub：`gh pr diff`）。
 
 ### 2. 读取审查规范
 
@@ -357,20 +336,7 @@ gh pr diff ${PR_NUMBER}
 > 完整报告见本地终端输出。
 ```
 
-**Gitea**：
-```bash
-curl -s -X POST "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/issues/${PR_NUMBER}/comments" \
-  -H "Authorization: token ${TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "body": "<精简版审查报告 Markdown>"
-  }'
-```
-
-**GitHub**：
-```bash
-gh pr review ${PR_NUMBER} --comment --body "<精简版审查报告 Markdown>"
-```
+按平台提交评论。**Gitea 注意**：PR 评论使用 `/issues/{N}/comments` 端点（不是 `/pulls/`）。
 
 **repoType = "other"**：仅本地展示，不提交评论，不触发确认询问。
 
@@ -435,36 +401,9 @@ has_reviewer = bool(pr_reviewers or config_reviewers)
 
 **y — 审核通过**（仅 `has_reviewer = True` 时出现）
 
-在平台提交「Approved」评审，并检查返回结果：
+按平台提交「Approved」评审。**Gitea**：`POST /pulls/{N}/reviews`，body 为 `{"event": "APPROVED"}`。GitHub：`gh pr review --approve`。
 
-**Gitea**：
-```bash
-RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-  "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/reviews" \
-  -H "Authorization: token ${TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{"event": "APPROVED", "body": ""}')
-
-HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-BODY=$(echo "$RESPONSE" | head -1)
-
-if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
-  echo "✅ 审核通过状态已提交"
-else
-  echo "❌ 提交失败（HTTP $HTTP_CODE）：$BODY"
-fi
-```
-
-**GitHub**：
-```bash
-if gh pr review ${PR_NUMBER} --approve; then
-  echo "✅ 审核通过状态已提交"
-else
-  echo "❌ 提交失败，请检查权限或网络"
-fi
-```
-
-**repoType = "other"**：跳过 API 调用，仅告知用户在平台手动操作。
+**repoType = "other"**：跳过，告知用户在平台手动操作。
 
 成功后输出：
 ```
@@ -512,28 +451,7 @@ fi
 - **Issue Comments（整体讨论评论）**：针对 PR 整体的讨论
 - **Review Comments（行内评论）**：针对 diff 具体行的评论，含 `path` 和 `position`/`line` 字段
 
-**Gitea**：
-```bash
-# Issue comments
-curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/issues/${PR_NUMBER}/comments" \
-  -H "Authorization: token ${TOKEN}"
-
-# Review comments（行内）
-curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/reviews" \
-  -H "Authorization: token ${TOKEN}"
-# 对每条 review 再拉 review 下的行评论：
-curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/reviews/${REVIEW_ID}/comments" \
-  -H "Authorization: token ${TOKEN}"
-```
-
-**GitHub**：
-```bash
-# Issue comments
-gh api "repos/${OWNER}/${REPO}/issues/${PR_NUMBER}/comments"
-
-# Review comments
-gh api "repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/comments"
-```
+按平台拉取。**Gitea 注意**：整体评论用 `/issues/{N}/comments`；行内评论需两级拉取——先 `GET /pulls/{N}/reviews`，再对每条 review 拉 `/reviews/{ID}/comments`。GitHub：`gh api` 直接支持两个独立端点。
 
 **repoType = "other"**：提示不支持，结束。
 
@@ -660,24 +578,7 @@ review: 处理 PR #42 的审查评论
 | `squash` | 压缩为一个提交 | 希望主分支历史简洁 |
 | `rebase` | 变基到目标分支 | 追求线性历史 |
 
-**Gitea**：
-```bash
-curl -s -X POST "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/merge" \
-  -H "Authorization: token ${TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "Do": "<mergeMethod>",
-    "merge_message_field": "<merge commit message>"
-  }'
-```
-
-`Do` 字段映射：`merge` → `"merge"`, `squash` → `"squash"`, `rebase` → `"rebase"`
-
-**GitHub**：
-```bash
-gh pr merge ${PR_NUMBER} --<mergeMethod>
-# --merge / --squash / --rebase
-```
+按平台合并。**Gitea 注意**：merge method 通过 `Do` 字段传递（不是 `method`），值为 `"merge"` / `"squash"` / `"rebase"`。GitHub：`gh pr merge --<mergeMethod>`。
 
 **repoType = "other"**：
 ```

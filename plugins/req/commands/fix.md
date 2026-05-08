@@ -320,29 +320,11 @@ rm -f .claude/.req-auto
    是否关闭该 issue？(y/n)
 ```
 
-**用户确认（y）**，按 [_issue.md 的 Issue 拉取规范](./_issue.md#issue-拉取规范) 中的 `repoType` 调用对应 API：
+**用户确认（y）** → 按 `repoType` 关闭 issue，逻辑同 [issue.md §5](./issue.md)。
 
-**gitea**：
-```bash
-curl -s -X PATCH "${giteaUrl}/api/v1/repos/${OWNER}/${REPO}/issues/${N}" \
-  -H "Authorization: token ${giteaToken}" \
-  -H "Content-Type: application/json" \
-  -d '{"state":"closed"}'
-```
+**用户拒绝（n）**：跳过。
 
-**github**：
-```bash
-gh issue close ${N} --comment "Closed via /req:fix"
-```
-
-**other**：输出提示让用户手工关闭：
-```
-💡 请手动关闭 issue #N
-```
-
-**用户拒绝（n）**：跳过，不做任何操作。
-
-> **注意**：即使此处跳过，若 commit message 包含 `closes #N`，Git 平台会在 PR 合并时自动关闭 issue。
+> commit message 含 `closes #N` 时，PR 合并时 Git 平台会自动关闭 issue，无需手动操作。
 
 ---
 

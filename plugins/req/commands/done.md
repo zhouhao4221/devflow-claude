@@ -68,30 +68,11 @@ git mv docs/requirements/active/REQ-XXX-*.md docs/requirements/completed/
 
 读取 `.claude/settings.local.json.branchStrategy` 和需求文档的 `branch` 字段。无 `branchStrategy` 或 `branch` 为空 → 跳过本步。
 
-按 `repoType` 决定动作：
+按 `repoType` 创建 PR，逻辑同 [pr.md](./pr.md)（push + 创建 PR + 提示 review-pr）。
 
-**gitea** — 通过 REST API 自动创建 PR：
-
-```bash
-git push -u origin <branch>
-curl -s -X POST "${giteaUrl}/api/v1/repos/${OWNER}/${REPO}/pulls" \
-  -H "Authorization: token ${giteaToken}" \
-  -H "Content-Type: application/json" \
-  -d '{"title":"feat(REQ-XXX): <标题>","head":"<branch>","base":"<mergeTarget>","body":"..."}'
-```
-
-成功 → 输出 PR 链接，并提示 `/req:review-pr review` / `/req:review-pr merge`。
-`giteaToken` 缺失 → 提示手工 compare 链接。
-
-**github** — 输出：
-```
-git push -u origin <branch>
-gh pr create --title "feat(REQ-XXX): <标题>" --base <mergeTarget>
-```
-
-**other** — 输出本地 merge 命令（`git checkout <mergeTarget> && git merge <branch>`）。
-
-**Git Flow + hotfix 分支**：合并到 `main` 和 `develop` 两处，Gitea/GitHub 创建两个 PR，other 输出两组命令。
+**特殊情况**：
+- `giteaToken` 缺失 → 提示手工 compare 链接
+- Git Flow + hotfix 分支 → 需合并到 `main` 和 `develop` 两处，创建两个 PR
 
 ### 8. 关联 issue 关闭提醒
 
@@ -104,33 +85,9 @@ gh pr create --title "feat(REQ-XXX): <标题>" --base <mergeTarget>
    是否关闭该 issue？(y/n)
 ```
 
-**用户确认（y）**，按 `repoType` 调用对应 API：
+**用户确认（y）** → 按 `repoType` 关闭 issue，逻辑同 [issue.md §5](./issue.md)。
 
-**gitea**：
-```bash
-curl -s -X PATCH "${giteaUrl}/api/v1/repos/${OWNER}/${REPO}/issues/${ISSUE_NUM}" \
-  -H "Authorization: token ${giteaToken}" \
-  -H "Content-Type: application/json" \
-  -d '{"state":"closed"}'
-```
-
-**github**：
-```bash
-gh issue close ${ISSUE_NUM} --comment "Closed by REQ-XXX"
-```
-
-**other**：输出提示让用户手工关闭：
-```
-💡 请手动关闭 issue #123
-```
-
-**用户拒绝（n）**：跳过，不做任何操作。
-
-成功关闭后输出：
-```
-✅ Issue #123 已关闭
-   🔗 ${ISSUE_URL}
-```
+**用户拒绝（n）**：跳过。
 
 ---
 
