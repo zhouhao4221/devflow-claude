@@ -196,72 +196,93 @@ mkdir -p $CACHE_ROOT/templates
 }
 ```
 
-### 8. CLAUDE.md 架构引导
+### 8. 生成项目架构文件
 
-检查项目 CLAUDE.md 是否包含架构信息，引导用户补充。
+扫描项目现有结构，自动生成 `.claude/skills/architecture.md`，并在 CLAUDE.md 中添加引用。
+`/req:dev` 和 `/req:test` 运行时会自动读取该文件，无需手动传入。
 
-#### 8.1 检查 CLAUDE.md
-
-```python
-claude_md_path = "CLAUDE.md"  # 项目根目录
-has_architecture = False
-
-if os.path.exists(claude_md_path):
-    content = read_file(claude_md_path)
-    # 检查是否包含架构关键章节
-    has_architecture = any(keyword in content for keyword in [
-        "分层架构", "目录结构", "技术栈", "项目架构",
-        "Architecture", "Tech Stack"
-    ])
-```
-
-#### 8.2 引导选择（仅当 CLAUDE.md 缺少架构信息时）
+#### 8.1 检查是否已有架构文件
 
 ```
-📋 CLAUDE.md 中未检测到项目架构描述
-   需求开发引导（/req:dev）依赖架构信息来生成实现方案
-
-   选择项目类型，生成 CLAUDE.md 建议片段：
-
-   1. Go 后端（Gin + GORM 分层架构）
-   2. Java 后端（Spring Boot 分层架构）
-   3. 前端项目（React/Vue + TypeScript）
-   4. 自定义（生成空白模板，手动填写）
-   5. 跳过（稍后手动添加）
-
-请选择（1-5）：
+.claude/skills/architecture.md 已存在 → 跳过，不覆盖
+CLAUDE.md 中已包含架构章节       → 跳过，不覆盖
 ```
 
-#### 8.3 生成建议片段
+#### 8.2 扫描项目结构
 
-根据用户选择，读取对应模板：
+按以下优先级检测技术栈：
 
-```python
-snippets = {
-    "1": "<plugin-path>/templates/claude-md-snippets/go-backend.md",
-    "2": "<plugin-path>/templates/claude-md-snippets/java-backend.md",
-    "3": "<plugin-path>/templates/claude-md-snippets/frontend-react.md",
-    "4": "<plugin-path>/templates/claude-md-snippets/generic.md",
-}
+| 检测文件 | 推断技术栈 |
+|---------|----------|
+| `go.mod` | Go 后端 |
+| `pom.xml` / `build.gradle` | Java 后端 |
+| `package.json`（含 `next` / `nuxt` / `vite`） | 前端 |
+| `package.json`（含 `express` / `fastify` / `nest`） | Node.js 后端 |
+| `requirements.txt` / `pyproject.toml` | Python 后端 |
+| `Cargo.toml` | Rust |
+| 均未找到 | 通用 |
+
+同时扫描：
+- 顶层及二级目录结构（推断分层）
+- 测试文件位置（`*_test.go` / `*.test.ts` / `tests/` 等）
+- 已有代码风格样例（命名、错误处理模式）
+
+#### 8.3 生成架构文件
+
+基于扫描结果，AI 生成 `.claude/skills/architecture.md`，结构固定为：
+
+```markdown
+## 技术栈
+<!-- AI 从扫描结果填入，如：Go 1.22 · Gin · GORM · MySQL 8 -->
+
+## 分层架构
+<!-- AI 从目录结构推断，按开发顺序排列 -->
+| 层 | 目录 | 职责 |
+|----|------|------|
+| ...扫描到的分层... | | |
+
+## 文件命名
+<!-- AI 从现有文件推断 -->
+
+## 开发规范
+<!-- AI 从现有代码推断，无代码时留空占位 -->
+
+## 测试规范
+<!-- AI 从测试文件位置推断 -->
+- 测试目录：...
+- 运行命令：...
 ```
 
-展示片段内容，追加到项目 CLAUDE.md 末尾（如文件不存在则创建）。
+生成后展示内容，请用户确认：
 
 ```
-✅ 已将架构片段追加到 CLAUDE.md
+📋 已扫描项目结构，生成架构文件草稿：
 
-💡 请根据实际项目情况修改以下内容：
-   - 技术栈版本号
-   - 分层架构的目录路径
-   - 开发规范和测试规范
+   技术栈：Go 1.22 · Gin · GORM · MySQL
+   分层：Model → Store → Biz → Controller → Router
+   测试：*_test.go，运行 go test ./...
 
-   后续 /req:dev 会读取这些信息引导开发
+   草稿已写入 .claude/skills/architecture.md
+
+   内容是否准确？(y/n，默认 y，n 则打开文件手动修改)
 ```
 
-#### 8.4 已有架构信息时
+#### 8.4 在 CLAUDE.md 中添加引用
+
+在 CLAUDE.md 末尾追加一行引用（文件不存在时创建）：
+
+```markdown
+## 项目架构
+
+详见 `.claude/skills/architecture.md`，`/req:dev` 和 `/req:test` 会自动读取。
+```
+
+CLAUDE.md 不包含架构内容本身，只持有指针。
+
+#### 8.5 已有架构文件时
 
 ```
-✅ CLAUDE.md 已包含项目架构描述，跳过引导
+✅ .claude/skills/architecture.md 已存在，跳过生成
 ```
 
 ### 9. 项目 Skills 初始化
@@ -369,8 +390,8 @@ mkdir -p .claude/skills
    - 版本规划和里程碑
 
 💡 下一步:
-   1. 检查 CLAUDE.md 中的架构描述是否准确
-   2. 确认 .claude/skills/ 中的 Skill 文件路径正确
+   1. 检查 .claude/skills/architecture.md 内容是否准确
+   2. 确认 .claude/skills/migration.md 中的路径是否正确（如已创建）
    3. 编辑 PRD.md 完善产品规划
    4. /req:branch init  配置分支策略
    5. /req:new <标题>   创建具体需求
