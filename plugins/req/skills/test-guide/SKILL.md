@@ -35,6 +35,18 @@ description: |
 | 运行命令 | 执行测试 | `go test ./...` / `npm test` |
 | 测试环境 | 环境准备 | docker-compose / testcontainers |
 
+**读取领域规约（Specs）**：
+
+读取 CLAUDE.md 后，检查项目是否存在领域规约：
+
+- **primary 仓库**：扫描 `docs/requirements/specs/` 目录，读取所有 `.md` 文件
+- **readonly 仓库**：读取 `~/.claude-requirements/projects/<requirementProject>/specs/`（`requirementProject` 取自 `.claude/settings.local.json`）
+
+目录存在且有文件 → 全部读取，作为测试约束注入上下文，不打印提示。  
+目录不存在或为空 → 静默跳过。
+
+---
+
 **CLAUDE.md 缺少测试规范时**：
 
 ```

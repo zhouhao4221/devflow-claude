@@ -60,6 +60,16 @@ docs/requirements/modules/<模块名>.md
 | `primary` | 本地读写，修改后自动同步缓存 |
 | `readonly` | 从缓存读取，允许基于已完成需求开发，不写入需求文档 |
 
+### 5. 加载项目扩展 Skills
+
+扫描 `.claude/skills/` 目录，读取所有 `.md` 文件，作为项目特有知识注入上下文。
+
+- 目录存在且有文件 → 全部读取，静默注入，不打印提示
+- 目录不存在或为空 → 静默跳过
+
+> 项目 Skills 声明项目特有的约定（如 `migration.md` 声明 `MIGRATIONS_DIR`），
+> 工具后续步骤直接使用，无需重复读取。
+
 ---
 
 ## 二、前置状态检查
@@ -150,6 +160,18 @@ docs/requirements/modules/<模块名>.md
 | 五、接口需求 | 接口能力和业务语义（技术方案在实现阶段生成） |
 | 六、测试要点 | 后续测试参考 |
 
+### 读取领域规约（Specs）
+
+读取需求文档后，检查项目是否存在领域规约：
+
+- **primary 仓库**：扫描 `docs/requirements/specs/` 目录，读取所有 `.md` 文件
+- **readonly 仓库**：读取 `~/.claude-requirements/projects/<requirementProject>/specs/`（`requirementProject` 取自 `.claude/settings.local.json`）
+
+目录存在且有文件 → 全部读取，作为开发约束注入上下文，不打印提示。  
+目录不存在或为空 → 静默跳过。
+
+---
+
 ### 检查已有实现方案
 
 检查需求文档「十一、实现方案」章节：
@@ -177,12 +199,12 @@ docs/requirements/modules/<模块名>.md
 
 分析需求中涉及的数据实体，生成：
 
-> **需要生成 migration SQL 时（后端 / 全栈项目）**，先解析 `MIGRATIONS_DIR`：
-> 1. Read `.claude/skills/migration.md` → 解析 `MIGRATIONS_DIR` 行
-> 2. 自动检测（`db/migrations`、`database/migrations`、`migrations`、`src/migrations`）
+> **需要生成 migration SQL 时（后端 / 全栈项目）**，从前置准备步骤 5 已加载的 Skills 中解析 `MIGRATIONS_DIR`：
+> 1. 已加载 `.claude/skills/migration.md` → 取其 `MIGRATIONS_DIR` 值
+> 2. 未配置 → 自动检测（`db/migrations`、`database/migrations`、`migrations`、`src/migrations`）
 > 3. 兜底：`docs/migrations`
 >
-> **未找到 `.claude/skills/migration.md` 时**，在生成 SQL 前打印一次警告（非阻塞，继续执行）：
+> **未找到 `MIGRATIONS_DIR` 配置时**，打印一次警告（非阻塞，继续执行）：
 >
 > ```
 > ⚠️  未找到 .claude/skills/migration.md，当前使用 MIGRATIONS_DIR=<auto-detected or default>
