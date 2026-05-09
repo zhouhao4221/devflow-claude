@@ -285,6 +285,52 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 ✅ docs/prompt/architecture.md 已存在，跳过生成
 ```
 
+#### 8.6 创建 Prompt 库骨架
+
+在 `docs/prompt/` 中创建通用 Prompt 文件骨架，仅当文件不存在时创建（--reinit 同样保护已有文件）：
+
+| 文件 | 用途说明（写入 `>` 行） |
+|------|------|
+| `code-generation.md` | 根据接口定义生成实现代码 |
+| `refactoring.md` | 在不改变行为的前提下重构代码结构 |
+| `test-generation.md` | 为代码编写测试用例 |
+| `error-diagnosis.md` | 分析错误根本原因并给出修复方向 |
+| `pr-review.md` | PR 初轮 AI 审查 |
+| `requirement-structuring.md` | 将模糊需求转为结构化输入 |
+
+每个文件使用统一的 5 节骨架，节内容留空，由用户与 AI 协作填写：
+
+```markdown
+# <中文标题>
+
+> <用途说明>
+
+## 什么时候用
+
+<!-- 适用场景 + 不适合的情况 -->
+
+## 必备输入
+
+<!-- 触发前需要准备的具体清单，这是最重要的部分 -->
+
+## 触发方式
+
+<!-- 单次任务模板（如何构造 prompt）+ 写入 CLAUDE.md 的推荐做法 -->
+
+## 优质输出标准
+
+<!-- 好的输出长什么样，用于质量判断 -->
+
+## 常见失败模式
+
+| 问题 | 原因 | 解决方案 |
+|------|------|----------|
+```
+
+同时创建 `docs/prompt/prompt-craft.md`，说明上述格式规范本身（供团队成员新建 prompt 时参考）。
+
+`architecture.md` 已由步骤 8.3 生成，此处跳过。
+
 ### 9. 项目 Skills 初始化
 
 创建 `.claude/skills/` 目录（不存在时），并根据项目类型引导创建常用 Skill 文件。
@@ -392,9 +438,10 @@ mkdir -p .claude/skills
 💡 下一步:
    1. 检查 docs/prompt/architecture.md 内容是否准确
    2. 确认 .claude/skills/migration.md 中的路径是否正确（如已创建）
-   3. 编辑 PRD.md 完善产品规划
-   4. /req:branch init  配置分支策略
-   5. /req:new <标题>   创建具体需求
+   3. 按需补充 docs/prompt/ 中各 Prompt 文件的内容（与 AI 协作填写）
+   4. 编辑 PRD.md 完善产品规划
+   5. /req:branch init  配置分支策略
+   6. /req:new <标题>   创建具体需求
 ```
 
 **重新初始化成功**（使用 `--reinit` 参数）：
@@ -411,6 +458,8 @@ mkdir -p .claude/skills
    + docs/requirements/templates/prd-template.md          已复制
    + docs/requirements/modules/quick-fix.md  已生成（新增）
    + docs/requirements/PRD.md       已生成（新增）
+   ✓ docs/prompt/architecture.md    已存在（或缺失时触发扫描+生成，见步骤 8）
+   ✓ docs/prompt/ 通用 Prompt 文件  已检查（6 个骨架 + prompt-craft.md，缺失时补创建）
    ✓ .claude/skills/                已检查（如为空可按引导创建 Skill 文件）
 
 🔗 当前仓库已绑定到此项目
