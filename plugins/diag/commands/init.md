@@ -31,7 +31,49 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/init-diag.sh"
 - 若 `services.yaml` 不存在，则从模板拷贝（已存在时不覆盖）
 - 打印目录结构和下一步指引
 
-### 2. 引导用户编辑服务清单
+### 2. 创建项目 Runbook 目录
+
+在当前项目的 `docs/runbooks/` 创建事故处理文档骨架，仅当文件不存在时创建：
+
+| 文件 | 用途 |
+|------|------|
+| `db-slow-query.md` | 数据库慢查询处理 |
+| `oom.md` | 内存溢出处理 |
+| `5xx-spike.md` | 接口报错飙升处理 |
+| `deployment-rollback.md` | 部署回滚流程 |
+
+每个文件使用统一的 5 节骨架，节内容留空，在 `/diag:diagnose` 诊断完事故后由 AI 协作补写：
+
+```markdown
+# <事故类型>
+
+> <一行用途说明>
+
+## 什么时候用
+
+<!-- 触发条件和典型症状 -->
+
+## 必备输入
+
+<!-- 开始诊断前需要收集的信息（日志、监控指标、错误码等） -->
+
+## 触发方式
+
+<!-- /diag:diagnose 命令模板 + 需要提供的上下文 -->
+
+## 优质输出标准
+
+<!-- 定位到根因、给出可执行的修复步骤 -->
+
+## 常见失败模式
+
+| 问题 | 原因 | 解决方案 |
+|------|------|----------|
+```
+
+若不在 git 仓库目录下运行（`git rev-parse --is-inside-work-tree` 失败），跳过此步骤。
+
+### 3. 引导用户编辑服务清单
 
 脚本结束后向用户展示：
 
@@ -50,7 +92,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/init-diag.sh"
 - **方式 A（对话录入）**：用户说"服务名 order-api，主机 prod-web-01，日志 /var/log/app/order.log"，AI 用 `Edit` 工具改 `~/.claude-diag/config/services.yaml`
 - **方式 B（自行编辑）**：用户说"我自己编辑"，AI 等待用户说"已填写"后继续校验
 
-### 3. 校验配置
+### 4. 校验配置
 
 ```bash
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/services-config.sh" validate
@@ -59,7 +101,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/services-config.sh" validate
 - 通过 → 展示服务数量
 - 失败 → 展示具体错误（缺字段 / 重名 / language_hint 非法），让用户修复后重试
 
-### 4. （可选）Hook 空跑测试
+### 5. （可选）Hook 空跑测试
 
 询问用户是否跑一次空测试：
 
@@ -74,13 +116,14 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/services-config.sh" validate
 
 **注意**：本期不强制执行空测试，用户拒绝即跳过。
 
-### 5. 输出总结
+### 6. 输出总结
 
 ```
 ✅ Diag 插件初始化完成
 
 📂 配置：~/.claude-diag/config/services.yaml（2 个服务）
 📂 审计：~/.claude-diag/audit/
+📂 Runbook：docs/runbooks/（4 个骨架文件，诊断完事故后补写内容）
 
 💡 下一步：
 - /diag:diagnose <报错描述>   开始诊断
