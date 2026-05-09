@@ -52,7 +52,7 @@ haiku 命令：`/req`、`/req:status/show/prd/projects/cache/use/done/update-tem
 
 ## 技能与钩子
 
-**自动触发技能**：`requirement-analyzer`（新建/编辑需求）· `dev-guide`（`/req:dev`）· `prd-analyzer`（`/req:prd-edit`）· `code-impact-analyzer`（需求变更）· `test-guide`（测试命令）· `changelog-generator`（`/req:changelog`）· `natural-language-dispatcher`（自然语言操作）
+**自动触发技能**：`requirement-analyzer`（新建/编辑需求）· `dev-guide`（`/req:dev`）· `prd-analyzer`（`/req:prd-edit`）· `code-impact-analyzer`（需求变更）· `test-guide`（测试命令）· `changelog-generator`（`/req:changelog`）· `natural-language-dispatcher`（自然语言操作）· `version-bumper`（`/req:release`，步骤 2.5 同步插件版本号）
 
 **钩子**（`plugins/req/hooks/hooks.json`）：
 

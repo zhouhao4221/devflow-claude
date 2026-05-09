@@ -109,6 +109,15 @@ model: claude-haiku-4-5-20251001
 - `--bump` 存在时直接用，跳过扫描
 - 打印 `基线 tag / 推导版本 / 推导依据`，**自动使用推导结果**（如需覆盖请显式传参）
 
+### 步骤 2.5：更新版本号（version-bumper）
+
+版本号确定后，立即执行 `version-bumper` skill：
+
+- `marketplace.json` `metadata.version` 同步为本次 release 版本号（去掉 `v` 前缀）
+- 各插件 `plugin.json` 按各自目录的 commit 变更等级独立 bump
+- 修改结果暂存（`git add`），在步骤 10 的统一 commit 中一起提交
+- 详细规则见 `plugins/req/skills/version-bumper/SKILL.md`
+
 ### 步骤 3：扫描候选需求
 
 ```bash
