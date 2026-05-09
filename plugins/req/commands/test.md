@@ -4,7 +4,7 @@ argument-hint: "[REQ-XXX]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-> **重要**：本命令的测试文件位置、运行命令、代码示例均从项目 CLAUDE.md 的「测试规范」章节读取，不内置任何项目细节。
+> **重要**：本命令的测试文件位置、运行命令、环境启动命令均从项目 `docs/prompt/testing.md` 读取，不内置任何项目细节。文件不存在时打印创建提示（非阻塞），并回退到 `docs/prompt/architecture.md` 的「测试规范」章节。
 
 # 需求测试
 
@@ -117,7 +117,7 @@ API 测试：
 
 1. **优先从需求文档**获取「文件改动清单」中列出的文件
 2. 如果文档中没有明确列出，则通过 `git diff` 对比当前分支与主分支的变更文件
-3. 按 CLAUDE.md 测试规范定位关联测试文件
+3. 按 `docs/prompt/testing.md` 定位关联测试文件
 
 ---
 
@@ -134,7 +134,7 @@ API 测试：
 
 🔄 运行已有 UT...
 
-<CLAUDE.md中定义的UT运行命令>
+<docs/prompt/testing.md 中定义的 UT 运行命令>
 
 <test-file-1>
 ├── <TestCase_1>            ✅ PASS
@@ -170,7 +170,7 @@ API 测试：
 
 #### 6.0 环境检查
 
-API 测试需要 CLAUDE.md 中定义的测试环境：
+API 测试需要 `docs/prompt/testing.md` 中定义的测试环境：
 
 ```
 🔍 检查测试环境...
@@ -184,8 +184,8 @@ API 测试需要 CLAUDE.md 中定义的测试环境：
 ```
 ⚠️ 测试环境未就绪
 
-🚀 按 CLAUDE.md 测试环境配置启动服务...
-<CLAUDE.md中定义的测试环境启动命令>
+🚀 按 docs/prompt/testing.md 测试环境配置启动服务...
+<docs/prompt/testing.md 中定义的测试环境启动命令>
 
 ⏳ 等待服务就绪...
 ├── <依赖服务 1>   ✅ 就绪
@@ -202,7 +202,7 @@ API 测试需要 CLAUDE.md 中定义的测试环境：
 
 🔄 运行已有 API 测试...
 
-<CLAUDE.md中定义的API测试运行命令>
+<docs/prompt/testing.md 中定义的 API 测试运行命令>
 
 <api-test-file>
 ├── <TestCase_API_1>           ✅ PASS
@@ -250,7 +250,7 @@ E2E 测试额外需要前端服务：
 └── <前端服务>       ❌ 未启动
 
 🚀 启动前端服务...
-<CLAUDE.md中定义的前端启动命令>
+<docs/prompt/testing.md 中定义的前端启动命令>
 └── <前端服务>  ✅ 就绪
 ```
 
@@ -263,7 +263,7 @@ E2E 测试额外需要前端服务：
 
 🔄 运行已有 E2E 测试...
 
-<CLAUDE.md中定义的E2E运行命令>
+<docs/prompt/testing.md 中定义的 E2E 运行命令>
 
   ✅ <E2E 场景描述 1> (Xs)
   ✅ <E2E 场景描述 2> (Xs)

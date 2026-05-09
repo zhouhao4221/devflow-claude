@@ -294,6 +294,7 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 | `code-generation.md` | 根据接口定义生成实现代码 |
 | `refactoring.md` | 在不改变行为的前提下重构代码结构 |
 | `test-generation.md` | 为代码编写测试用例 |
+| `testing.md` | 项目测试细节：运行命令、文件位置、环境启动（`/req:test` 读取此文件） |
 | `error-diagnosis.md` | 分析错误根本原因并给出修复方向 |
 | `pr-review.md` | PR 初轮 AI 审查 |
 | `requirement-structuring.md` | 将模糊需求转为结构化输入 |
@@ -459,7 +460,7 @@ mkdir -p .claude/skills
    + docs/requirements/modules/quick-fix.md  已生成（新增）
    + docs/requirements/PRD.md       已生成（新增）
    ✓ docs/prompt/architecture.md    已存在（或缺失时触发扫描+生成，见步骤 8）
-   ✓ docs/prompt/ 通用 Prompt 文件  已检查（6 个骨架 + prompt-craft.md，缺失时补创建）
+   ✓ docs/prompt/ 通用 Prompt 文件  已检查（7 个骨架 + prompt-craft.md，缺失时补创建）
    ✓ .claude/skills/                已检查（如为空可按引导创建 Skill 文件）
 
 🔗 当前仓库已绑定到此项目
