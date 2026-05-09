@@ -94,11 +94,19 @@ else:
 
 **情况 A：需求文档元信息 `branch` 字段有值（非 `-`）**
 
-1. 读取 `branch` 字段值
-2. 检查分支是否存在：
+1. 读取 `branch` 字段值，按逗号拆分得到分支列表
+2. **单个分支**：直接 checkout
    - 本地存在 → `git checkout <branch>`
    - 仅远程存在 → `git checkout -b <branch> origin/<branch>`
    - 都不存在 → `git checkout -b <branch> <BRANCH_FROM>`
+3. **多个分支**：展示列表，让用户选择切入哪一个：
+   ```
+   此需求有多个开发分支，请选择：
+   1. feat/REQ-025-backend
+   2. feat/REQ-025-frontend
+   （输入编号，或输入新分支名新建）
+   ```
+   选择后按单分支逻辑处理
 
 **情况 B：`branch` 字段为 `-` 或缺失（首次进入）**
 
