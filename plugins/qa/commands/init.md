@@ -28,7 +28,17 @@ mkdir -p docs/qa/screenshots
 mkdir -p .claude/skills/qa-executor
 ```
 
-### 2. 安装 qa-executor skill
+### 2. 生成 testid 命名约定文档
+
+将约定模板复制到项目：
+
+```bash
+cp plugins/qa/templates/testid-convention.md docs/qa/testid-convention.md
+```
+
+此文件提交到 git，供前端开发参考添加 `data-testid` 属性。
+
+### 3. 安装 qa-executor skill
 
 将插件源文件复制到项目 skills 目录：
 
@@ -43,7 +53,7 @@ cp plugins/qa/skills/qa-executor/SKILL.md .claude/skills/qa-executor/SKILL.md
 💡 请先通过 devflow 安装 qa 插件后重试
 ```
 
-### 3. 更新 .gitignore
+### 4. 更新 .gitignore
 
 检查项目根目录的 `.gitignore`：
 
@@ -56,7 +66,7 @@ docs/qa/reports/
 docs/qa/screenshots/
 ```
 
-### 4. 输出结果
+### 5. 输出结果
 
 ```
 ✅ QA 插件初始化完成
@@ -68,6 +78,9 @@ docs/qa/screenshots/
 
 已安装 skill：
   .claude/skills/qa-executor/SKILL.md
+
+已生成约定文档：
+  docs/qa/testid-convention.md    data-testid 命名约定（提交 git，供前端参考）
 
 💡 Codex / Claude 桌面端现在可以使用 /qa:run 执行测试
 💡 使用 /qa:new 创建第一个测试流程文档
