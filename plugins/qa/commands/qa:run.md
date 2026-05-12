@@ -23,6 +23,20 @@ allowed-tools: Read, Write, Edit, Glob, Bash(mkdir:*)
 
 ## 执行流程
 
+### 0. 前置检查：skill 是否已安装
+
+检查 `.claude/skills/qa-executor/SKILL.md` 是否存在：
+
+- 存在 → 继续
+- 不存在 → 终止并提示：
+
+```
+❌ qa-executor skill 未安装
+
+当前环境（Codex / Claude 桌面端）需要 skill 文件才能执行测试。
+💡 请先在 Claude Code 中运行：/qa:init
+```
+
 ### 1. 确定执行范围
 
 - 有参数 → 查找 `docs/qa/flows/<module>.md`
@@ -36,7 +50,7 @@ allowed-tools: Read, Write, Edit, Glob, Bash(mkdir:*)
 
 ### 2. 激活 qa-executor skill
 
-读取 flow 文档后，按 `plugins/qa/skills/qa-executor/SKILL.md` 的指导执行：
+读取 flow 文档后，按 `.claude/skills/qa-executor/SKILL.md` 的指导执行：
 
 - 检查运行环境（browser 模式下确认浏览器工具可用）
 - 逐场景执行并记录结果
