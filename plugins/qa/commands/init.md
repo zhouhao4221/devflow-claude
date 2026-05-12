@@ -1,7 +1,7 @@
 ---
 description: 初始化 QA 插件 - 创建目录结构并安装 skill 到项目
 argument-hint: ""
-allowed-tools: Read, Write, Glob, Bash(mkdir:*, cp:*, ls:*)
+allowed-tools: Read, Write, Edit, Glob, Bash(mkdir:*, cp:*, ls:*, grep:*)
 model: claude-haiku-4-5-20251001
 ---
 
@@ -43,15 +43,28 @@ cp plugins/qa/skills/qa-executor/SKILL.md .claude/skills/qa-executor/SKILL.md
 💡 请先通过 devflow 安装 qa 插件后重试
 ```
 
-### 3. 输出结果
+### 3. 更新 .gitignore
+
+检查项目根目录的 `.gitignore`：
+
+- 若已包含 `docs/qa/reports/` → 跳过
+- 否则追加：
+
+```
+# QA test artifacts
+docs/qa/reports/
+docs/qa/screenshots/
+```
+
+### 4. 输出结果
 
 ```
 ✅ QA 插件初始化完成
 
 已创建目录：
   docs/qa/flows/          测试流程文档
-  docs/qa/reports/        测试报告
-  docs/qa/screenshots/    截图存储
+  docs/qa/reports/        测试报告（已加入 .gitignore）
+  docs/qa/screenshots/    截图存储（已加入 .gitignore）
 
 已安装 skill：
   .claude/skills/qa-executor/SKILL.md
