@@ -1,7 +1,7 @@
 ---
 description: 上报测试失败项 - 将失败场景创建为 Gitea issue
 argument-hint: "[module]"
-allowed-tools: Read, Glob, Bash(git remote:*, command:*, tea:*, curl:*)
+allowed-tools: Read, Glob, Bash(git remote:*, command:*, tea:*, curl:*, gh:*)
 model: claude-haiku-4-5-20251001
 ---
 

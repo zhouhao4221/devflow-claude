@@ -69,5 +69,5 @@ AI 将用户的自然语言整理为标准格式。每收集完一个场景展�
 🎯 场景数：3
 
 💡 /qa:run <module>   立即执行测试
-💡 /qa:edit <module>  手动编辑文档
+💡 直接编辑：docs/qa/flows/<module>.md
 ```

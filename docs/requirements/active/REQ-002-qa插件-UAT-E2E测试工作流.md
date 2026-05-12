@@ -255,6 +255,7 @@ flowchart LR
 plugins/qa/
 ├── commands/
 │   ├── qa.md                  # 入口：列出模块 + 状态
+│   ├── qa:init.md             # 初始化：安装 skill 到项目
 │   ├── qa:new.md              # 引导创建测试流程文档
 │   ├── qa:run.md              # 执行测试场景
 │   ├── qa:report.md           # 生成/展示测试报告
