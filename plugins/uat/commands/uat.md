@@ -20,10 +20,11 @@ model: claude-haiku-4-5-20251001
 | 命令 | 说明 |
 |------|------|
 | `/uat:init` | 初始化 UAT 插件（首次使用必须执行） |
-| `/uat:new [module]` | 引导创建测试流程文档 |
+| `/uat:analyze [module]` | 分析代码/接口定义生成测试指导文件 |
+| `/uat:new [module]` | 对话式引导创建测试流程文档 |
 | `/uat:run [module]` | 执行测试（需 Codex Chrome 或 Claude 桌面端） |
 | `/uat:report` | 查看最近一次测试报告 |
-| `/uat:bug` | 将失败场景上报为 Gitea issue |
+| `/uat:bug` | 将失败场景上报为 issue |
 
 ---
 

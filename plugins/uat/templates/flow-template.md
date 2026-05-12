@@ -9,8 +9,10 @@
 | 入口 | http://localhost:3000 |
 | 创建日期 | YYYY-MM-DD |
 | 最后执行 | - |
+| 生成方式 | 手动（/uat:new）|
 
 > 平台可选值：`web`（浏览器）/ `desktop`（桌面应用）/ `mobile-web`（移动端浏览器）
+> 生成方式可选值：`手动（/uat:new）` / `代码分析（/uat:analyze）` / `手动 + 补充分析`
 
 ---
 

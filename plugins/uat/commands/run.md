@@ -59,7 +59,7 @@ allowed-tools: Read, Write, Edit, Glob, Bash(mkdir:*)
 
 执行完毕后：
 1. 创建 `docs/uat/screenshots/` 目录（如不存在）
-2. 将报告写入 `docs/uat/reports/YYYY-MM-DD-<module>.md`
+2. 将报告写入 `docs/uat/reports/YYYY-MM-DD-<module>.md`（含「发现记录」节，若有发现项）
 3. 更新 flow 文档元信息的 `最后执行` 字段
 
 ### 4. 输出汇总
@@ -70,5 +70,7 @@ allowed-tools: Read, Write, Edit, Glob, Bash(mkdir:*)
 📄 报告已保存：docs/uat/reports/YYYY-MM-DD-<module>.md
 
 💡 /uat:report          查看完整报告
-💡 /uat:bug             将失败项上报为 issue
+💡 /uat:bug             将失败项（代码 bug）上报为 issue
 ```
+
+**注**：执行过程中发现的用例描述问题已通过 uat-executor 就地更新 flow 文档，无需额外操作。
