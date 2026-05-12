@@ -6,12 +6,12 @@
 |-----|-----|
 | 编号 | REQ-002 |
 | 类型 | 全栈 |
-| 状态 | 评审通过 |
+| 状态 | 开发中 |
 | 模块 | qa |
 | 优先级 | P2 |
 | 创建日期 | 2026-05-11 |
 | 负责人 | - |
-| branch | - |
+| branch | feat/REQ-002-qa-uat-e2e-workflow |
 | issue | - |
 
 ## 生命周期
@@ -19,7 +19,7 @@
 - [x] 草稿（编写中）
 - [x] 待评审
 - [x] 评审通过
-- [ ] 开发中
+- [x] 开发中
 - [ ] 测试中
 - [ ] 已完成
 
@@ -76,13 +76,13 @@ devflow 现有 `browser:browser` 技能提供了底层浏览器操控能力，�
 
 ## 二、功能清单
 
-- [ ] **qa 插件骨架**：创建 `plugins/qa/` 目录结构（commands/ skills/）并注册到 marketplace.json
-- [ ] **`/qa` 入口命令**：列出 `docs/qa/flows/` 下所有模块及上次执行状态
-- [ ] **`/qa:new` 引导创建**：多轮对话收集测试场景，生成结构化 flow 文档
-- [ ] **`/qa:run [module]`**：读取 flow 文档，逐场景调用 browser 等工具执行，记录 pass/fail
-- [ ] **`/qa:report`**：从最近一次运行结果生成 `docs/qa/reports/YYYY-MM-DD-<module>.md`
-- [ ] **`/qa:bug`**：展示失败场景，询问用户是否上报，按项目 giteaToken 等配置创建 issue
-- [ ] **`qa-executor` skill**：指导 Claude 作为指挥家按场景执行测试、记录结果的核心逻辑
+- [x] **qa 插件骨架**：创建 `plugins/qa/` 目录结构（commands/ skills/）并注册到 marketplace.json
+- [x] **`/qa` 入口命令**：列出 `docs/qa/flows/` 下所有模块及上次执行状态
+- [x] **`/qa:new` 引导创建**：多轮对话收集测试场景，生成结构化 flow 文档
+- [x] **`/qa:run [module]`**：读取 flow 文档，逐场景调用 browser 等工具执行，记录 pass/fail
+- [x] **`/qa:report`**：从最近一次运行结果生成 `docs/qa/reports/YYYY-MM-DD-<module>.md`
+- [x] **`/qa:bug`**：展示失败场景，询问用户是否上报，按项目 giteaToken 等配置创建 issue
+- [x] **`qa-executor` skill**：指导 Claude 作为指挥家按场景执行测试、记录结果的核心逻辑
 
 ---
 
@@ -224,16 +224,62 @@ flowchart LR
 
 ### 11.1 数据模型
 
-_开发阶段填充_
+无数据库。核心存储文件：
+
+| 文件 | 说明 |
+|------|------|
+| `docs/qa/flows/<module>.md` | 测试流程文档，人工维护 |
+| `docs/qa/reports/YYYY-MM-DD-<module>.md` | 测试报告，`/qa:run` 自动生成 |
+
+**flow 文档格式规范**（由模板约束）：
+- 元信息区：模块名、操作方式（browser/api/desktop）、入口 URL、创建日期、最后执行日期
+- 场景区：每个场景含 ID（S01/S02...）、前置条件、步骤列表、预期结果断言列表
 
 ### 11.2 API 设计
 
-_开发阶段填充_
+本插件为 CLI 工具，无 HTTP API。命令即接口：
+
+| 命令 | 参数 | 输出 |
+|------|------|------|
+| `/qa` | - | 列出 flows/ 下所有模块 + 上次执行状态 |
+| `/qa:new [module]` | 模块名（可选） | 生成 `docs/qa/flows/<module>.md` |
+| `/qa:run [module]` | 模块名（省略则全部） | 逐场景 pass/fail 汇总 + 写报告文件 |
+| `/qa:report` | - | 格式化最近报告并展示 |
+| `/qa:bug` | - | 读最近报告失败项 → 询问 → 创建 Gitea issue |
 
 ### 11.3 文件改动清单
 
-_开发阶段填充_
+**新增文件**：
+
+```
+plugins/qa/
+├── commands/
+│   ├── qa.md                  # 入口：列出模块 + 状态
+│   ├── qa:new.md              # 引导创建测试流程文档
+│   ├── qa:run.md              # 执行测试场景
+│   ├── qa:report.md           # 生成/展示测试报告
+│   └── qa:bug.md              # 失败项上报 Gitea issue
+├── skills/
+│   └── qa-executor/
+│       └── SKILL.md           # 核心执行引导 skill
+└── templates/
+    └── flow-template.md       # flow 文档模板
+```
+
+**修改文件**：
+
+```
+.claude-plugin/marketplace.json   # 追加 qa 插件注册
+```
 
 ### 11.4 实现步骤
 
-_开发阶段填充_
+1. **创建目录结构**：`plugins/qa/commands/`、`plugins/qa/skills/qa-executor/`、`plugins/qa/templates/`
+2. **注册插件**：在 `.claude-plugin/marketplace.json` 追加 qa 插件条目
+3. **实现 flow 模板**：`plugins/qa/templates/flow-template.md`（规范场景格式）
+4. **实现 qa-executor skill**：`plugins/qa/skills/qa-executor/SKILL.md`（指导 Claude 读 flow 文档、按操作方式选工具、记录结果）
+5. **实现 `/qa` 入口**：`plugins/qa/commands/qa.md`（扫描 flows/ 展示模块列表）
+6. **实现 `/qa:new`**：`plugins/qa/commands/qa:new.md`（多轮对话 → 按模板生成 flow 文档）
+7. **实现 `/qa:run`**：`plugins/qa/commands/qa:run.md`（调用 qa-executor，写报告文件）
+8. **实现 `/qa:report`**：`plugins/qa/commands/qa:report.md`（读最新报告文件展示）
+9. **实现 `/qa:bug`**：`plugins/qa/commands/qa:bug.md`（读失败项 → 询问 → 创建 issue）

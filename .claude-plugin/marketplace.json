@@ -32,6 +32,12 @@
       "description": "生产诊断 - 只读拉日志、AI 解析堆栈、关联代码、给修复建议，严禁写操作",
       "source": "./plugins/diag/",
       "category": "ops"
+    },
+    {
+      "name": "qa",
+      "description": "QA 测试工作流 - AI 驱动的 UAT/E2E 测试，Claude 作为指挥家按测试流程文档执行验收",
+      "source": "./plugins/qa/",
+      "category": "quality"
     }
   ]
 }
