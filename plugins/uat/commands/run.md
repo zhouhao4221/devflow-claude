@@ -73,4 +73,4 @@ allowed-tools: Read, Write, Edit, Glob, Bash(mkdir:*)
 💡 /uat:bug             将失败项（代码 bug）上报为 issue
 ```
 
-**注**：执行过程中发现的用例描述问题已通过 uat-executor 就地更新 flow 文档，无需额外操作。
+**注**：执行中发现流程文档描述有误时直接更新 `docs/uat/flows/<module>.md`，无需额外操作。
