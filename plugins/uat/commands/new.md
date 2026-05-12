@@ -11,7 +11,7 @@ allowed-tools: Read, Write, Glob
 ## 命令格式
 
 ```
-/qa:new [module]
+/uat:new [module]
 ```
 
 ---
@@ -23,13 +23,13 @@ allowed-tools: Read, Write, Glob
 - 若参数已传入模块名，直接使用
 - 否则询问：`请输入测试模块名称（如：用户登录、商品搜索）`
 
-检查 `docs/qa/flows/<module>.md` 是否已存在：
+检查 `docs/uat/flows/<module>.md` 是否已存在：
 - 已存在 → 提示 `该模块已有测试文档，是否覆盖？(y/n)`
 - 不存在 → 继续
 
 ### 2. 读取模板
 
-读取 `plugins/qa/templates/flow-template.md`，了解 flow 文档结构。
+读取 `plugins/uat/templates/flow-template.md`，了解 flow 文档结构。
 
 ### 3. 多轮对话收集信息
 
@@ -89,8 +89,8 @@ AI 将用户的自然语言整理为标准格式，`选择器` 字段填入步�
 
 ### 4. 生成文档
 
-严格按模板格式生成 `docs/qa/flows/<module>.md`：
-- 创建 `docs/qa/flows/` 目录（如不存在）
+严格按模板格式生成 `docs/uat/flows/<module>.md`：
+- 创建 `docs/uat/flows/` 目录（如不存在）
 - 场景 ID 按 S01、S02... 顺序编号
 - `测试数据` 和 `已知结论` 区块必须写入（无内容时保留空占位符）
 
@@ -99,9 +99,9 @@ AI 将用户的自然语言整理为标准格式，`选择器` 字段填入步�
 ```
 ✅ 测试流程文档已创建
 
-📁 docs/qa/flows/<module>.md
+📁 docs/uat/flows/<module>.md
 🎯 场景数：3
 
-💡 /qa:run <module>   立即执行测试
-💡 直接编辑：docs/qa/flows/<module>.md
+💡 /uat:run <module>   立即执行测试
+💡 直接编辑：docs/uat/flows/<module>.md
 ```

@@ -1,17 +1,17 @@
 ---
-name: qa-executor
+name: uat-executor
 description: |
-  QA 测试执行引导。在 /qa:run 命令时激活。
+  UAT 测试执行引导。在 /uat:run 命令时激活。
   指导 Claude 作为"指挥家"，读取测试流程文档，
   通过 browser 工具在 UI 上逐步执行测试，记录结果。
   所有测试操作均通过界面进行，不直接调用 API。
 ---
 
-# QA 执行引导
+# UAT 执行引导
 
-仅在 `/qa:run` 命令执行时激活。
+仅在 `/uat:run` 命令执行时激活。
 
-**核心原则**：所有测试通过界面（browser）执行，不调用后端 API。API 信息仅在 `/qa:new` 撰写 flow 文档时作为参考。
+**核心原则**：所有测试通过界面（browser）执行，不调用后端 API。API 信息仅在 `/uat:new` 撰写 flow 文档时作为参考。
 
 ---
 
@@ -20,7 +20,7 @@ description: |
 ### 1. 读取 flow 文档
 
 ```
-docs/qa/flows/<module>.md
+docs/uat/flows/<module>.md
 ```
 
 解析以下字段：
@@ -40,7 +40,7 @@ docs/qa/flows/<module>.md
 **环境检测**：若操作方式为 `browser` 但当前环境无浏览器工具，输出：
 ```
 ⚠️  当前环境不支持浏览器自动化
-💡  请在 Codex Chrome 或 Claude 桌面客户端中运行 /qa:run
+💡  请在 Codex Chrome 或 Claude 桌面客户端中运行 /uat:run
 ```
 然后终止。
 
@@ -175,7 +175,7 @@ docs/qa/flows/<module>.md
 | 元素不存在 | 确认选择器在容器内查无结果 |
 | URL 匹配 | 检查当前页面 URL |
 
-**截图策略**：**仅在步骤失败时截图**，不对通过的步骤截图。截图路径：`docs/qa/screenshots/YYYY-MM-DD-S0N-<step>.png`
+**截图策略**：**仅在步骤失败时截图**，不对通过的步骤截图。截图路径：`docs/uat/screenshots/YYYY-MM-DD-S0N-<step>.png`
 
 ---
 
@@ -209,7 +209,7 @@ docs/qa/flows/<module>.md
 
 ```
 ═══════════════════════════════════
-  QA 执行报告：<module>
+  UAT 执行报告：<module>
   执行时间：YYYY-MM-DD HH:mm
 ═══════════════════════════════════
   ✅ S01 正常登录           PASS
@@ -224,10 +224,10 @@ docs/qa/flows/<module>.md
 
 ### 报告文件格式
 
-写入 `docs/qa/reports/YYYY-MM-DD-<module>.md`：
+写入 `docs/uat/reports/YYYY-MM-DD-<module>.md`：
 
 ```markdown
-# QA 报告：<module>
+# UAT 报告：<module>
 
 执行时间：YYYY-MM-DD HH:mm
 操作方式：browser
@@ -249,14 +249,14 @@ docs/qa/flows/<module>.md
 - **失败步骤**：步骤 3 - 点击登录后
 - **预期**：页面显示「密码错误」提示
 - **实际**：页面无任何提示，直接刷新
-- **截图**：docs/qa/screenshots/2026-05-12-S02-step3.png
+- **截图**：docs/uat/screenshots/2026-05-12-S02-step3.png
 
 ### S05 表单边界 & 字符 — 失败行
 | 行 | 输入 | 预期 | 实际 |
 |----|------|------|------|
 | B2 | 超长字符串（51位） | 提示超限 | 正常提交，数据被截断存储 |
 | C4 | `<script>alert(1)</script>` | 展示为文本 | 页面弹出 alert 弹窗 |
-- **截图**：docs/qa/screenshots/2026-05-12-S05-B2.png、S05-C4.png
+- **截图**：docs/uat/screenshots/2026-05-12-S05-B2.png、S05-C4.png
 ```
 
 更新 flow 文档元信息的 `最后执行` 字段为当前日期。
@@ -270,15 +270,15 @@ docs/qa/flows/<module>.md
 
 💡 GitHub Issue:
    gh issue create --title "[BUG] <module> - <简短描述>" \
-     --body "$(cat docs/qa/reports/YYYY-MM-DD-<module>.md)" \
+     --body "$(cat docs/uat/reports/YYYY-MM-DD-<module>.md)" \
      --label bug
 
 💡 Gitea Issue:
    tea issue create --title "[BUG] <module> - <简短描述>" \
-     --description "$(cat docs/qa/reports/YYYY-MM-DD-<module>.md)"
+     --description "$(cat docs/uat/reports/YYYY-MM-DD-<module>.md)"
 
    或通过 /req:issue new 创建，自动关联需求。
 
-📎 截图路径：docs/qa/screenshots/YYYY-MM-DD-*
+📎 截图路径：docs/uat/screenshots/YYYY-MM-DD-*
    上报 Issue 时建议手动附上截图附件。
 ```
