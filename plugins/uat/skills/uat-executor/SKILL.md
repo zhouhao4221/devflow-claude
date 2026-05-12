@@ -60,17 +60,45 @@ docs/uat/flows/<module>.md
 ⏭ S02 <场景名> — SKIP（已知结论：手工新增接口返回 500）
 ```
 
+### 执行前：注入 console error 监听（web 平台）
+
+在打开页面后、执行任何步骤前，通过 browser 工具注入以下脚本，收集整个场景过程中的 console error：
+
+```javascript
+window.__uatConsoleErrors = [];
+const _orig = console.error.bind(console);
+console.error = function(...args) {
+  window.__uatConsoleErrors.push(args.map(String).join(' '));
+  _orig(...args);
+};
+```
+
+每个场景结束后读取并清空 `window.__uatConsoleErrors`，作为该场景的附加信息。
+
 ### 对每个场景 `S0N`，按以下流程执行：
 
 ```
 1. 输出场景标题：▶ S01 <场景名称>
-2. 数据准备：若有说明，提示用户手动准备后确认继续
-3. 检查前置条件
-4. 逐步理解并执行操作步骤（见三、意图驱动执行）
-5. 逐条验证预期结果（见六、断言策略）
-6. 数据清理：若场景类型为「新增」，执行清理（见五）
-7. 记录结果：✅ PASS 或 ❌ FAIL（附失败原因）
+2. 注入 console error 监听（web 平台，见上方）
+3. 数据准备：若有说明，提示用户手动准备后确认继续
+4. 检查前置条件
+5. 逐步理解并执行操作步骤（见三、意图驱动执行）
+6. 逐条验证预期结果（见六、断言策略）
+7. 读取 window.__uatConsoleErrors，记录本场景的 console error 列表
+8. 数据清理：若场景类型为「新增」，执行清理（见五）
+9. 记录结果（见下方结果判定规则）
 ```
+
+### console error 结果判定
+
+| 步骤结果 | console error | 最终标记 | 说明 |
+|---------|--------------|---------|------|
+| PASS | 无 | ✅ PASS | 正常 |
+| PASS | 有 | ⚠️ PASS | 功能通过但有异常，需关注 |
+| FAIL | 无 | ❌ FAIL | 步骤/断言失败 |
+| FAIL | 有 | ❌ FAIL | 同上，console error 作为附加线索 |
+
+⚠️ PASS 不算失败，不触发截图，但会写入报告和工单。
 
 ---
 
@@ -193,10 +221,10 @@ docs/uat/flows/<module>.md
 ═══════════════════════════════════
   ✅ S01 正常登录           PASS
   ❌ S02 密码错误提示        FAIL  表单未显示错误信息
-  ⏭ S03 手工新增           SKIP  已知结论：接口 500
-  ✅ S04 退出登录           PASS
+  ⚠️ S03 新增客户           PASS  1 个 console error
+  ⏭ S04 手工新增           SKIP  已知结论：接口 500
 ───────────────────────────────────
-  通过：2   失败：1   跳过：1   共 4
+  通过：2   警告：1   失败：1   跳过：1   共 4
 ═══════════════════════════════════
 ```
 
@@ -212,13 +240,14 @@ docs/uat/flows/<module>.md
 
 ## 汇总
 
-| 场景 | 名称 | 结果 | 备注 |
-|------|------|------|------|
-| S01 | 正常登录 | ✅ PASS | - |
-| S02 | 密码错误提示 | ❌ FAIL | 表单未显示错误信息 |
-| S03 | 手工新增 | ⏭ SKIP | 已知结论：接口 500 |
+| 场景 | 名称 | 结果 | Console Errors | 备注 |
+|------|------|------|---------------|------|
+| S01 | 正常登录 | ✅ PASS | - | - |
+| S02 | 密码错误提示 | ❌ FAIL | - | 表单未显示错误信息 |
+| S03 | 新增客户 | ⚠️ PASS | 1 个 | 见详情 |
+| S04 | 手工新增 | ⏭ SKIP | - | 已知结论：接口 500 |
 
-通过：2 · 失败：1 · 跳过：1
+通过：2 · 警告：1 · 失败：1 · 跳过：1
 
 ## 失败详情
 
@@ -227,6 +256,14 @@ docs/uat/flows/<module>.md
 - **预期**：页面显示「密码错误」提示
 - **实际**：页面无任何提示，直接刷新
 - **截图**：docs/uat/screenshots/2026-05-12-S02-step3.png
+
+## Console Error 详情
+
+### S03 新增客户
+```
+TypeError: Cannot read properties of undefined (reading 'id')
+    at CustomerForm.vue:142
+```
 ```
 
 更新 flow 文档元信息的 `最后执行` 字段为当前日期。

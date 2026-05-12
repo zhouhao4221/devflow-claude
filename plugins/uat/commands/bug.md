@@ -40,18 +40,23 @@ model: claude-haiku-4-5-20251001
 ❌ 未找到测试报告，请先执行 /uat:run
 ```
 
-### 3. 展示失败列表并询问
+### 3. 展示候选列表并询问
 
 ```
-📋 发现 2 个失败场景：
+📋 发现 3 个需上报场景：
 
+❌ 失败（2 个）：
   1. S02 密码错误提示
-     失败原因：表单未显示错误信息
+     原因：表单未显示错误信息
 
   2. S05 退出登录后跳转
-     失败原因：未跳转到登录页，停留在当前页
+     原因：未跳转到登录页
 
-是否上报到 Gitea？(y/n/选择编号如 1,2)
+⚠️  Console Error（1 个，功能表现正常但有 JS 异常）：
+  3. S03 新增客户
+     TypeError: Cannot read properties of undefined (reading 'id')
+
+是否上报？(y/n/选择编号如 1,2,3)
 ```
 
 用户可选择全部上报、部分上报或取消。
@@ -69,6 +74,8 @@ model: claude-haiku-4-5-20251001
 - GitHub：`gh issue create`
 - Gitea：优先 `tea issue create`，不可用时回退 `curl + giteaToken`
 
+**上报范围**：`❌ FAIL` 和 `⚠️ PASS（有 console error）` 的场景都纳入上报候选，在步骤 3 展示时分组标注。
+
 **issue 正文**：
 
 ```
@@ -76,15 +83,19 @@ model: claude-haiku-4-5-20251001
 - 模块：<module>
 - 场景：S0N <场景名称>
 - 测试日期：YYYY-MM-DD
+- 结果：❌ FAIL / ⚠️ PASS（有 console error）
 
 ## 失败步骤
-<失败步骤描述>
+<失败步骤描述，⚠️ PASS 时填「步骤均通过，但有 console error」>
 
 ## 预期结果
 <预期断言>
 
 ## 实际结果
-<失败原因>
+<失败原因，⚠️ PASS 时填「功能表现正常，但 console 有以下报错」>
+
+## Console Errors
+<本场景捕获的 console error，无则省略此节>
 
 ---
 由 /uat:bug 自动生成
