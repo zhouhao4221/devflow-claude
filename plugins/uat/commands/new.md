@@ -31,7 +31,33 @@ allowed-tools: Read, Write, Glob
 
 读取 `plugins/uat/templates/flow-template.md`，了解 flow 文档结构。
 
-### 3. 多轮对话收集信息
+### 3. 选择创建方式
+
+询问：
+
+```
+如何创建测试流程文档？
+  [1] 代码分析（扫描路由/表单/接口，自动推导场景）
+  [2] 手动描述（逐场景对话录入）
+```
+
+**选 [1] 代码分析**：
+
+扫描以下来源（自动检测，无需用户指定）：
+- 前端路由：`src/router/`, `src/routes/`, `router.ts`, `router.js`
+- 表单组件：`src/` 下含 `<form`/`<el-form`/`<a-form`/`<van-form` 的 `.vue`/`.tsx`/`.jsx`，提取字段名、类型、校验规则（required/maxlength/pattern）
+- API 接口文档：`openapi.yaml`, `swagger.json`, `docs/openapi.*`
+- 后端路由：FastAPI `@router.*`、Express `router.*`、Spring `@*Mapping`、Go Gin `r.GET/POST`
+
+根据扫描结果推导场景（列表页→浏览、含 POST 的表单→新增、含 PUT 的表单→编辑、含 DELETE→删除），展示候选列表后由用户确认或调整，再进入阶段一补充基本信息（平台/入口/测试数据）。
+
+生成的文档元信息 `生成方式` 填写 `代码分析（/uat:new）`，步骤中标注字段来源（如 `来源：CustomerForm.vue:38`）。
+
+**选 [2] 手动描述**：直接进入阶段一。
+
+---
+
+### 4. 多轮对话收集信息
 
 **阶段一：收集基本信息**
 
@@ -83,14 +109,14 @@ AI 将用户描述整理为自然语言步骤，不强制写选择器。每收�
 
 - **无表单输入** → 跳过此阶段
 
-### 4. 生成文档
+### 5. 生成文档
 
 严格按模板格式生成 `docs/uat/flows/<module>.md`：
 - 创建 `docs/uat/flows/` 目录（如不存在）
 - 场景 ID 按 S01、S02... 顺序编号
 - `测试数据` 和 `已知结论` 区块必须写入（无内容时保留空占位符）
 
-### 5. 输出
+### 6. 输出
 
 ```
 ✅ 测试流程文档已创建
