@@ -69,11 +69,9 @@ model: claude-haiku-4-5-20251001
 - GitHub：`gh issue create`
 - Gitea：优先 `tea issue create`，不可用时回退 `curl + giteaToken`
 
-**issue 内容**：
-```
-标题：[UAT] <模块名> - S0N <场景名称>
+**issue 正文**：
 
-正文：
+```
 ## 测试场景
 - 模块：<module>
 - 场景：S0N <场景名称>
@@ -88,20 +86,56 @@ model: claude-haiku-4-5-20251001
 ## 实际结果
 <失败原因>
 
-## 截图
-<截图路径（如有）>
-
 ---
 由 /uat:bug 自动生成
 ```
 
-### 5. 输出结果
+> 截图不写在正文里，创建 issue 后单独上传（见步骤 5）。
+
+### 5. 上传截图附件
+
+issue 创建成功后，检查该场景是否有对应截图（`docs/uat/screenshots/` 下匹配场景 ID 的文件）。有则上传，无则跳过。
+
+**GitHub**（`repoType=github`）：
+
+```bash
+# 获取当前仓库
+REPO=$(gh repo view --json owner,name -q '"\\(.owner.login)/\\(.name)"')
+
+# 上传截图到 GitHub，获取可访问 URL
+UPLOAD_RESPONSE=$(curl -s -X POST \
+  "https://uploads.github.com/repos/$REPO/issues/assets" \
+  -H "Authorization: token $(gh auth token)" \
+  -H "Content-Type: image/png" \
+  --data-binary "@<截图路径>")
+IMG_URL=$(echo $UPLOAD_RESPONSE | jq -r '.url // empty')
+
+# 追加图片评论到 issue
+gh issue comment <issue_number> --body "![截图]($IMG_URL)"
+```
+
+若 upload 失败（非 2xx）：追加一条评论写明截图本地路径，提示手动上传。
+
+**Gitea**（`repoType=gitea`）：
+
+```bash
+# 上传附件到 issue
+curl -s -X POST "$GITEA_URL/api/v1/repos/$OWNER/$REPO/issues/$ISSUE_NUM/assets" \
+  -H "Authorization: token $GITEA_TOKEN" \
+  -F "attachment=@<截图路径>"
+```
+
+附件上传后 Gitea 自动在 issue 页面展示，无需额外操作。
+
+若 `tea` CLI 支持附件上传则优先 `tea`，否则回退 `curl`。
+
+### 6. 输出结果
 
 ```
 ✅ 已创建 2 个 issue：
 
-  #42 [UAT] 用户登录 - S02 密码错误提示
-  #43 [UAT] 用户登录 - S05 退出登录后跳转
+  #42 [UAT] 用户登录 - S02 密码错误提示   🖼 截图已上传
+  #43 [UAT] 用户登录 - S05 退出登录后跳转  ⚠ 无截图
 
 💡 /uat:run   修复后重新验证
 ```

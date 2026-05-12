@@ -234,19 +234,7 @@ docs/uat/flows/<module>.md
 ### 有 FAIL 时的后续提示
 
 ```
-⚠️  发现 <N> 个失败场景，建议上报为缺陷工单：
+⚠️  发现 <N> 个失败场景
 
-💡 GitHub Issue:
-   gh issue create --title "[BUG] <module> - <简短描述>" \
-     --body "$(cat docs/uat/reports/YYYY-MM-DD-<module>.md)" \
-     --label bug
-
-💡 Gitea Issue:
-   tea issue create --title "[BUG] <module> - <简短描述>" \
-     --description "$(cat docs/uat/reports/YYYY-MM-DD-<module>.md)"
-
-   或通过 /req:issue new 创建，自动关联需求。
-
-📎 截图路径：docs/uat/screenshots/YYYY-MM-DD-*
-   上报 Issue 时建议手动附上截图附件。
+💡 执行 /uat:bug 上报工单（自动创建 issue + 上传截图附件）
 ```
