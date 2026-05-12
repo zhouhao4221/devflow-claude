@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "AI 驱动的软件全生命周期管理工具集",
-    "version": "2.30.1"
+    "version": "2.32.0"
   },
   "plugins": [
     {
@@ -34,9 +34,9 @@
       "category": "ops"
     },
     {
-      "name": "qa",
-      "description": "QA 测试工作流 - AI 驱动的 UAT/E2E 测试，Claude 作为指挥家按测试流程文档执行验收",
-      "source": "./plugins/qa/",
+      "name": "uat",
+      "description": "用户验收测试（UAT）- AI 驱动的 UI 验收测试，Claude 按测试流程文档逐场景执行界面操作验收",
+      "source": "./plugins/uat/",
       "category": "quality"
     }
   ]
