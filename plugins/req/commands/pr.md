@@ -27,9 +27,19 @@ allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 
 ### 1. 识别需求和分支
 
-- 指定编号 → 读取该需求的 `branch` 字段
+- 指定编号 → 读取该需求的 `branch` 字段，按逗号拆分得到分支列表
 - 未指定 → `git branch --show-current`，从分支名提取 `REQ-XXX` / `QUICK-XXX`
 - 两者都失败 → 提示 `请指定需求编号：/req:pr REQ-XXX` 退出
+
+**多分支处理**：`branch` 字段含多个分支时，为**每个分支各创建一个 PR**，依次执行步骤 2–8：
+
+```
+此需求有 2 个开发分支，将分别创建 PR：
+  [1/2] feat/REQ-025-backend  → main
+  [2/2] feat/REQ-025-frontend → main
+```
+
+若只需对当前分支创建 PR，直接运行（不传编号），命令自动匹配当前分支。
 
 ### 2. 前置检查
 
