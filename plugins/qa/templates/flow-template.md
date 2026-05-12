@@ -41,6 +41,10 @@
 - 方式：`api` — `POST /api/resource` 创建所需数据（参数见测试数据）
 - 跳过条件：数据库已有目标数据时可省略
 
+**数据清理**（新增场景必填）：
+- 方式：`api` — `DELETE /api/resource/:id`（id 取自数据准备返回值）
+- 触发：测试完成后自动执行，无论 PASS/FAIL
+
 **步骤**：
 1. 在 `[data-testid="xxx-input"]` 输入「测试值」
    - 等待信号：元素可交互（无 `disabled` 属性）
