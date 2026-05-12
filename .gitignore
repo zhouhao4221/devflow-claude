@@ -14,6 +14,10 @@ Thumbs.db
 .claude/.req-auto
 .claude/.req-confirm-commit
 
+# QA test artifacts
+docs/qa/reports/
+docs/qa/screenshots/
+
 # Temp files
 *.tmp
 *.bak
