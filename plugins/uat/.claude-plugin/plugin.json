@@ -1,6 +1,6 @@
 {
   "name": "uat",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "用户验收测试（UAT）- AI 驱动的 UI 验收测试，Claude 按测试流程文档逐场景执行界面操作验收",
   "author": {
     "name": "Haiqing"
