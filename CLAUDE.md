@@ -44,7 +44,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 haiku 命令：`/req`、`/req:status/show/prd/projects/cache/use/done/update-template/changelog/help/commit/review/upgrade/branch/release/modules/specs/init/migrate/test_regression`、`/api:api/search/help`、`/pm:pm/standup/export/help`
 
-默认命令：`/req:new/do/fix/dev/test/test_new/test_regression/review-pr/prd-edit/edit/new-quick/pr/issue/split`
+默认命令：`/req:new/do/fix/dev/test/test_new/review-pr/prd-edit/edit/new-quick/pr/issue/split`
 
 **allowed-tools**：只读命令不触发 Write/Edit/Bash。**Token 节约**：单文件 < 30 KB；> 50 KB 拆主+rationale；详见 [`docs/design/token-optimization.md`](./docs/design/token-optimization.md)。
 
@@ -108,7 +108,7 @@ Write/Edit/Bash 默认全部直通。用户说"开启提交确认"→ Claude 创
 |------|------|---------|
 | `CLAUDE.md` | AI 行为指令（通用规则、引用指针） | 每次会话自动加载 |
 | `docs/prompt/architecture.md` | 项目架构知识（分层、规范、技术栈） | 命令显式 Read |
-| `docs/requirements/specs/` | 领域规约（业务规则、接口契约） | 命令按仓库角色注入 |
+| `docs/requirements/specs/` | 项目级公共知识层（枚举、规则、契约等散落代码知识的摘要） | 命令按仓库角色注入 |
 | `settings.local.json` | 结构化配置（分支策略、仓库角色、token） | 命令读取配置字段 |
 | `.claude/skills/<concern>.md` | 具体约定（路径变量等窄知识） | 命令扫描全量注入 |
 
@@ -121,6 +121,14 @@ Write/Edit/Bash 默认全部直通。用户说"开启提交确认"→ Claude 创
 ## pm 插件
 
 req 产出数据的只读消费者（不触发缓存同步），从 PRD/需求文档/Git 记录生成汇报、统计、方案。primary/readonly 均可用。命令：`/pm` · `weekly` · `monthly` · `milestone` · `stats` · `progress` · `plan` · `brief` · `risk` · `standup` · `ask` · `export`。输出到 `docs/reports/`。
+
+## uat 插件
+
+UI 验收测试，从 v2.32.0 起由 `qa` 重命名。在项目本地存储测试流程和报告，不依赖需求缓存。
+
+存储：`docs/uat/flows/`（测试流程文档）· `docs/uat/reports/`（测试报告）。
+
+命令：`/uat:init` · `/uat:new [module]` · `/uat:run [module]` · `/uat:report` · `/uat:bug`。技能：`uat-executor`。
 
 ## diag 插件
 
