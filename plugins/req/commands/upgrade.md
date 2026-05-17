@@ -21,39 +21,11 @@ model: claude-haiku-4-5-20251001
 
 ### 0. 解析存储路径
 
-```bash
-# 本地存储路径（主存储）
-LOCAL_ROOT=docs/requirements
-LOCAL_ACTIVE=$LOCAL_ROOT/active
-LOCAL_COMPLETED=$LOCAL_ROOT/completed
-
-# 检查当前仓库绑定的项目（用于缓存同步）
-PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
-
-if [ -n "$PROJECT" ]; then
-    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
-    CACHE_ACTIVE=$CACHE_ROOT/active
-    CACHE_COMPLETED=$CACHE_ROOT/completed
-fi
-```
+从 `settings.local.json` 读取 `requirementProject`，确定本地路径（`docs/requirements/active|completed`）和全局缓存路径。
 
 ### 1. 定位源文件
 
-查找 QUICK-XXX 需求文档：
-
-```bash
-# 优先本地，其次缓存
-if [ -f "$LOCAL_ACTIVE/QUICK-XXX-*.md" ]; then
-    SOURCE_FILE=$LOCAL_ACTIVE/QUICK-XXX-*.md
-    SOURCE_LOCATION="local"
-elif [ -f "$CACHE_ACTIVE/QUICK-XXX-*.md" ]; then
-    SOURCE_FILE=$CACHE_ACTIVE/QUICK-XXX-*.md
-    SOURCE_LOCATION="cache"
-else
-    echo "❌ 未找到 QUICK-XXX 需求文档"
-    exit 1
-fi
-```
+优先在本地 active/ 查找 `QUICK-XXX-*.md`，不存在时查缓存；两处都找不到则报错退出。
 
 **状态检查**：
 - 已完成的 QUICK 不允许升级（已归档）
@@ -63,11 +35,7 @@ fi
 
 解析 QUICK 需求的关键信息：
 
-```bash
-./scripts/parse-requirement.sh "$SOURCE_FILE"
-```
-
-提取：
+读取并解析 QUICK 需求文档，提取：
 - 编号、标题
 - 改动类型、端类型
 - 当前状态
@@ -77,16 +45,7 @@ fi
 
 ### 3. 生成新编号
 
-格式：`REQ-XXX`（三位数字）
-
-```bash
-# 从本地和缓存获取最大 REQ 编号
-LOCAL_MAX=$(ls $LOCAL_ACTIVE/ $LOCAL_COMPLETED/ 2>/dev/null | grep -oE 'REQ-[0-9]+' | sort -t'-' -k2 -n | tail -1)
-CACHE_MAX=$(ls $CACHE_ACTIVE/ $CACHE_COMPLETED/ 2>/dev/null | grep -oE 'REQ-[0-9]+' | sort -t'-' -k2 -n | tail -1)
-
-# 取两者中较大的编号 + 1
-NEW_REQ_ID=REQ-$(printf "%03d" $((MAX_NUM + 1)))
-```
+格式：`REQ-XXX`（三位数字）。扫描本地和缓存中已有的最大 REQ 编号，取两者较大值 +1。
 
 ### 4. 内容转换
 
@@ -173,46 +132,16 @@ NEW_REQ_ID=REQ-$(printf "%03d" $((MAX_NUM + 1)))
 
 #### 6.1 创建新 REQ 文件
 
-使用 requirement-template.md 模板，填充转换后的内容：
-
-```bash
-# 写入本地
-TARGET_FILE=$LOCAL_ACTIVE/$NEW_REQ_ID-$TITLE.md
-```
+使用 requirement-template.md 模板，填充转换后的内容，写入 `docs/requirements/active/<NEW_REQ_ID>-<title>.md`。
 
 #### 6.2 处理原 QUICK 文件
 
-根据用户选择：
-
-**归档**：
-```bash
-# 在原文件末尾添加升级标记
-echo -e "\n---\n\n> ⬆️ 已升级为 $NEW_REQ_ID（$(date +%Y-%m-%d)）" >> $SOURCE_FILE
-
-# 移动到 completed/
-mv $SOURCE_FILE $LOCAL_COMPLETED/
-```
-
-**删除**：
-```bash
-rm $SOURCE_FILE
-```
+**归档**：在原文件末尾追加升级标记（含日期和新编号），移动到 completed/。
+**删除**：直接删除源文件。
 
 #### 6.3 同步缓存
 
-```bash
-if [ -n "$PROJECT" ]; then
-    # 同步新 REQ 文件
-    cp $TARGET_FILE $CACHE_ACTIVE/
-
-    # 根据用户选择处理缓存中的 QUICK 文件
-    if [ 归档 ]; then
-        mv $CACHE_ACTIVE/QUICK-XXX-*.md $CACHE_COMPLETED/
-    else
-        rm $CACHE_ACTIVE/QUICK-XXX-*.md
-    fi
-fi
-```
+将新 REQ 文件复制到缓存 active/，按用户选择同步处理缓存中的 QUICK 文件（归档或删除）。
 
 ### 7. 触发需求完善
 

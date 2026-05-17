@@ -25,63 +25,14 @@ model: claude-haiku-4-5-20251001
 
 如果未提供 REQ-XXX 编号：
 
-```python
-# 根据角色决定搜索路径（步骤 1 中已解析 ROLE 和路径）
-# readonly：直接搜索缓存 active/
-# primary：搜索本地 active/，本地为空时搜索缓存 active/
-# 未绑定：仅搜索本地 active/
-candidates = find_requirements(dir=ACTIVE, sort_by="mtime")
-
-if len(candidates) == 0 and ROLE == "primary" and CACHE_ACTIVE:
-    candidates = find_requirements(dir=CACHE_ACTIVE, sort_by="mtime")
-
-if len(candidates) == 0:
-    print("没有活跃的需求")
-    if ROLE != "readonly":
-        print("创建新需求：/req:new")
-    print("查看已完成：/req:status --all")
-    exit()
-elif len(candidates) == 1:
-    REQ_ID = candidates[0]
-    print(f"自动选择：{REQ_ID}")
-else:
-    print("发现多个活跃需求，请选择：")
-    for i, req in enumerate(candidates):
-        print(f"  {i+1}. {req}")
-    choice = input()  # 用户输入编号
-    REQ_ID = candidates[int(choice) - 1]
-```
+按修改时间排序扫描角色对应的 active 目录（readonly 用缓存，primary 优先本地不存在时用缓存，未绑定只用本地）。无结果时提示创建；唯一时自动选中；多个时列表让用户输入序号选择。
 
 ### 1. 解析存储路径（按角色）
 
-```bash
-# 读取项目配置
-PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
-ROLE=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementRole // empty')
-
-if [ "$ROLE" = "readonly" ]; then
-    # 只读仓库：直接使用缓存路径
-    ROOT=~/.claude-requirements/projects/$PROJECT
-    ACTIVE=$ROOT/active
-    COMPLETED=$ROOT/completed
-    SOURCE="cache"
-elif [ "$ROLE" = "primary" ]; then
-    # 主仓库：优先本地，缓存为备用
-    LOCAL_ROOT=docs/requirements
-    ACTIVE=$LOCAL_ROOT/active
-    COMPLETED=$LOCAL_ROOT/completed
-    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
-    CACHE_ACTIVE=$CACHE_ROOT/active
-    CACHE_COMPLETED=$CACHE_ROOT/completed
-    SOURCE="local"
-else
-    # 未绑定项目：仅使用本地
-    LOCAL_ROOT=docs/requirements
-    ACTIVE=$LOCAL_ROOT/active
-    COMPLETED=$LOCAL_ROOT/completed
-    SOURCE="local"
-fi
-```
+读取 `.claude/settings.local.json` 的 `requirementProject` 和 `requirementRole`，按角色确定路径：
+- `readonly`：根目录为 `~/.claude-requirements/projects/$PROJECT`
+- `primary`：本地根目录为 `docs/requirements`，缓存为备用
+- 未绑定：仅使用 `docs/requirements`
 
 ### 2. 查找需求文档（按角色）
 

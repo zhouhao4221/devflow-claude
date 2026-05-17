@@ -40,131 +40,23 @@ model: claude-haiku-4-5-20251001
 
 ### 2. 创建本地存储目录（主存储）
 
-```bash
-# 在当前仓库创建本地需求目录
-LOCAL_ROOT=docs/requirements
-mkdir -p $LOCAL_ROOT/active
-mkdir -p $LOCAL_ROOT/completed
-mkdir -p $LOCAL_ROOT/modules
-mkdir -p $LOCAL_ROOT/templates
-```
+在 `docs/requirements/` 下创建 `active/`、`completed/`、`modules/`、`templates/` 四个子目录。
 
 ### 3. 复制模板文件到本地
 
-将所有模板文件复制到 `docs/requirements/templates/` 目录：
-
-```bash
-TEMPLATE_DIR=$LOCAL_ROOT/templates
-
-# 仅当文件不存在时复制（--reinit 模式下保护已有文件）
-if [ ! -f $TEMPLATE_DIR/requirement-template.md ]; then
-  cp <plugin-path>/templates/requirement-template.md $TEMPLATE_DIR/requirement-template.md
-fi
-
-if [ ! -f $TEMPLATE_DIR/quick-template.md ]; then
-  cp <plugin-path>/templates/quick-template.md $TEMPLATE_DIR/quick-template.md
-fi
-
-if [ ! -f $TEMPLATE_DIR/prd-template.md ]; then
-  cp <plugin-path>/templates/prd-template.md $TEMPLATE_DIR/prd-template.md
-fi
-```
+将插件 `templates/` 下的模板文件复制到 `docs/requirements/templates/`（仅当目标文件不存在时复制，`--reinit` 模式保护已有文件）。
 
 ### 4. 生成 PRD 文档
 
-从本地模板生成项目 PRD 文档，替换变量：
-
-```bash
-# 仅当 PRD.md 不存在时生成（--reinit 模式下保护已有文件）
-if [ ! -f $LOCAL_ROOT/PRD.md ]; then
-  cp $TEMPLATE_DIR/prd-template.md $LOCAL_ROOT/PRD.md
-  # 替换模板变量
-  sed -i 's/{{PROJECT_NAME}}/<project-name>/g' $LOCAL_ROOT/PRD.md
-  sed -i 's/{{DATE}}/$(date +%Y-%m-%d)/g' $LOCAL_ROOT/PRD.md
-fi
-```
+`docs/requirements/PRD.md` 不存在时，从 prd-template.md 复制并替换 `{{PROJECT_NAME}}`、`{{DATE}}` 变量。
 
 ### 4.1 创建「快速修复」模块
 
-自动创建「快速修复」模块文档，用于归档快速修复类需求：
-
-```bash
-# 仅当模块文档不存在时创建
-QUICK_FIX_MODULE=$LOCAL_ROOT/modules/quick-fix.md
-if [ ! -f $QUICK_FIX_MODULE ]; then
-  cat > $QUICK_FIX_MODULE << 'EOF'
-# 快速修复
-
-## 概述
-
-本模块用于归档所有快速修复类需求，包括：
-- 小 bug 修复
-- 小功能增强
-- 代码优化
-- UI 微调
-
-这些改动通常不需要完整的需求评审流程，可快速完成。
-
----
-
-## 核心功能
-
-> 快速修复按时间顺序记录，无需细分功能点
-
-| 编号 | 描述 | 状态 | 完成日期 |
-|------|------|------|----------|
-| - | 暂无记录 | - | - |
-
----
-
-## 业务规则
-
-| 规则 | 说明 |
-|------|------|
-| 改动范围 | 建议 <5 个文件 |
-| 数据库变更 | 不涉及表结构变更 |
-| 影响范围 | 不影响核心业务流程 |
-| 验证方式 | 自测即可 |
-
----
-
-## 相关需求
-
-| 编号 | 标题 | 状态 | 更新时间 |
-|------|------|------|----------|
-| - | 暂无 | - | - |
-
----
-
-## 变更记录
-
-| 日期 | 变更内容 |
-|------|----------|
-| {{DATE}} | 初始版本 |
-EOF
-  # 替换日期
-  sed -i 's/{{DATE}}/$(date +%Y-%m-%d)/g' $QUICK_FIX_MODULE
-fi
-```
+`docs/requirements/modules/quick-fix.md` 不存在时，使用 Write 工具生成模块文档（含概述、核心功能、业务规则、相关需求、变更记录各章节）。
 
 ### 5. 创建全局缓存目录（同步副本）
 
-```bash
-# 确保全局缓存目录存在
-CACHE_ROOT=~/.claude-requirements/projects/<project-name>
-mkdir -p $CACHE_ROOT/active
-mkdir -p $CACHE_ROOT/completed
-mkdir -p $CACHE_ROOT/modules
-
-# 同步模板和 PRD 到缓存（仅当本地存在时）
-mkdir -p $CACHE_ROOT/templates
-[ -f $TEMPLATE_DIR/requirement-template.md ] && cp $TEMPLATE_DIR/requirement-template.md $CACHE_ROOT/templates/
-[ -f $TEMPLATE_DIR/quick-template.md ] && cp $TEMPLATE_DIR/quick-template.md $CACHE_ROOT/templates/
-[ -f $TEMPLATE_DIR/prd-template.md ] && cp $TEMPLATE_DIR/prd-template.md $CACHE_ROOT/templates/
-[ -f $LOCAL_ROOT/PRD.md ] && cp $LOCAL_ROOT/PRD.md $CACHE_ROOT/PRD.md
-
-# 同步快速修复模块到缓存
-[ -f $LOCAL_ROOT/modules/quick-fix.md ] && cp $LOCAL_ROOT/modules/quick-fix.md $CACHE_ROOT/modules/
+在 `~/.claude-requirements/projects/<project-name>/` 下创建 `active/`、`completed/`、`modules/`、`templates/` 目录，将本地模板、PRD、快速修复模块同步过去。
 ```
 
 ### 6. 更新全局索引
@@ -338,9 +230,7 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 
 #### 9.1 创建目录
 
-```bash
-mkdir -p .claude/skills
-```
+创建 `.claude/skills/` 目录（不存在时）。
 
 #### 9.2 引导创建 Skill 文件
 

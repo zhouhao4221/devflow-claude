@@ -80,29 +80,9 @@ AI 搜索代码库，定位可能相关的文件：
 
 **流程**（只读索引 + 按需读正文，控制 token 消耗）：
 
-```python
-# 第 1 步：读 INDEX.md（几十行，~500 token）
-index = read_file("docs/requirements/INDEX.md")
-
-# 第 2 步：用 bug 相关文件路径匹配需求
-#   从步骤 1.2 拿到的相关文件列表，在 INDEX.md 中模糊匹配
-#   INDEX.md 包含：编号、标题、状态、模块
-related_files = ["src/utils/auth.ts", "src/interceptors/request.ts"]
-keywords = extract_keywords(bug_description)  # "登录", "token", "超时"
-
-# 匹配策略（满足任一即命中）：
-#   a. 需求标题包含关键词（如「登录认证」）
-#   b. 需求所属模块与 bug 相关（如「用户」模块）
-matched_reqs = match_index(index, keywords)
-```
-
-```
-# 第 3 步：命中时，仅读该需求的「十一、实现方案」中的文件改动清单（~1k token）
-#   未命中 → 跳过，不额外消耗
-if matched_reqs:
-    for req in matched_reqs[:2]:  # 最多读 2 个
-        file_list = read_section(req, "11.3 文件改动清单")
-```
+1. 读 `docs/requirements/INDEX.md`（~500 token）
+2. 用 bug 相关文件路径 + 关键词在 INDEX.md 中模糊匹配（标题含关键词 或 模块与 bug 相关 → 命中）
+3. 命中时仅读该需求的「十一、实现方案 - 文件改动清单」（~1k token/个，最多 2 个）；未命中静默跳过
 
 **命中时展示**：
 
@@ -170,26 +150,11 @@ AI 综合代码搜索结果和关联需求上下文，给出根因判断：
 
 #### 2.1 工作区检查
 
-```bash
-git status --porcelain
-```
-
 有未提交改动时终止，提示先 commit 或 stash。
 
 #### 2.2 读取分支策略
 
-```python
-strategy = read_settings("branchStrategy")
-
-if strategy:
-    MAIN_BRANCH = strategy["mainBranch"]
-    BRANCH_FROM = strategy.get("branchFrom", MAIN_BRANCH)
-    FIX_PREFIX = strategy.get("fixPrefix", "fix/")
-else:
-    MAIN_BRANCH = detect_main_branch()
-    BRANCH_FROM = MAIN_BRANCH
-    FIX_PREFIX = "fix/"
-```
+从 `branchStrategy` 读取 `mainBranch`、`branchFrom`（缺省同 mainBranch）、`fixPrefix`（缺省 `fix/`）；未配置时自动检测主分支。
 
 #### 2.3 创建分支
 
@@ -209,12 +174,7 @@ AI 根据问题描述生成英文 slug（lowercase kebab-case，最多 5 词）�
    基于：main（来源：branchStrategy.branchFrom）
 ```
 
-```bash
-git fetch origin $BRANCH_FROM
-# 有 issue：BRANCH=${FIX_PREFIX}<slug>-i${N}
-# 无 issue：BRANCH=${FIX_PREFIX}<slug>
-git checkout -b $BRANCH origin/$BRANCH_FROM
-```
+fetch `branchFrom`，从远端创建并切换到新分支（有 issue 时分支名末尾追加 `-i<N>`）。
 
 ---
 
@@ -253,12 +213,7 @@ AI 按确认的方案修改代码。
 
 #### 4.5.0 建立 auto 标记（跳过 hook 确认）
 
-在 commit/push/PR 前，先创建 `.claude/.req-auto` 标记文件，让 PreToolUse hook（`confirm-before-commit.sh`）在检测到该文件且 mtime 在 10 分钟内时自动放行，不再弹出原生确认对话框：
-
-```bash
-mkdir -p .claude
-touch .claude/.req-auto
-```
+在 commit/push/PR 前，先创建 `.claude/.req-auto` 标记文件，让 PreToolUse hook（`confirm-before-commit.sh`）在检测到该文件且 mtime 在 10 分钟内时自动放行，不再弹出原生确认对话框。
 
 > **标记生命周期**：步骤 4.5 开始时创建，步骤 4.5 结束（成功或失败）时在 4.5.4 清理。若命令异常终止残留，10 分钟后 hook 自动忽略该标记，不会造成长期"默认放行"。
 
@@ -291,11 +246,7 @@ touch .claude/.req-auto
 
 #### 4.5.4 清理 auto 标记
 
-无论成功或失败，都必须在命令结束前清理：
-
-```bash
-rm -f .claude/.req-auto
-```
+无论成功或失败，都必须在命令结束前删除 `.claude/.req-auto`。
 
 **成功输出**：
 ```

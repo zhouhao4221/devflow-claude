@@ -28,27 +28,11 @@ AI 辅助分析和修改产品需求文档（PRD），支持按章节编辑和�
 
 ### 1. 权限检查
 
-```bash
-ROLE=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementRole // empty')
-
-if [ "$ROLE" = "readonly" ]; then
-    echo "❌ 只读仓库不可编辑 PRD"
-    echo "请在主仓库（primary）中执行此命令"
-    exit 1
-fi
-```
+读取 `settings.local.json` 的 `requirementRole`；若为 `readonly` 则报错退出，提示在主仓库执行。
 
 ### 2. 读取 PRD 文档和模板
 
-```bash
-PRD_PATH=docs/requirements/PRD.md
-
-if [ ! -f "$PRD_PATH" ]; then
-    echo "❌ 未找到 PRD 文档"
-    echo "💡 请先执行 /req:init <project-name> 初始化项目"
-    exit 1
-fi
-```
+检查 `docs/requirements/PRD.md` 是否存在，不存在则提示先执行 `/req:init`。
 
 **必须先读取模板**作为格式基准：
 ```
@@ -114,18 +98,8 @@ fi
 当用户选择 `a`（AI 智能补充）时：
 
 **数据采集**：
-```python
-# 扫描所有需求文档
-active_reqs = scan("docs/requirements/active/REQ-*.md")
-active_reqs += scan("docs/requirements/active/QUICK-*.md")
-completed_reqs = scan("docs/requirements/completed/REQ-*.md")
-completed_reqs += scan("docs/requirements/completed/QUICK-*.md")
 
-# 扫描模块文档
-modules = scan("docs/requirements/modules/*.md")
-
-all_reqs = active_reqs + completed_reqs
-```
+扫描 `docs/requirements/active/` 和 `completed/` 下的所有 REQ-*.md、QUICK-*.md，以及 `modules/*.md`。
 
 **反推逻辑**：
 

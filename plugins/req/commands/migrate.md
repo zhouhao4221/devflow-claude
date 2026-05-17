@@ -26,45 +26,11 @@ model: claude-haiku-4-5-20251001
 
 ### 1. 前置检查
 
-```bash
-# 检查本地需求目录是否存在
-if [ ! -d "docs/requirements/active" ] && [ ! -d "docs/requirements/completed" ]; then
-    echo "❌ 未找到本地需求目录 docs/requirements/"
-    echo "💡 无需迁移，可直接使用 /req:init <project-name>"
-    exit 1
-fi
-
-# 统计本地需求数量
-LOCAL_ACTIVE=$(ls docs/requirements/active/*.md 2>/dev/null | wc -l)
-LOCAL_COMPLETED=$(ls docs/requirements/completed/*.md 2>/dev/null | wc -l)
-```
+`docs/requirements/active` 和 `completed` 均不存在时报错退出，提示使用 `/req:init`。统计本地活跃/已完成需求数量。
 
 ### 2. 检查目标项目
 
-```bash
-PROJECT_PATH=~/.claude-requirements/projects/<project-name>
-
-if [ -d "$PROJECT_PATH" ]; then
-    # 项目已存在，检查是否有冲突
-    REMOTE_ACTIVE=$(ls $PROJECT_PATH/active/*.md 2>/dev/null | wc -l)
-    REMOTE_COMPLETED=$(ls $PROJECT_PATH/completed/*.md 2>/dev/null | wc -l)
-
-    if [ $REMOTE_ACTIVE -gt 0 ] || [ $REMOTE_COMPLETED -gt 0 ]; then
-        echo "⚠️ 目标项目已有需求文档"
-        echo "   活跃需求: $REMOTE_ACTIVE 个"
-        echo "   已完成: $REMOTE_COMPLETED 个"
-        echo ""
-        echo "请选择合并策略："
-        echo "1. 合并 - 保留两边，编号冲突时重新编号"
-        echo "2. 覆盖 - 用本地覆盖远程"
-        echo "3. 取消"
-    fi
-else
-    # 项目不存在，自动创建
-    mkdir -p $PROJECT_PATH/active
-    mkdir -p $PROJECT_PATH/completed
-fi
-```
+目标路径 `~/.claude-requirements/projects/<project-name>/`。项目不存在时自动创建；已存在且有需求文档时，询问合并策略：合并（编号冲突时重新编号）、覆盖、取消。
 
 ### 3. 显示迁移预览
 
@@ -92,19 +58,7 @@ fi
 
 ### 4. 执行迁移
 
-```bash
-# 复制活跃需求
-cp docs/requirements/active/*.md $PROJECT_PATH/active/ 2>/dev/null
-
-# 复制已完成需求
-cp docs/requirements/completed/*.md $PROJECT_PATH/completed/ 2>/dev/null
-
-# 复制模板目录（如果存在且目标没有）
-if [ -d "docs/requirements/templates" ]; then
-    mkdir -p $PROJECT_PATH/templates
-    cp docs/requirements/templates/*.md $PROJECT_PATH/templates/ 2>/dev/null
-fi
-```
+将 active/、completed/、templates/（如存在）分别复制到目标项目对应目录。
 
 ### 5. 处理编号冲突（合并模式）
 
@@ -136,22 +90,7 @@ fi
 
 ### 7. 清理本地文件（默认行为）
 
-```bash
-# 如果没有 --keep 参数
-rm -rf docs/requirements/active/
-rm -rf docs/requirements/completed/
-rm -rf docs/requirements/templates/
-
-# 保留空目录结构（可选）
-# mkdir -p docs/requirements/active
-# mkdir -p docs/requirements/completed
-```
-
-如果指定 `--keep`：
-```
-💡 本地文件已保留，如需删除请手动执行：
-   rm -rf docs/requirements/
-```
+无 `--keep` 时删除本地 active/、completed/、templates/ 目录。指定 `--keep` 时保留并提示手动清理命令。
 
 ### 8. 输出结果
 
@@ -184,19 +123,6 @@ rm -rf docs/requirements/templates/
 | 迁移中断 | 回滚已迁移文件 |
 
 ---
-
-## 示例
-
-```bash
-# 基本迁移
-/req:migrate my-saas-product
-
-# 迁移但保留本地副本
-/req:migrate my-saas-product --keep
-
-# 迁移到已有项目（会提示合并策略）
-/req:migrate existing-project
-```
 
 ## 用户输入
 

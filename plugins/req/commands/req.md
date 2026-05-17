@@ -75,22 +75,11 @@ model: claude-haiku-4-5-20251001
 
 ### 0. 解析需求路径
 
-```bash
-# 检查当前仓库绑定的项目
-cat .claude/settings.local.json | jq -r '.requirementProject'
-
-# 如果有绑定项目，使用全局缓存路径
-REQ_PATH=~/.claude-requirements/projects/<project-name>/active/
-
-# 如果没有绑定，使用本地路径
-REQ_PATH=docs/requirements/active/
-```
+读取 `.claude/settings.local.json` 的 `requirementProject`：有绑定时使用 `~/.claude-requirements/projects/<project>/active/`，否则使用 `docs/requirements/active/`。
 
 ### 1. 扫描需求目录
 
-```bash
-ls $REQ_PATH
-```
+列出需求路径下的所有文件。
 
 ### 2. 解析每个需求文档
 
@@ -120,18 +109,7 @@ ls $REQ_PATH
 
 **头部信息**（每次 `/req` 都展示）：
 
-```python
-# 从 plugin.json 读取版本
-version = read_plugin_json("version")  # <plugin-path>/.claude-plugin/plugin.json
-
-# 从 settings.local.json 读取项目配置
-project = read_settings("requirementProject")
-role = read_settings("requirementRole")
-strategy = read_settings("branchStrategy")
-
-# 检查 CLAUDE.md 架构信息
-has_arch = check_claude_md_architecture()
-```
+从 `<plugin-path>/.claude-plugin/plugin.json` 读取版本号，从 `settings.local.json` 读取 `requirementProject`、`requirementRole`、`branchStrategy`，检查 CLAUDE.md 是否含架构描述关键词。
 
 ```
 📋 需求工作流 v<version> | 项目：<project> (<role>)

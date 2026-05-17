@@ -35,68 +35,19 @@ model: claude-haiku-4-5-20251001
 
 ### 1. 参数校验
 
-```python
-if not version:
-    print("❌ 请指定版本号")
-    print("用法：/req:changelog <version> [--from=<tag|commit>] [--to=<tag|commit>]")
-    print("示例：/req:changelog v1.2.0")
-    exit()
-```
+`version` 必填，缺失时打印用法后退出。
 
 ### 2. 确定 Git 范围
 
 > **被 `/req:release` 调用时**：`/req:release` 会显式传入 `--from`，跳过下面的自动检测链，draft 模式对本步无影响。
 > **用户手动调用时**：走下方 draft-aware 回退链。
 
-```bash
-# --to 参数，默认 HEAD
-TO_REF=${to:-HEAD}
-```
-
-**FROM_REF 解析优先级**（v3.0.0+ 新增 draft 感知）：
+`TO_REF` 默认 HEAD。`FROM_REF` 按以下优先级解析（v3.0.0+ 新增 draft 感知）：
 
 1. `--from` 参数显式指定 → 直接使用
-2. 最近一个平台 Release（含 draft）的 target SHA → 仅当 `repoType in {gitea, github}` 且能成功调用 API 时
-3. `git describe --tags --abbrev=0 $TO_REF^` → 最近一个 local git tag（原有行为）
-4. 仓库首次 commit → 无任何 tag 时的兜底
-
-```python
-from_ref = args.from_ref  # 1. 显式参数
-
-if not from_ref:
-    # 2. 查询平台最近一次 Release（含 draft），用它的 target SHA 作为范围起点
-    #    避免 draft 未 publish 导致 git describe 取到上上个 tag 的 bug
-    repo_type = read_settings("branchStrategy.repoType", "other")
-    if repo_type in ("gitea", "github"):
-        latest_release = fetch_latest_release(repo_type, include_draft=True)
-        if latest_release:
-            from_ref = latest_release["target_sha"]
-            print(f"📌 使用平台最近 Release `{latest_release['name']}` 的 target SHA 作为起点（含 draft）")
-
-if not from_ref:
-    # 3. 回退到 git describe
-    from_ref = run(f"git describe --tags --abbrev=0 {TO_REF}^", allow_fail=True)
-
-    # 额外检测：存在未 publish 的 draft？如果是，警告用户 changelog 范围可能和预期不一致
-    if from_ref:
-        repo_type = read_settings("branchStrategy.repoType", "other")
-        if repo_type in ("gitea", "github"):
-            pending_drafts = fetch_pending_drafts(repo_type)
-            if pending_drafts:
-                print(f"⚠️  检测到 {len(pending_drafts)} 个未 publish 的 draft release：")
-                for d in pending_drafts:
-                    print(f"     - {d['name']}（target SHA: {d['target_sha'][:8]}）")
-                print(f"   当前使用 git tag `{from_ref}` 作为起点，draft release 不会影响本次范围。")
-                print(f"   如果本次 changelog 预期从 draft 之后开始，请显式传 --from=<draft-target-sha>")
-                print()
-
-if not from_ref:
-    # 4. 没有任何 tag，使用第一个 commit
-    from_ref = run("git rev-list --max-parents=0 HEAD")
-    print("⚠️ 未找到 git tag，将从仓库首次提交开始")
-
-print(f"📌 版本范围：{from_ref}..{TO_REF}")
-```
+2. 查询平台最近一个 Release（含 draft）的 target SHA → 仅当 `repoType` 为 gitea / github 且 API 可达时；打印所用 Release 名称
+3. `git describe` 取最近一个本地 git tag；若同时存在未 publish 的 draft release，打印 ⚠️ 提示（changelog 范围可能与预期不一致，建议显式传 `--from=<draft-target-sha>`）
+4. 仓库首次 commit → 无任何 tag 时的兜底，打印 ⚠️ 警告
 
 **为什么要 draft 感知**：v3.0.0 起 `/req:release` 默认 draft，不再本地打 tag。如果用户先跑 `/req:release v1.2.0`（draft 未 publish）→ 后跑 `/req:changelog v1.3.0`，原来的 `git describe` 会返回更早的 tag（比如 `v1.1.0`），导致 v1.3.0 的 changelog 多包含了一整个版本的 commits。新回退链优先读平台 Release（含 draft）的 SHA，或在走 git tag 回退时警告用户。
 
@@ -104,15 +55,7 @@ print(f"📌 版本范围：{from_ref}..{TO_REF}")
 
 ### 3. 读取 Git 提交记录
 
-```bash
-# 获取提交列表（hash、日期、消息）
-git log $FROM_REF..$TO_REF --pretty=format:"%h|%ai|%s" --no-merges
-```
-
-提取信息：
-- 提交 hash（短）
-- 提交日期
-- 提交消息（用于分类和展示）
+从 `FROM_REF..TO_REF` 范围内（不含 merge commit）提取：短 hash、提交日期、提交消息。
 
 ### 4. 按提交前缀分类
 
@@ -136,53 +79,11 @@ git log $FROM_REF..$TO_REF --pretty=format:"%h|%ai|%s" --no-merges
 
 ### 5. 关联已完成需求
 
-```python
-# 解析存储路径
-PROJECT = read_settings("requirementProject")
-ROLE = read_settings("requirementRole")
-
-if ROLE == "readonly":
-    completed_dir = f"~/.claude-requirements/projects/{PROJECT}/completed/"
-elif ROLE == "primary":
-    completed_dir = "docs/requirements/completed/"
-    # 本地不存在时回退到缓存
-    if not exists(completed_dir) and PROJECT:
-        completed_dir = f"~/.claude-requirements/projects/{PROJECT}/completed/"
-else:
-    completed_dir = "docs/requirements/completed/"
-
-# 从 commit messages 中提取 REQ-XXX / QUICK-XXX 编号
-req_ids = extract_req_ids_from_commits(commits)  # 正则匹配 REQ-\d+ 和 QUICK-\d+
-
-# 读取对应的需求文档，提取标题和类型
-related_reqs = []
-for req_id in req_ids:
-    doc = find_requirement(completed_dir, req_id)
-    if doc:
-        related_reqs.append({
-            "id": req_id,
-            "title": extract_title(doc),
-            "type": extract_type(doc)
-        })
-```
-
-也扫描 active/ 目录中的需求（可能需求尚未完成但已有 commit）。
+按 `requirementRole` 确定需求目录（readonly → 全局缓存；primary → 本地，不存在时回退缓存）。从 commit messages 中提取 `REQ-XXX` / `QUICK-XXX` 编号，读取对应需求文档的标题和类型。同时扫描 active/ 目录（需求可能尚未完成但已有 commit）。
 
 ### 6. 检查目标文件
 
-```bash
-OUTPUT_DIR=docs/changelogs
-OUTPUT_FILE=$OUTPUT_DIR/<version>.md
-
-# 创建目录（如不存在）
-mkdir -p $OUTPUT_DIR
-
-# 检查是否已存在
-if [ -f "$OUTPUT_FILE" ]; then
-    echo "⚠️ 版本说明已存在：$OUTPUT_FILE"
-    # 用户确认后继续，否则终止
-fi
-```
+目标路径固定为 `docs/changelogs/<version>.md`，目录不存在时自动创建。文件已存在时询问用户是否覆盖。
 
 ### 7. 生成版本说明文档
 

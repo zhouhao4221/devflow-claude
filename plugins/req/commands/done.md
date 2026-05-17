@@ -51,11 +51,7 @@ model: claude-haiku-4-5-20251001
 
 ### 5. 归档文档 + 同步缓存
 
-```bash
-git mv docs/requirements/active/REQ-XXX-*.md docs/requirements/completed/
-```
-
-缓存同步由 PostToolUse Hook 自动处理，无需命令内显式调用。
+将需求文档从 `active/` 移动到 `completed/`（使用 `git mv` 保留历史）。缓存同步由 PostToolUse Hook 自动处理，无需命令内显式调用。
 
 ### 6. 输出确认
 

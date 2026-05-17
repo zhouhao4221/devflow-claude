@@ -30,39 +30,13 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(gh:*, curl:*)
 
 ### 0. 解析存储路径
 
-```bash
-# 本地存储路径（主存储）
-LOCAL_ROOT=docs/requirements
-LOCAL_ACTIVE=$LOCAL_ROOT/active
-LOCAL_COMPLETED=$LOCAL_ROOT/completed
-
-# 检查当前仓库绑定的项目（用于缓存同步）
-PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
-
-if [ -n "$PROJECT" ]; then
-    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
-    CACHE_ACTIVE=$CACHE_ROOT/active
-    CACHE_COMPLETED=$CACHE_ROOT/completed
-fi
-
-# 确保本地目录存在
-mkdir -p $LOCAL_ACTIVE $LOCAL_COMPLETED
-```
+本地主存储为 `docs/requirements/active/` 和 `docs/requirements/completed/`，确保目录存在。读取 `settings.local.json` 的 `requirementProject`；有绑定则同时准备缓存路径 `~/.claude-requirements/projects/$PROJECT/`。
 
 ### 1. 生成需求编号
 
 格式：`QUICK-XXX`（三位数字，如 QUICK-001）
 
-扫描本地和缓存中的快速需求文档，生成下一个编号：
-
-```bash
-# 从本地和缓存获取最大编号
-LOCAL_MAX=$(ls $LOCAL_ACTIVE/ $LOCAL_COMPLETED/ 2>/dev/null | grep -oE 'QUICK-[0-9]+' | sort -t'-' -k2 -n | tail -1)
-CACHE_MAX=$(ls $CACHE_ACTIVE/ $CACHE_COMPLETED/ 2>/dev/null | grep -oE 'QUICK-[0-9]+' | sort -t'-' -k2 -n | tail -1)
-
-# 取两者中较大的编号
-MAX_NUM=$(echo -e "$LOCAL_MAX\n$CACHE_MAX" | sort -t'-' -k2 -n | tail -1)
-```
+扫描本地 active/completed 和缓存 active/completed 中所有 QUICK-XXX 文件，取两边最大编号中的较大值，加 1 生成新编号。
 
 ### 1.5 （可选）从 issue 导入
 
@@ -122,12 +96,7 @@ MAX_NUM=$(echo -e "$LOCAL_MAX\n$CACHE_MAX" | sort -t'-' -k2 -n | tail -1)
 
 **步骤 4.2：同步到全局缓存**
 
-```bash
-if [ -n "$PROJECT" ]; then
-    mkdir -p $CACHE_ACTIVE
-    cp $LOCAL_ACTIVE/QUICK-XXX-标题.md $CACHE_ACTIVE/
-fi
-```
+若已绑定项目，将新建文档同步复制到 `$CACHE_ACTIVE/`。
 
 ### 5. 快速分析并生成方案
 

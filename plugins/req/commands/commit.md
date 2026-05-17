@@ -40,13 +40,7 @@ model: claude-haiku-4-5-20251001
 
 ### 1. 分支检查（在任何 git 操作之前）
 
-读取 `.claude/settings.local.json` 的 `branchStrategy`，未配置时跳过。
-
-```bash
-CURRENT=$(git branch --show-current)
-```
-
-**判断：当前分支是否 == mainBranch 或 == developBranch？**
+读取 `.claude/settings.local.json` 的 `branchStrategy`，未配置时跳过。获取当前分支名，判断是否等于 `mainBranch` 或 `developBranch`：
 
 - **否（feat/*、fix/*、hotfix/* 等）** → 当前分支是安全的，直接跳到步骤 2 正常提交。
 - **是** → 当前在保护分支，**禁止提交**，执行以下操作：
@@ -57,11 +51,7 @@ CURRENT=$(git branch --show-current)
 
 **第 1 步：从当前改动的文件推断需求**
 
-```bash
-git diff --name-only   # 查看当前修改了哪些文件
-```
-
-将修改的文件路径与活跃需求（状态为「开发中」或「测试中」）的「文件改动清单」（第十一章 11.3）进行匹配。如果某个需求的改动清单覆盖了当前修改的文件 → 命中该需求。
+获取当前已修改的文件列表，与活跃需求（状态为「开发中」或「测试中」）的「文件改动清单」（第十一章 11.3）进行匹配。如果某个需求的改动清单覆盖了当前修改的文件 → 命中该需求。
 
 **第 2 步：从当前对话上下文推断**
 
@@ -123,12 +113,7 @@ git diff --name-only   # 查看当前修改了哪些文件
 
 ### 2. 检查工作区状态
 
-```bash
-git status --short
-git diff --cached --stat
-```
-
-**无变更时：**
+检查工作区是否有变更及暂存情况。**无变更时：**
 ```
 ❌ 没有可提交的变更
 
@@ -159,38 +144,7 @@ git diff --cached --stat
 
 ### 4. 检测当前需求
 
-**优先从分支名匹配**（步骤 1 已获取当前分支信息）：
-
-```python
-current_branch = git("branch --show-current")
-
-# 优先：从分支名提取需求编号
-import re
-branch_match = re.search(r'(REQ-\d+|QUICK-\d+)', current_branch)
-if branch_match:
-    CURRENT_REQ = branch_match.group(1)
-else:
-    # 回退：扫描活跃需求
-    PROJECT = read_settings("requirementProject")
-    ROLE = read_settings("requirementRole")
-
-    if ROLE == "readonly":
-        active_dir = f"~/.claude-requirements/projects/{PROJECT}/active/"
-    else:
-        active_dir = "docs/requirements/active/"
-
-    active_reqs = find_requirements(active_dir, status=["开发中", "测试中"])
-
-    if len(active_reqs) == 1:
-        CURRENT_REQ = active_reqs[0]
-    elif len(active_reqs) > 1:
-        print("检测到多个活跃需求：")
-        for i, req in enumerate(active_reqs):
-            print(f"  {i+1}. {req}")
-        print(f"  {len(active_reqs)+1}. 不关联需求")
-    else:
-        CURRENT_REQ = None
-```
+优先从分支名提取 `REQ-XXX` / `QUICK-XXX` 编号；未匹配时回退扫描活跃需求（按 `requirementRole` 决定读本地还是缓存）：命中 1 个自动关联，命中多个列出让用户选，未命中则不关联。
 
 ### 5. 分析变更内容
 
@@ -282,11 +236,7 @@ else:
 
 ```
 
-展示预览后直接执行提交（默认直通；仅当项目内存在 `.claude/.req-confirm-commit` marker 时，Hook 才会弹出原生确认对话框——该 marker 由 Claude 按用户自然语言意图维护）：
-
-```bash
-git commit -m "新功能: 实现部门渠道关联 (REQ-001)"
-```
+展示预览后直接执行提交（默认直通；仅当项目内存在 `.claude/.req-confirm-commit` marker 时，Hook 才会弹出原生确认对话框——该 marker 由 Claude 按用户自然语言意图维护）。
 
 ### 8. 提交结果
 

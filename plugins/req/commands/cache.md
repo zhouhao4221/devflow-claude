@@ -33,20 +33,7 @@ model: claude-haiku-4-5-20251001
 
 ### 执行流程
 
-```bash
-CACHE_PATH=~/.claude-requirements
-
-# 检查缓存是否存在
-if [ ! -d "$CACHE_PATH" ]; then
-    echo "📭 全局缓存未初始化"
-    echo "💡 使用 /req:init <project-name> 创建第一个项目"
-    exit 0
-fi
-
-# 统计信息
-TOTAL_PROJECTS=$(ls $CACHE_PATH/projects/ 2>/dev/null | wc -l)
-TOTAL_SIZE=$(du -sh $CACHE_PATH 2>/dev/null | cut -f1)
-```
+检查 `~/.claude-requirements` 是否存在；不存在则提示未初始化。存在则统计 `projects/` 下的项目数量和缓存总大小。
 
 ### 输出
 
@@ -80,19 +67,7 @@ TOTAL_SIZE=$(du -sh $CACHE_PATH 2>/dev/null | cut -f1)
 
 ### 执行流程
 
-```bash
-PROJECT_PATH=~/.claude-requirements/projects/<project-name>
-
-# 检查项目是否存在
-if [ ! -d "$PROJECT_PATH" ]; then
-    echo "❌ 项目不存在: <project-name>"
-    exit 1
-fi
-
-# 统计将删除的内容
-ACTIVE_COUNT=$(ls $PROJECT_PATH/active/*.md 2>/dev/null | wc -l)
-COMPLETED_COUNT=$(ls $PROJECT_PATH/completed/*.md 2>/dev/null | wc -l)
-```
+检查 `~/.claude-requirements/projects/<project-name>` 是否存在；不存在则报错。存在则统计 active/ 和 completed/ 下的需求文件数量，用于确认提示。
 
 ### 确认提示
 
@@ -115,16 +90,7 @@ COMPLETED_COUNT=$(ls $PROJECT_PATH/completed/*.md 2>/dev/null | wc -l)
 
 ### 执行删除
 
-```bash
-# 删除项目目录
-rm -rf $PROJECT_PATH
-
-# 更新全局索引
-# 从 index.json 移除项目记录
-
-# 清理关联仓库的绑定配置
-# 遍历 index.json 中记录的仓库，删除其 .claude/settings.local.json 中的 requirementProject
-```
+删除项目目录，从 `index.json` 移除项目记录，并清理 `index.json` 中记录的所有关联仓库的 `.claude/settings.local.json` 中的 `requirementProject` 字段。
 
 ### 输出
 
@@ -170,12 +136,7 @@ rm -rf $PROJECT_PATH
 
 ### 执行
 
-```bash
-# 删除整个缓存目录
-rm -rf ~/.claude-requirements
-
-# 清理所有关联仓库的绑定配置
-```
+删除整个 `~/.claude-requirements` 目录，并清理所有关联仓库的绑定配置。
 
 ### 输出
 
@@ -213,24 +174,7 @@ rm -rf ~/.claude-requirements
 2. 清空该项目的缓存目录
 3. 从本地 `docs/requirements/` 完整复制到缓存
 
-```bash
-# 获取当前项目
-PROJECT=$(cat .claude/settings.local.json | jq -r '.requirementProject')
-
-if [ -z "$PROJECT" ]; then
-    echo "❌ 当前仓库未绑定项目"
-    exit 1
-fi
-
-CACHE_PATH=~/.claude-requirements/projects/$PROJECT
-LOCAL_PATH=docs/requirements
-
-# 清空缓存目录
-rm -rf $CACHE_PATH/*
-
-# 完整复制本地需求（包括 modules/、active/、completed/、INDEX.md）
-cp -r $LOCAL_PATH/* $CACHE_PATH/
-```
+读取 `settings.local.json` 的 `requirementProject`，未绑定时报错退出。清空 `~/.claude-requirements/projects/$PROJECT/` 后，将 `docs/requirements/`（含 modules/、active/、completed/、INDEX.md）完整同步到缓存。
 
 ### 输出
 
@@ -257,16 +201,7 @@ cp -r $LOCAL_PATH/* $CACHE_PATH/
 
 ### 执行流程
 
-```bash
-PROJECT_PATH=~/.claude-requirements/projects/<project-name>
-EXPORT_PATH=./requirements-export-<project-name>-<date>
-
-# 创建导出目录
-mkdir -p $EXPORT_PATH
-
-# 复制所有文件
-cp -r $PROJECT_PATH/* $EXPORT_PATH/
-```
+将 `~/.claude-requirements/projects/<project-name>/` 下的所有文件复制到当前目录的 `requirements-export-<project-name>-<date>/` 目录。
 
 ### 输出
 

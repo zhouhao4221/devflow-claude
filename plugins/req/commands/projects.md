@@ -20,9 +20,7 @@ model: claude-haiku-4-5-20251001
 
 ### 1. 检查全局缓存
 
-```bash
-ls ~/.claude-requirements/projects/
-```
+检查 `~/.claude-requirements/projects/` 是否存在且非空。
 
 **如果缓存不存在或为空**：
 ```
@@ -33,9 +31,7 @@ ls ~/.claude-requirements/projects/
 
 ### 2. 读取全局索引
 
-```bash
-cat ~/.claude-requirements/index.json
-```
+读取 `~/.claude-requirements/index.json` 获取各项目的元信息和关联仓库列表。
 
 ### 3. 扫描每个项目
 

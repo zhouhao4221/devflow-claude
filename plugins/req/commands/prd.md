@@ -28,28 +28,10 @@ model: claude-haiku-4-5-20251001
 
 ### 1. 解析存储路径（按角色）
 
-```bash
-# 读取项目配置
-PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
-ROLE=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementRole // empty')
-
-if [ "$ROLE" = "readonly" ]; then
-    PRD_PATH=~/.claude-requirements/projects/$PROJECT/PRD.md
-    SOURCE="cache"
-elif [ "$ROLE" = "primary" ]; then
-    PRD_PATH=docs/requirements/PRD.md
-    # 本地不存在时回退到缓存
-    if [ ! -f "$PRD_PATH" ] && [ -n "$PROJECT" ]; then
-        PRD_PATH=~/.claude-requirements/projects/$PROJECT/PRD.md
-        SOURCE="cache"
-    else
-        SOURCE="local"
-    fi
-else
-    PRD_PATH=docs/requirements/PRD.md
-    SOURCE="local"
-fi
-```
+读取 `.claude/settings.local.json` 的 `requirementProject` 和 `requirementRole`，按角色确定 PRD 路径：
+- `readonly`：`~/.claude-requirements/projects/$PROJECT/PRD.md`
+- `primary`：`docs/requirements/PRD.md`，本地不存在时回退到缓存
+- 未绑定：`docs/requirements/PRD.md`
 
 ### 2. 检查 PRD 存在性
 
@@ -105,15 +87,7 @@ fi
 
 ### 5. 统计需求追踪（第 9 章）
 
-解析「需求追踪」表格，统计各状态需求数量：
-
-```python
-statuses = {"草稿": 0, "待评审": 0, "评审通过": 0, "开发中": 0, "测试中": 0, "已完成": 0}
-for row in tracking_table:
-    if row["状态"] in statuses:
-        statuses[row["状态"]] += 1
-total = sum(statuses.values())
-```
+解析「需求追踪」表格，按状态（草稿/待评审/评审通过/开发中/测试中/已完成）逐行统计数量并求总计。
 
 ### 6. 输出概览报告
 

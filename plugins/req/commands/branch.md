@@ -123,17 +123,7 @@ model: claude-haiku-4-5-20251001
 
 #### 3. 自动检测主分支名
 
-初始化时自动检测实际主分支名称：
-
-```bash
-# 检测主分支
-MAIN=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
-if [ -z "$MAIN" ]; then
-    git rev-parse --verify origin/main &>/dev/null && MAIN="main" || MAIN="master"
-fi
-```
-
-如果检测到的主分支与默认值不同，自动更新配置：
+初始化时从 `origin/HEAD` 检测实际主分支名，不存在时按序探测 `main` / `master`。检测到的主分支与默认值不同时，自动更新配置：
 ```
 检测到主分支为 master，已自动更新配置
 ```
@@ -161,11 +151,7 @@ fi
 🔗 Gitea 实例地址（如 https://git.example.com）：
 ```
 
-自动从 git remote 提取 owner/repo：
-```bash
-REMOTE_URL=$(git remote get-url origin)
-# 解析出 owner 和 repo
-```
+自动从 git remote URL 解析 owner/repo（SSH/HTTPS 均支持）。
 
 **Gitea Token 说明：**
 ```
@@ -194,13 +180,7 @@ REMOTE_URL=$(git remote get-url origin)
 
 #### 6. Git Flow 额外步骤
 
-如果选择 Git Flow，检查 develop 分支是否存在：
-
-```bash
-git rev-parse --verify origin/develop &>/dev/null
-```
-
-- 存在 → 使用
+如果选择 Git Flow，检查 develop 分支是否存在于远端：存在 → 使用；
 - 不存在 → 提示创建：
   ```
   develop 分支不存在，是否从 main 创建？
@@ -271,10 +251,7 @@ git rev-parse --verify origin/develop &>/dev/null
 
 #### 3. 展示当前分支状态
 
-```bash
-CURRENT=$(git branch --show-current)
-```
-
+获取当前分支名并展示：
 ```
 🌿 当前分支：feat/REQ-001-user-points
 ```
@@ -319,10 +296,6 @@ CURRENT=$(git branch --show-current)
 
 #### 1. 工作区检查
 
-```bash
-git status --porcelain
-```
-
 有未提交改动时终止，提示先 commit 或 stash。
 
 #### 2. 收集信息
@@ -342,16 +315,7 @@ hotfix/<slug>
 
 **关键**：hotfix 始终从**主分支**拉取，无论当前使用什么策略。
 
-```bash
-# 读取策略中的主分支
-MAIN_BRANCH=$(读取 branchStrategy.mainBranch，默认 main)
-
-# 确保主分支是最新的
-git fetch origin $MAIN_BRANCH
-
-# 从主分支创建 hotfix 分支
-git checkout -b hotfix/<slug> origin/$MAIN_BRANCH
-```
+fetch 并基于 `branchStrategy.mainBranch`（默认 main）创建 `hotfix/<slug>` 分支。
 
 ```
 🚨 紧急修复分支已创建

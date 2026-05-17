@@ -44,15 +44,7 @@ model: claude-haiku-4-5-20251001
 
 ### 1. 扫描模块目录
 
-```bash
-# 本地优先
-LOCAL_MODULES=docs/requirements/modules/
-
-# 全局缓存（如果配置了项目）
-if [ -n "$PROJECT" ]; then
-    CACHE_MODULES=~/.claude-requirements/projects/$PROJECT/modules/
-fi
-```
+优先使用 `docs/requirements/modules/`；若已绑定项目则同时扫描 `~/.claude-requirements/projects/$PROJECT/modules/`。
 
 ### 2. 解析模块文档
 

@@ -32,9 +32,7 @@ model: claude-haiku-4-5-20251001
 
 ### 2. 检查目标项目是否存在
 
-```bash
-ls ~/.claude-requirements/projects/<project-name>/
-```
+检查 `~/.claude-requirements/projects/<project-name>/` 是否存在。
 
 **如果项目不存在**：
 - 列出所有可用项目
@@ -77,19 +75,7 @@ ls ~/.claude-requirements/projects/<project-name>/
 
 #### 6.1 CLAUDE.md 架构检查
 
-```python
-claude_md_path = "CLAUDE.md"
-architecture_keywords = [
-    "分层架构", "目录结构", "技术栈", "项目架构",
-    "Architecture", "Tech Stack", "Project Structure"
-]
-
-if os.path.exists(claude_md_path):
-    content = read_file(claude_md_path)
-    has_architecture = any(kw in content for kw in architecture_keywords)
-else:
-    has_architecture = False
-```
+检查 CLAUDE.md 是否包含以下关键词之一：`分层架构`、`目录结构`、`技术栈`、`项目架构`、`Architecture`、`Tech Stack`、`Project Structure`。
 
 **缺失时引导**（与 `/req:init` 步骤 8 相同）：
 
@@ -113,9 +99,7 @@ else:
 
 #### 6.2 分支策略检查
 
-```python
-strategy = read_settings("branchStrategy")
-```
+读取 `settings.local.json` 中的 `branchStrategy` 字段。
 
 **未配置时提示**（不阻断）：
 
