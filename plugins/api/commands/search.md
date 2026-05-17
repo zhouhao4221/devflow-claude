@@ -34,14 +34,7 @@ model: claude-haiku-4-5-20251001
 
 1. **读取数据源配置**
 
-2. **调用 Python 脚本搜索**
-
-   ```bash
-   python3 <plugin-path>/scripts/swagger-parser.py \
-     --url "<source.url>" \
-     --mode search \
-     --keyword "用户"
-   ```
+2. **调用 `swagger-parser.py`**（`mode=search`，传入关键词）搜索匹配接口。
 
 3. **展示搜索结果**
 

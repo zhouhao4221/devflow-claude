@@ -38,61 +38,15 @@ from_date, to_date = parse_date_range(args.from, args.to, default_range="week")
 
 #### 2.1 需求变动
 
-```python
-reqs = collect_requirements()
-
-# 本周完成的需求（状态变为已完成，且更新日期在范围内）
-completed_this_week = [r for r in reqs
-    if r["is_completed"] and r["updated"] >= from_date and r["updated"] <= to_date]
-
-# 本周新创建的需求
-created_this_week = [r for r in reqs
-    if r["created"] >= from_date and r["created"] <= to_date]
-
-# 本周状态发生变化的需求（通过文档中的生命周期日期判断）
-# 检查生命周期记录中是否有本周的日期
-progressed_this_week = [r for r in reqs
-    if not r["is_completed"]
-    and r["updated"] >= from_date and r["updated"] <= to_date]
-
-# 当前进行中的需求
-in_progress = [r for r in reqs
-    if r["status"] in ["🔨 开发中", "🧪 测试中"] and not r["is_completed"]]
-```
+读取所有需求文档，按更新日期筛选出：本周完成的需求、本周新创建的需求、本周有进展（状态变化）的需求、当前进行中的需求（开发中 / 测试中）。
 
 #### 2.2 Git 提交
 
-```bash
-# 本周提交列表
-git log --oneline --no-merges --since='$FROM' --until='$TO 23:59:59'
-
-# 本周提交统计
-git log --shortstat --no-merges --since='$FROM' --until='$TO 23:59:59' | \
-  awk '/files changed/{f+=$1; i+=$4; d+=$6} END{print f, i, d}'
-
-# 本周贡献者
-git shortlog -sn --no-merges --since='$FROM' --until='$TO 23:59:59'
-
-# 本周按类型统计
-git log --oneline --no-merges --since='$FROM' --until='$TO 23:59:59' | \
-  sed 's/^[a-f0-9]* //' | \
-  grep -oE '^(feat|fix|refactor|perf|docs|test|chore|新功能|修复|重构|优化|文档|测试|构建)' | \
-  sort | uniq -c | sort -rn
-
-# 本周合并的分支
-git log --merges --oneline --since='$FROM' --until='$TO 23:59:59'
-```
+从 git log（时间范围内，不含 merge commit）提取：提交列表、代码增删行数、贡献者分布、按 conventional commit 类型分布、本周合并的分支。
 
 #### 2.3 从提交消息提取关联需求
 
-```python
-# 从 commit messages 中提取 REQ-XXX / QUICK-XXX
-commits = git_log(from_date, to_date)
-mentioned_reqs = set()
-for commit in commits:
-    ids = re.findall(r'(REQ-\d+|QUICK-\d+)', commit.message)
-    mentioned_reqs.update(ids)
-```
+扫描本周提交消息，提取其中出现的 `REQ-XXX` / `QUICK-XXX` 编号，关联到对应需求文档。
 
 ### 3. AI 整合分析
 

@@ -29,38 +29,13 @@ allowed-tools: Bash(bash:*, ssh:*), Read, Grep, Glob
 
 每次执行 `/diag:diagnose` 时，在读取服务清单前先完成 session 管理：
 
-```bash
-# 0-a. 清理上一轮遗留的本地 session 文件（2h TTL）
-find "${DIAG_HOME:-$HOME/.claude-diag}/tmp" -maxdepth 1 -name '.current-session' -mmin +120 -delete 2>/dev/null || true
-find "${DIAG_HOME:-$HOME/.claude-diag}/runtime" -maxdepth 1 -name 'tmp-*.json' -mmin +120 -delete 2>/dev/null || true
-
-# 0-b. 若上一轮 session 文件仍存在，读取旧 session id 并清理远端遗留文件
-OLD_SESSION=""
-SESSION_FILE="${DIAG_HOME:-$HOME/.claude-diag}/tmp/.current-session"
-if [ -f "$SESSION_FILE" ]; then
-    OLD_SESSION=$(cat "$SESSION_FILE")
-fi
-
-# 0-c. 生成新 session id（8位十六进制），写入本地
-NEW_SESSION=$(LC_ALL=C tr -dc 'a-f0-9' < /dev/urandom | head -c 8 2>/dev/null || date '+%H%M%S%N' | head -c 8)
-echo "$NEW_SESSION" > "$SESSION_FILE"
-```
-
-**远端遗留文件清理**（若 OLD_SESSION 非空，对本次诊断涉及的每台主机各执行一次）：
-
-```bash
-ssh <host> "rm -f /tmp/claude-diag-<OLD_SESSION>-*"
-```
-
-此命令会通过 write-guard 的 tmp 白名单（rm + 合规前缀），审计落盘。
+1. 清理本地超过 2h 的遗留 session 文件（`$DIAG_HOME/tmp/.current-session`、`runtime/tmp-*.json`）
+2. 若上一轮 session 文件仍存在，读取旧 session id，对本次诊断涉及的每台主机各执行一次远端清理（`rm -f /tmp/claude-diag-<OLD_SESSION>-*`）；此命令通过 write-guard 的 tmp 白名单，审计落盘
+3. 生成新 session id（8 位十六进制），写入本地 session 文件
 
 ### 1. 读取服务清单
 
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/services-config.sh" list
-```
-
-若配置文件不存在 → 提示 `/diag:init`，终止。
+调用 `services-config.sh list` 获取服务列表。配置文件不存在 → 提示 `/diag:init`，终止。
 
 ### 2. 选择目标服务
 

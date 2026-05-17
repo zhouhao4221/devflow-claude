@@ -21,11 +21,7 @@ allowed-tools: Bash(bash:*, ls:*, cat:*, chmod:*, mkdir:*), Read, Edit
 
 ### 1. 运行初始化脚本
 
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/init-diag.sh"
-```
-
-该脚本会：
+调用 `init-diag.sh`，该脚本会：
 - 检查 `python3 / jq / ssh / yq(或 pyyaml)` 是否可用，缺失则终止
 - 创建 `~/.claude-diag/config/` 和 `~/.claude-diag/audit/`
 - 若 `services.yaml` 不存在，则从模板拷贝（已存在时不覆盖）

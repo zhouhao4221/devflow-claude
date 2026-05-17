@@ -37,15 +37,7 @@ allowed-tools: Read, Write, Edit, Glob, Bash(python3:*, curl:*)
 
 2. **逐个解析数据源**
 
-   对每个 source 调用 Python 脚本：
-
-   ```bash
-   # URL 数据源
-   python3 <plugin-path>/scripts/swagger-parser.py --url "<source.url>" --mode summary
-
-   # 本地文件数据源
-   python3 <plugin-path>/scripts/swagger-parser.py --file "<source.file>" --mode summary
-   ```
+   对每个 source 调用 `swagger-parser.py`（`mode=summary`；URL 数据源用 `--url`，本地文件用 `--file`）。
 
 3. **展示解析结果**
 

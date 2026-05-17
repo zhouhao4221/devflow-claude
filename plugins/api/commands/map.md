@@ -33,14 +33,7 @@ allowed-tools: Read, Glob, Grep, Bash(python3:*)
 
 1. **解析接口定义**
 
-   ```bash
-   python3 <plugin-path>/scripts/swagger-parser.py \
-     --url "<source.url>" \
-     --mode detail \
-     --path "GET /api/v1/users/{id}"
-   ```
-
-   Python 脚本输出该接口的完整 schema（参数、请求体、响应体、$ref 解析后的结构）。
+   调用 `swagger-parser.py`（`mode=detail`，传入接口路径），获取该接口的完整 schema（参数、请求体、响应体、$ref 解析后的结构）。
 
 2. **AI 分析字段映射**
 

@@ -37,14 +37,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(python3:*)
 
 1. **解析接口定义**
 
-   调用 Python 脚本获取接口完整 schema：
-
-   ```bash
-   python3 <plugin-path>/scripts/swagger-parser.py \
-     --url "<source.url>" \
-     --mode detail \
-     --path "GET /api/v1/users/{id}"
-   ```
+   调用 `swagger-parser.py`（`mode=detail`，传入接口路径），获取接口完整 schema。
 
 2. **检测请求库**
 
@@ -91,15 +84,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(python3:*)
 
 AI 在项目中搜索引用了该类型或该请求函数的文件，识别受影响的页面组件：
 
-```bash
-# 搜索类型引用
-grep -r "UserDetailResponse" --include="*.{ts,tsx,vue}"
-
-# 搜索请求函数引用
-grep -r "getUserDetail\|getUserList" --include="*.{ts,tsx,vue}"
-```
-
-对每个引用文件，AI 读取代码判断其用途：
+在项目中搜索引用了该类型和请求函数的文件（`.ts`、`.tsx`、`.vue`）。对每个引用文件，AI 读取代码判断其用途：
 
 | 用途 | 判断依据 | 影响 |
 |------|---------|------|

@@ -46,13 +46,7 @@ model: claude-haiku-4-5-20251001
 ### 有配置时
 
 1. 读取 `.api-config.json`
-2. 对每个数据源调用 Python 脚本获取摘要：
-
-   ```bash
-   python3 <plugin-path>/scripts/swagger-parser.py \
-     --url "<source.url>" \
-     --mode summary
-   ```
+2. 对每个数据源调用 `swagger-parser.py`（`mode=summary`）获取接口总数和分组概览。
 
 3. 展示概览：
 

@@ -39,66 +39,11 @@ from_date, to_date = parse_date_range(args.from, args.to, default_range="all")
 
 #### 2.1 需求数据
 
-```python
-reqs = collect_requirements()
-
-# 基础统计
-total = len(reqs)
-active = [r for r in reqs if not r["is_completed"]]
-completed = [r for r in reqs if r["is_completed"]]
-
-# 按状态分布
-status_dist = counter([r["status"] for r in reqs])
-
-# 按类型分布
-type_dist = counter([r["type"] for r in reqs])
-
-# 按模块分布
-module_dist = counter([r["module"] for r in reqs if r["module"]])
-
-# 按优先级分布
-priority_dist = counter([r["priority"] for r in reqs if r["priority"]])
-
-# 需求吞吐量（按月统计完成数）
-monthly_throughput = group_by_month(completed, "updated")
-
-# 平均生命周期（从创建到完成的天数）
-lifecycles = [days_between(r["created"], r["updated"]) for r in completed]
-avg_lifecycle = mean(lifecycles) if lifecycles else None
-```
+读取所有需求文档，统计：总数、进行中/已完成分布、按状态/类型/模块/优先级分布、按月完成吞吐量、平均生命周期（创建到完成的天数）。
 
 #### 2.2 Git 数据
 
-```bash
-# 提交总数（时间范围内）
-git log --oneline --no-merges --since='$FROM' --until='$TO' | wc -l
-
-# 按作者统计
-git shortlog -sn --no-merges --since='$FROM' --until='$TO'
-
-# 按日期统计（每天提交数）
-git log --format='%ad' --date=short --no-merges --since='$FROM' --until='$TO' | sort | uniq -c
-
-# 按类型统计（feat/fix/...）
-git log --oneline --no-merges --since='$FROM' --until='$TO' | \
-  sed 's/^[a-f0-9]* //' | \
-  grep -oE '^(feat|fix|refactor|perf|docs|test|chore|style|ci|build|新功能|修复|重构|优化|文档|测试|构建)' | \
-  sort | uniq -c | sort -rn
-
-# 代码变更量
-git log --shortstat --no-merges --since='$FROM' --until='$TO' | \
-  awk '/files changed/{f+=$1; i+=$4; d+=$6} END{print f, i, d}'
-
-# 变更最多的文件 TOP 10
-git log --name-only --no-merges --since='$FROM' --until='$TO' --pretty=format: | \
-  sort | uniq -c | sort -rn | head -10
-
-# 活跃分支数
-git branch -a --sort=-committerdate | head -20
-
-# Tag 数量
-git tag | wc -l
-```
+从 git log（时间范围内，不含 merge commit）提取：提交总数、按作者分布、按日期趋势、按 conventional commit 类型分布、代码增删行数、变更频率最高的文件 TOP 10、活跃分支数、tag 数量。
 
 #### 2.3 代码规模（可选，当前快照）
 
@@ -202,9 +147,7 @@ find . -name '*.go' -o -name '*.ts' -o -name '*.vue' -o -name '*.py' -o -name '*
 
 ### 4. 提供保存选项
 
-```python
-offer_save(content, f"docs/reports/stats/{today}.md")
-```
+询问是否保存到 `docs/reports/stats/<today>.md`。
 
 ---
 
