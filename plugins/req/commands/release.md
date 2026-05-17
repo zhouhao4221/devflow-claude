@@ -46,7 +46,15 @@ model: claude-haiku-4-5-20251001
 
 ## 执行流程
 
-### 步骤 0：角色检查 + 目录配置
+### 步骤 0：角色检查 + 目录配置 + 项目发版规则
+
+**读取项目发版规则**：若 `docs/prompt/release.md` 存在，立即 Read 并提取三个变量（后续步骤使用）：
+
+- `PRE_RELEASE_CHECKS`：「发版前检查」章节的内容，步骤 0.5 执行
+- `POST_RELEASE_NOTES`：「发版后步骤」章节的内容，步骤 16 追加到最终报告
+- `EXTRA_ASSETS`：「额外附件」章节的 glob 列表，步骤 12 上传时合并进去
+
+文件不存在时三个变量均为空，跳过对应行为，不打印任何提示。
 
 读取 `.claude/settings.local.json` 中的 `requirementRole`：
 
@@ -76,6 +84,18 @@ model: claude-haiku-4-5-20251001
 ⚠️  未找到 .claude/skills/migration.md，当前使用 MIGRATIONS_DIR=<auto-detected or default>
     如需固定路径，创建 .claude/skills/migration.md 并写入：
     - **MIGRATIONS_DIR**: `<路径>`
+```
+
+### 步骤 0.5：发版前检查（仅 `PRE_RELEASE_CHECKS` 非空时执行）
+
+逐条执行检查命令，打印每条结果（✅ 通过 / ❌ 失败）。**任意一条失败则硬停止**，不进入后续步骤。
+
+```
+🔍 发版前检查：
+  ✅ npm test
+  ❌ npm run build（exit 1）
+
+发版中止。请修复后重新运行。
 ```
 
 ### 步骤 1：参数校验 + 分支判定
@@ -109,33 +129,19 @@ model: claude-haiku-4-5-20251001
 - `--bump` 存在时直接用，跳过扫描
 - 打印 `基线 tag / 推导版本 / 推导依据`，**自动使用推导结果**（如需覆盖请显式传参）
 
-### 步骤 2.5：更新版本号（version-bumper）
+### 步骤 2.5：更新版本号文件
 
-版本号确定后，立即执行 `version-bumper` skill：
-
-- `marketplace.json` `metadata.version` 同步为本次 release 版本号（去掉 `v` 前缀）
-- 各插件 `plugin.json` 按各自目录的 commit 变更等级独立 bump
-- 修改结果暂存（`git add`），在步骤 10 的统一 commit 中一起提交
-- 详细规则见 `plugins/req/skills/version-bumper/SKILL.md`
+读取 `docs/prompt/release.md` 中的「版本号文件」章节，按其规则更新对应文件并暂存（在步骤 10 的统一 commit 中一起提交）。章节不存在时跳过。
 
 ### 步骤 3：扫描候选需求
 
-```bash
-git log $FROM_REF..$TO_REF --pretty=format:"%s%n%b" --no-merges \
-  | grep -oE "(REQ|QUICK)-[0-9]+" | sort -u
-```
-
-读取每个需求文档，提取标题/类型/状态/关联 SQL 文件数。
+扫描 `$FROM_REF..$TO_REF` 范围内（不含 merge commit）的 commit subject + body，提取所有 `REQ-XXX` / `QUICK-XXX` 编号（去重）。读取每个需求文档，提取标题/类型/状态/关联 SQL 文件数。
 - **primary**：从 `docs/requirements/` 读取
 - **readonly**：从 `~/.claude-requirements/projects/<requirementProject>/` 读取；不存在则跳过该需求，继续纯 commit changelog 流程
 
 ### 步骤 4：扫描 migration SQL
 
-```bash
-find $MIGRATIONS_DIR -maxdepth 2 -name "*.sql" ! -path "$MIGRATIONS_DIR/released/*"
-```
-
-文件名含 `REQ-XXX` / `QUICK-XXX` 即归属对应需求。
+扫描 `$MIGRATIONS_DIR`（不含 `released/` 子目录）下的 `.sql` 文件，文件名含 `REQ-XXX` / `QUICK-XXX` 即归属对应需求。
 
 ### 步骤 5：自动选择需求
 
@@ -157,19 +163,7 @@ find $MIGRATIONS_DIR -maxdepth 2 -name "*.sql" ! -path "$MIGRATIONS_DIR/released
 
 ### 步骤 8：生成回滚 SQL
 
-输出 `$MIGRATIONS_DIR/released/<version>.rollback.sql`，倒序排列（后建的先回滚）：
-
-| 正向语句 | 自动生成回滚 |
-|---------|------------|
-| `CREATE TABLE x` | `DROP TABLE x;` |
-| `CREATE TABLE IF NOT EXISTS x` | `DROP TABLE IF EXISTS x;` |
-| `ALTER TABLE x ADD COLUMN y` | `ALTER TABLE x DROP COLUMN y;` |
-| `ALTER TABLE x ADD INDEX i` | `ALTER TABLE x DROP INDEX i;` |
-| `CREATE [UNIQUE] INDEX i ON x` | `DROP INDEX i;` |
-| `ALTER TABLE x RENAME TO y` | `ALTER TABLE y RENAME TO x;` |
-| INSERT / UPDATE / DELETE / DROP / 复杂 ALTER | `-- ⚠️ 需手动补充：<原语句首 80 字>` |
-
-记录待补充数量，最终报告中提示。
+输出 `$MIGRATIONS_DIR/released/<version>.rollback.sql`，按倒序排列（后建的先回滚）。对每条 DDL 生成语义相反的回滚语句；INSERT / UPDATE / DELETE / DROP / 复杂 ALTER 无法自动推导的，输出 `-- ⚠️ 需手动补充：<原语句首 80 字>`。记录待补充数量，最终报告中提示。
 
 ### 步骤 9：生成 changelog
 
@@ -177,36 +171,21 @@ find $MIGRATIONS_DIR -maxdepth 2 -name "*.sql" ! -path "$MIGRATIONS_DIR/released
 
 ### 步骤 10：提交产物 + 推送 + PR
 
-**direct**：`git add` 所有产物 → `git commit "chore(release): prepare <version>"`，进入步骤 11。
+**direct**：暂存所有产物 → commit（消息：`chore(release): prepare <version>`），进入步骤 11。
 
 **cross-branch**：
-1. commit + `git push origin <develop_branch>`
-2. 创建 PR: `<develop_branch>` → `<main_branch>`（复用 `state=open` 的 PR，不复用 merged/closed，详见 rationale §7.3）
-   - `gitea` → API；`github` → `gh pr create`；`other` → 打印命令后终止
+1. commit（同上）+ push `<develop_branch>`
+2. 创建 PR：`<develop_branch>` → `<main_branch>`（复用 `state=open` 的 PR，不复用 merged/closed，详见 rationale §7.3）；`other` → 打印命令后终止
    - Body：需求清单 + changelog 摘要
-3. **自动合并 PR**：
-   - `github`：`gh pr merge <PR_NUMBER> --merge --delete-branch`
-   - `gitea`：`POST /api/v1/repos/{owner}/{repo}/pulls/{index}/merge`（`{"Do":"merge"}`）
-   - 合并失败（分支保护/CI 未通过）→ 打印 PR URL，等待用户手动合并后回复「继续」（**强制交互**）
-4. `git checkout <main_branch> && git pull --ff-only`（验证 `docs/changelogs/<version>.md` 存在，异常见 rationale §7.4）
+3. **自动合并 PR**；合并失败（分支保护/CI 未通过）→ 打印 PR URL，等待用户手动合并后回复「继续」（**强制交互**）
+4. 切到 `<main_branch>` 并 fast-forward pull（验证 `docs/changelogs/<version>.md` 存在，异常见 rationale §7.4）
 5. 继续步骤 11（若 `create_tag`）和步骤 12（若 `!skip_release`）
 
 **release-branch**：同 cross-branch，但 PR1 是 `<release_branch>` → `<main_branch>`，PR2（步骤 14）同样自动合并。
 
 ### 步骤 10.9：主分支强制验证（步骤 11/12 前必须通过）
 
-**无论 flow_mode 是 direct / cross-branch / release-branch，执行 tag 或 Release 前必须硬性确认当前在 `main_branch` 上：**
-
-```bash
-CURRENT=$(git branch --show-current)
-if [ "$CURRENT" != "$main_branch" ]; then
-    echo "❌ 当前分支 $CURRENT ≠ 主分支 $main_branch"
-    echo "   Release 只能从 $main_branch 发布（branchStrategy.mainBranch）"
-    echo "   请手动执行：git checkout $main_branch && git pull --ff-only"
-    echo "   然后重新运行本命令"
-    exit 1
-fi
-```
+**无论 flow_mode 是 direct / cross-branch / release-branch，执行 tag 或 Release 前必须硬性确认当前在 `main_branch` 上。** 若不在，打印错误（当前分支 / 主分支名 / 手动切换命令），硬停止——不自动切换。
 
 `target_commitish` 后续所有步骤统一使用 `main_branch`，**不使用 develop / release 分支**。
 
@@ -225,36 +204,29 @@ fi
 
 Release notes 取 `docs/changelogs/<version>.md`。**`target_commitish` 固定为 `main_branch`（由步骤 10.9 保证），绝不使用 develop / release 分支。**
 
-- **gitea**：解析 remote URL，读 `branchStrategy.giteaToken`，`POST /api/v1/repos/.../releases`（body 用 `jq --rawfile`，详见 rationale §11），`target_commitish: main_branch`，成功后上传 SQL 资产
-- **github**：`gh release create <version> [--draft] --target <main_branch> --notes-file docs/changelogs/<version>.md [sql 文件...]`
+- **gitea**：解析 remote URL，读 `branchStrategy.giteaToken`，调用 Releases API；body 必须用 `jq --rawfile` 从文件构造（不手工拼接字符串，避免 emoji 编码损坏，详见 rationale §11）；`target_commitish` 固定为 `main_branch`；成功后上传 SQL 资产
+- **github**：`gh release create`，带 `--target <main_branch>` 和 changelog 文件，酌情加 `--draft` 和 SQL 附件
 - **other**：打印手动命令
 
 已存在（HTTP 409）时打印链接，不重复创建。
 
 ### 步骤 13：切回起始分支
 
-```bash
-git checkout "$start_branch"
-```
+切回步骤 0 记录的起始分支。
 
 ### 步骤 14：PR2 回流到 `developBranch`（仅 release-branch 模式）
 
 **触发条件**：`flow_mode == "release-branch"`。
 
-**为什么只有 release-branch 需要 PR2**：
-- `release-branch`：准备 commit 在 `chore/release-*` 分支上，develop 还没有这些 commit，必须通过 PR2 同步
-- `cross-branch`：准备 commit 直接提交在 develop 上，PR1（develop → main）之后 develop 已经有全部内容，**无需也不应**回流（`main → develop` 会产生循环 merge commit）
-- `direct`：单主线，无 develop，无需回流
-
 **PR2 方向**：`<release_branch>` → `<develop_branch>`
 
-- PR 标题：`chore(release): backmerge <version> → <develop_branch>`
-- PR Body：「回流 release 准备 commit（changelog / SQL / 回滚脚本）到 `<develop_branch>`，使下次 release 不重复生成产物。tag `<version>` 已在 `<main_branch>` 上创建，此 PR 不影响已发版本。」
+- 标题：`chore(release): backmerge <version> → <develop_branch>`
+- Body：说明回流目的（使下次 release 不重复产物）+ tag 已落在 `<main_branch>`
 - 等待用户确认（**非阻塞**，可跳过）；跳过时最终报告标记 ⏸️
 
 ### 步骤 15：清理 release 分支（仅 release-branch）
 
-PR2 merged → `git branch -D <release_branch>` + `git push origin --delete <release_branch>`。`remote ref does not exist` 视为成功。PR2 pending 时保留分支。
+PR2 merged → 删除本地和远程 release 分支（remote ref 不存在视为成功）。PR2 pending 时保留分支。
 
 ### 步骤 16：最终报告
 
@@ -284,6 +256,12 @@ PR2 merged → `git branch -D <release_branch>` + `git push origin --delete <rel
 🏷️ <若 --tag：✅ tag 已推送 | 否则：— 无 tag>
 🚀 — 已跳过（--no-release）
 🔀 PR: <PR URL>（等待合并到 <main_branch>）
+```
+
+**发版后步骤**（`POST_RELEASE_NOTES` 非空，且非 draft 模式时追加）：
+```
+📌 发版后待办：
+  <POST_RELEASE_NOTES 内容逐条列出>
 ```
 
 ---

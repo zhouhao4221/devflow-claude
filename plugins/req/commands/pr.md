@@ -100,9 +100,7 @@ else:
 
 ### 5. 推送分支
 
-```bash
-git push -u origin <branch>
-```
+推送当前分支到 origin 并设置上游追踪。
 
 ### 6. 按 repoType 创建 PR
 
@@ -110,21 +108,10 @@ git push -u origin <branch>
 
 1. 解析 `git remote get-url origin` 得到 `OWNER/REPO`（SSH/HTTPS 均支持）
 2. `giteaToken` 缺失 → 提示配置方式，给出手动 compare 链接退出
-3. 先查是否已有 PR：
-   ```bash
-   curl -s "${giteaUrl}/api/v1/repos/${OWNER}/${REPO}/pulls?state=open&head=${OWNER}:<branch>&base=<target>" \
-     -H "Authorization: token ${giteaToken}"
-   ```
-   有 → 输出现有 PR 链接，跳到步骤 8
-4. 无 → 调 `POST /api/v1/repos/${OWNER}/${REPO}/pulls`，参数 `title/body/head/base`
+3. 先查 `GET /api/v1/repos/{OWNER}/{REPO}/pulls?state=open&head={OWNER}:{branch}&base={target}` 是否已有 PR；有 → 输出现有 PR 链接，跳到步骤 8
+4. 无 → `POST /api/v1/repos/{OWNER}/{REPO}/pulls`，参数 `title/body/head/base`
 5. **设置审核人**（`reviewers` 非空时，**不询问**直接执行）：
-   - 拿到新建 PR 的 `number`，调用：
-     ```bash
-     curl -s -X POST "${giteaUrl}/api/v1/repos/${OWNER}/${REPO}/pulls/<N>/requested_reviewers" \
-       -H "Authorization: token ${giteaToken}" \
-       -H "Content-Type: application/json" \
-       -d '{"reviewers": ["user1", "user2"]}'
-     ```
+   - `POST /api/v1/repos/{OWNER}/{REPO}/pulls/{N}/requested_reviewers`，body `{"reviewers": [...]}`
    - tea CLI 无对应子命令，统一走 curl
    - 单个失败（用户名不存在 / 权限不足）不阻塞主流程，输出 ⚠️ 提示后继续
 
@@ -160,7 +147,7 @@ git push -u origin <branch>
 ```
 是否切回 <target> 并删除本地分支 <branch>？
 ```
-确认 → `git checkout <target> && git branch -d <branch>`（小写 `-d`，未合并会被拒绝）。当前已在目标分支则跳过 `checkout`。远程分支不删。
+确认 → 切回 target 并删除本地分支（用 `-d` 而非 `-D`，未合并时会被 git 拒绝）。当前已在目标分支则跳过切换。远程分支不删。
 
 ---
 

@@ -96,6 +96,37 @@ NEW_VER=$(jq -r '.version // "unknown"' "$SOURCE_PATH/plugins/req/.claude-plugin
    请手动处理：cd <SOURCE_PATH> && git status
 ```
 
+### 4. 检查项目 prompt 文件
+
+**触发条件**：当前目录存在 `docs/prompt/`（说明项目已创建架构文档）。`--check` 模式同样执行此步骤。
+
+读取 `$SOURCE_PATH/plugins/req/schemas/prompt-schema.md`，对 schema 中每个文件逐项检查：
+
+1. 文件是否存在
+2. 文件存在时，必需关键词是否在标题或正文中出现
+
+按结果分级输出：
+
+```
+📋 Prompt 文件检查（schema v<VERSION>）：
+
+  docs/prompt/architecture.md
+    ✅ 技术栈      ✅ 分层      ✅ 目录      ❌ 命名规范（必需，/req:dev 依赖）
+    ⚠️  错误处理（推荐，/req:dev 可能生成不一致的错误返回）
+
+  docs/prompt/testing.md
+    ⚠️  文件不存在（可选，/req:test 将使用内置默认值）
+
+建议：补充 1 个必需章节，详见 plugins/req/schemas/prompt-schema.md
+```
+
+全部覆盖时：
+```
+✅ Prompt 文件结构完整
+```
+
+`docs/prompt/` 不存在时跳过，不输出任何内容（项目尚未初始化架构文档，属正常状态）。
+
 ## 用户输入
 
 $ARGUMENTS

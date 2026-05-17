@@ -33,6 +33,7 @@ model: claude-haiku-4-5-20251001
 | `quick` | `templates/quick-template.md` | `docs/requirements/templates/quick-template.md` |
 | `module` | `templates/module-template.md` | `docs/requirements/templates/module-template.md` |
 | `prd` | `templates/prd-template.md` | `docs/requirements/templates/prd-template.md` |
+| `release-prompt` | `templates/release-prompt-template.md` | `docs/prompt/release.md` |
 | `all` | 以上全部 | 以上全部 |
 
 ---
