@@ -6,6 +6,8 @@ allowed-tools: Read, Write, Edit, Glob, Bash(mkdir:*)
 
 # 执行 UAT 测试
 
+> **Audience:** QA
+
 读取测试流程文档，调用 uat-executor skill 逐场景执行，输出报告。
 
 > **运行环境要求**：操作方式为 `browser` 时，必须在 **Codex Chrome** 或 **Claude 桌面客户端** 中运行，否则无法调用浏览器工具。

@@ -5,6 +5,8 @@ allowed-tools: Read, Glob, Grep, Bash(git log:*, git tag:*)
 
 # 项目总进度
 
+> **Audience:** Product Manager
+
 从全局视角展示所有需求的进度、里程碑节点和交付时间线。适合给上级看项目全貌。
 
 ## 命令格式

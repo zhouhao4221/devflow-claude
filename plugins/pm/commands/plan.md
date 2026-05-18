@@ -6,6 +6,8 @@ allowed-tools: Read, Write, Glob, Grep, Bash(git log:*)
 
 # 生成方案文档
 
+> **Audience:** Product Manager
+
 根据当前项目数据和用户指定的主题，AI 生成方案文档。
 
 ## 命令格式

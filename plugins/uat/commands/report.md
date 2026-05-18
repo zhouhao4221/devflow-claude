@@ -7,6 +7,8 @@ model: claude-haiku-4-5-20251001
 
 # 查看测试报告
 
+> **Audience:** QA
+
 读取并展示最近一次 `/uat:run` 生成的测试报告。
 
 ## 命令格式

@@ -6,6 +6,8 @@ allowed-tools: Read, Glob, Grep, Bash(git log:*, git diff:*, git shortlog:*)
 
 # 生成周报
 
+> **Audience:** Product Manager
+
 从需求文档和 Git 记录自动提取本周工作内容，生成结构化周报。
 
 ## 命令格式

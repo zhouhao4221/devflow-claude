@@ -7,6 +7,8 @@ model: claude-haiku-4-5-20251001
 
 # 上报测试 Bug
 
+> **Audience:** QA
+
 将最近一次测试的失败场景上报为 Gitea issue。
 
 ## 命令格式

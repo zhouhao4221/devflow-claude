@@ -6,6 +6,8 @@ allowed-tools: Read, Glob, Grep, Bash(git log:*, git tag:*, git diff:*)
 
 # 里程碑总结
 
+> **Audience:** Product Manager
+
 基于 Git Tag 和需求完成记录，生成版本发布总结报告。
 
 ## 命令格式

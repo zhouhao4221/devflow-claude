@@ -6,6 +6,8 @@ model: claude-haiku-4-5-20251001
 
 # 项目管理助手
 
+> **Audience:** Product Manager
+
 项目管理主入口，展示项目概况仪表盘，或路由到子命令。
 
 ## 命令格式

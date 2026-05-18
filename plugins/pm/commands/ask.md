@@ -6,6 +6,8 @@ allowed-tools: Read, Glob, Grep, Bash(git:*)
 
 # 自由提问
 
+> **Audience:** Product Manager
+
 基于项目的 PRD、需求文档、Git 记录等数据，回答任何项目相关问题。
 
 ## 命令格式

@@ -7,6 +7,8 @@ model: claude-haiku-4-5-20251001
 
 # UAT 测试工作流
 
+> **Audience:** QA
+
 列出所有测试流程模块及其上次执行状态。
 
 ## 命令格式

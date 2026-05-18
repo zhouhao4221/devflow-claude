@@ -6,6 +6,8 @@ allowed-tools: Read, Glob, Grep, Bash(git log:*, git diff:*, git shortlog:*)
 
 # 项目数据统计
 
+> **Audience:** Product Manager
+
 生成项目多维度统计数据，包括需求进度、代码活动、贡献者分布等。
 
 ## 命令格式

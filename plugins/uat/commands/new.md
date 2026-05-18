@@ -6,6 +6,8 @@ allowed-tools: Read, Write, Glob
 
 # 创建测试流程文档
 
+> **Audience:** QA
+
 通过多轮对话收集测试场景，生成结构化的 flow 文档。
 
 ## 命令格式

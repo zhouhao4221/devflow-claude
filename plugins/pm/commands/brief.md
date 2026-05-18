@@ -6,6 +6,8 @@ allowed-tools: Read, Glob, Grep, Bash(git log:*)
 
 # 项目简介
 
+> **Audience:** Product Manager
+
 生成项目概述文档，适合给新成员、客户或外部合作方了解项目全貌。
 
 ## 命令格式

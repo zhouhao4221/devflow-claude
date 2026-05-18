@@ -6,6 +6,8 @@ model: claude-haiku-4-5-20251001
 
 # 站会摘要
 
+> **Audience:** Product Manager
+
 生成简洁的每日站会汇报内容：昨天做了什么、今天要做什么、有什么阻塞。
 
 ## 命令格式

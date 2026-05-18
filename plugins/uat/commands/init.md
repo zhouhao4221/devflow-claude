@@ -7,6 +7,8 @@ model: claude-haiku-4-5-20251001
 
 # 初始化 UAT 插件
 
+> **Audience:** Engineer
+
 将 uat-executor skill 安装到项目的 `.claude/skills/`，使 Codex 和 Claude 桌面端能在执行测试时自动加载。
 
 ## 命令格式

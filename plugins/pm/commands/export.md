@@ -7,6 +7,8 @@ model: claude-haiku-4-5-20251001
 
 # 导出内容
 
+> **Audience:** Product Manager
+
 将最近一次 pm 命令生成的内容保存到 `docs/reports/` 目录。
 也可以直接指定要执行的命令并保存结果。
 

@@ -5,6 +5,8 @@ allowed-tools: Read, Glob, Grep, Bash(git log:*, git status:*)
 
 # 风险扫描
 
+> **Audience:** Product Manager
+
 自动扫描项目数据，识别延期需求、长期未更新分支、异常提交模式等风险信号。
 
 ## 命令格式

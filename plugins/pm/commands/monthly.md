@@ -6,6 +6,8 @@ allowed-tools: Read, Glob, Grep, Bash(git log:*, git diff:*, git shortlog:*)
 
 # 生成月报
 
+> **Audience:** Product Manager
+
 从需求文档和 Git 记录生成月度工作总结，包含本月成果、数据统计、趋势分析和下月计划。
 
 ## 命令格式
