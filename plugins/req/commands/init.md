@@ -224,6 +224,50 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 
 `architecture.md` 已由步骤 8.3 生成，此处跳过。
 
+#### 8.7 引导生成 release.md
+
+**`docs/prompt/release.md` 已存在时**：
+
+```
+✅ docs/prompt/release.md 已存在，跳过生成
+```
+
+**不存在时**，扫描项目并生成预填充草稿（非空白骨架）：
+
+**扫描目标：**
+
+| 扫描对象 | 推断内容 |
+|---------|---------|
+| `package.json` → `version` / `scripts.test` / `scripts.build` / `scripts.lint` | 版本号文件路径 + 前置检查命令 |
+| `plugin.json` / `marketplace.json` / `pyproject.toml` / `Cargo.toml` | 版本号文件路径 |
+| `go.mod` + git tag 格式 | 版本号来源（Go 模块通常不写入文件，说明来源） |
+| `Makefile` → `test` / `build` / `lint` targets | 前置检查命令 |
+| `.github/workflows/*.yml` / `Jenkinsfile` | 前置检查是否有 CI 门控 |
+| `dist/` / `build/` 目录或 glob 输出 | 额外附件候选 |
+
+**基于扫描生成草稿**（三个可推断章节填入发现值，不可推断则留注释）：
+
+- **版本号文件**：列出扫描到的文件 + 字段名
+- **发版前检查**：列出扫描到的 test/build/lint 命令（无则留注释示例）
+- **发版后步骤**：始终留空（项目特有，AI 无法推断），注释提示填写通知/部署事项
+- **额外附件**：若发现 `dist/` 或构建产物 glob 则填入，否则留注释
+
+展示草稿并请用户确认：
+
+```
+📋 已扫描项目，生成 release.md 草稿：
+
+   版本号文件：package.json → version
+   发版前检查：npm test, npm run build
+   额外附件：未发现构建产物目录
+
+   是否写入 docs/prompt/release.md？(y/n/e，默认 y，e 先预览完整内容)
+```
+
+- `y`（默认）→ 直接写入
+- `n` → 跳过，提示后续可手动创建（模板位于插件 `templates/release-prompt-template.md`）
+- `e` → 输出完整草稿内容供审阅，再次询问 y/n
+
 ### 9. 项目 Skills 初始化
 
 创建 `.claude/skills/` 目录（不存在时），并根据项目类型引导创建常用 Skill 文件。
@@ -328,11 +372,12 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 
 💡 下一步:
    1. 检查 docs/prompt/architecture.md 内容是否准确
-   2. 确认 .claude/skills/migration.md 中的路径是否正确（如已创建）
-   3. 按需补充 docs/prompt/ 中各 Prompt 文件的内容（与 AI 协作填写）
-   4. 编辑 PRD.md 完善产品规划
-   5. /req:branch init  配置分支策略
-   6. /req:new <标题>   创建具体需求
+   2. 补充 docs/prompt/release.md 中「发版后步骤」章节（通知渠道、部署触发等）
+   3. 确认 .claude/skills/migration.md 中的路径是否正确（如已创建）
+   4. 按需补充 docs/prompt/ 中各 Prompt 文件的内容（与 AI 协作填写）
+   5. 编辑 PRD.md 完善产品规划
+   6. /req:branch init  配置分支策略
+   7. /req:new <标题>   创建具体需求
 ```
 
 **重新初始化成功**（使用 `--reinit` 参数）：
@@ -351,6 +396,7 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
    + docs/requirements/PRD.md       已生成（新增）
    ✓ docs/prompt/architecture.md    已存在（或缺失时触发扫描+生成，见步骤 8）
    ✓ docs/prompt/ 通用 Prompt 文件  已检查（7 个骨架 + prompt-craft.md，缺失时补创建）
+   ✓ docs/prompt/release.md         已存在（或缺失时扫描项目引导生成，见步骤 8.7）
    ✓ .claude/skills/                已检查（如为空可按引导创建 Skill 文件）
 
 🔗 当前仓库已绑定到此项目
