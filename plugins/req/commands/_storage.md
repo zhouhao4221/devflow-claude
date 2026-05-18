@@ -1,44 +1,64 @@
 # 公共逻辑参考 - 存储与配置
 
-> 此文档定义 settings.local.json 写入、存储路径、缓存同步、需求编号、元信息等共用规则。
+> 此文档定义 settings 文件写入、存储路径、缓存同步、需求编号、元信息等共用规则。
 >
 > 同伴文档：[`_branch.md`](./_branch.md)（分支策略）、[`_issue.md`](./_issue.md)（Issue 关联）、[`_template.md`](./_template.md)（模板与状态确认）、[`_granularity.md`](./_granularity.md)（需求粒度）、[`_claude-md.md`](./_claude-md.md)（架构检查）。
 
-## settings.local.json 写入规范
+## settings 文件写入规范
 
-所有插件配置统一存储在 `.claude/settings.local.json` 中。
+插件配置分两个文件存储，按是否含密钥区分：
+
+| 字段 | 文件 | 纳入 git | 说明 |
+|------|------|----------|------|
+| `requirementProject` | `settings.json` | ✅ | 团队共享配置 |
+| `requirementRole` | `settings.json` | ✅ | 团队共享配置 |
+| `branchStrategy`（不含 token） | `settings.json` | ✅ | 团队共享配置 |
+| `giteaToken` | `settings.local.json` | ❌ | 个人密钥，禁止提交 |
 
 **写入规则（强制）**：
 
-1. **唯一配置文件**：所有配置（`requirementProject`、`requirementRole`、`branchStrategy` 等）必须写入 `.claude/settings.local.json`，**禁止**创建独立配置文件（如 `.claude/devflow.json`、`branchStrategy.json`、`requirement-config.json` 等）。独立文件不会被 Claude Code 识别
-2. **合并写入**：先读取已有 `settings.local.json` 内容，合并需要更新的字段后写回，**不得覆盖已有字段**
+1. **禁止独立配置文件**：禁止创建 `.claude/devflow.json`、`branchStrategy.json` 等独立文件，独立文件不会被 Claude Code 识别
+2. **合并写入**：先读取已有文件内容，合并需要更新的字段后写回，**不得覆盖已有字段**
 3. **目录检查**：`.claude/` 目录不存在时先创建
-4. **无写入权限的回退**：当 Write/Edit 工具被拒绝或无权限写入 `.claude/settings.local.json` 时，**不得**改写到其他文件，而应直接输出一段可复制执行的 shell 命令（使用 `python3 -c` 或 `jq`）让用户自己运行，例如：
+4. **读取合并顺序**：命令读配置时先读 `settings.json`，再用 `settings.local.json` 覆盖同名字段（`giteaToken` 以 local 为准）
+5. **无写入权限的回退**：当 Write/Edit 工具被拒绝时，**不得**改写到其他文件，而应直接输出可复制执行的 shell 命令：
 
    ```bash
-   python3 -c "import json,os; p='.claude/settings.local.json'; os.makedirs('.claude',exist_ok=True); d=json.load(open(p)) if os.path.exists(p) else {}; d['requirementProject']='my-project'; d['requirementRole']='primary'; json.dump(d,open(p,'w'),indent=2,ensure_ascii=False)"
+   # 写入 settings.json（团队配置）
+   python3 -c "import json,os; p='.claude/settings.json'; os.makedirs('.claude',exist_ok=True); d=json.load(open(p)) if os.path.exists(p) else {}; d['requirementProject']='my-project'; d['requirementRole']='primary'; json.dump(d,open(p,'w'),indent=2,ensure_ascii=False)"
+   # 写入 settings.local.json（本地密钥）
+   python3 -c "import json,os; p='.claude/settings.local.json'; os.makedirs('.claude',exist_ok=True); d=json.load(open(p)) if os.path.exists(p) else {}; d['giteaToken']='YOUR_TOKEN'; json.dump(d,open(p,'w'),indent=2,ensure_ascii=False)"
    ```
 
 ```python
-# 正确写法
+# 写入团队配置（settings.json）
 import json, os
 
-path = ".claude/settings.local.json"
+path = ".claude/settings.json"
 os.makedirs(".claude", exist_ok=True)
+existing = json.load(open(path)) if os.path.exists(path) else {}
+existing["requirementProject"] = "..."  # 只更新需要的字段
+with open(path, "w") as f:
+    json.dump(existing, f, indent=2, ensure_ascii=False)
 
-# 读取已有内容
-existing = {}
-if os.path.exists(path):
-    with open(path) as f:
-        existing = json.load(f)
-
-# 合并更新
-existing["branchStrategy"] = { ... }  # 只更新需要的字段
-
-# 写回
+# 写入本地密钥（settings.local.json）
+path = ".claude/settings.local.json"
+existing = json.load(open(path)) if os.path.exists(path) else {}
+existing["giteaToken"] = "YOUR_TOKEN"
 with open(path, "w") as f:
     json.dump(existing, f, indent=2, ensure_ascii=False)
 ```
+
+### 读取惯例（兼容旧项目）
+
+命令读取 `requirementProject` / `requirementRole` / `branchStrategy` 时，统一按以下顺序合并：
+
+```
+config = merge(settings.json, settings.local.json)
+# settings.local.json 中的同名字段覆盖 settings.json
+```
+
+**兼容旧项目**：旧项目若将所有字段写在 `settings.local.json`（未拆分），读取时仍能正常工作，无需迁移。只有在显式重新运行 `/req:init --reinit` 或 `/req:branch init` 后才会迁移到新布局。
 
 ---
 

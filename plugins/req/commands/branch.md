@@ -29,7 +29,7 @@ model: claude-haiku-4-5-20251001
 
 ## 子命令：init
 
-交互式选择分支策略，写入 `.claude/settings.local.json`。
+交互式选择分支策略，写入 `.claude/settings.json`（`giteaToken` 除外，写入 `settings.local.json`）。
 
 ### 执行流程
 
@@ -57,14 +57,13 @@ model: claude-haiku-4-5-20251001
 
 根据选择生成默认配置，展示给用户确认：
 
-**GitHub Flow 默认配置：**
+**GitHub Flow 默认配置（写入 `settings.json`）：**
 ```json
 {
   "branchStrategy": {
     "model": "github-flow",
     "repoType": "github",
     "giteaUrl": null,
-    "giteaToken": null,
     "mainBranch": "main",
     "developBranch": null,
     "featurePrefix": "feat/",
@@ -79,14 +78,13 @@ model: claude-haiku-4-5-20251001
 }
 ```
 
-**Git Flow 默认配置：**
+**Git Flow 默认配置（写入 `settings.json`）：**
 ```json
 {
   "branchStrategy": {
     "model": "git-flow",
     "repoType": "github",
     "giteaUrl": null,
-    "giteaToken": null,
     "mainBranch": "main",
     "developBranch": "develop",
     "featurePrefix": "feat/",
@@ -101,14 +99,13 @@ model: claude-haiku-4-5-20251001
 }
 ```
 
-**Trunk-Based 默认配置：**
+**Trunk-Based 默认配置（写入 `settings.json`）：**
 ```json
 {
   "branchStrategy": {
     "model": "trunk-based",
     "repoType": "github",
     "giteaUrl": null,
-    "giteaToken": null,
     "mainBranch": "main",
     "developBranch": null,
     "featurePrefix": "feat/",
@@ -157,7 +154,7 @@ model: claude-haiku-4-5-20251001
 **Gitea Token 说明：**
 ```
 🔑 Gitea API Token：
-   在 branchStrategy.giteaToken 中直接配置 token 值
+   token 存入 .claude/settings.local.json 的顶层 giteaToken 字段（不提交 git）
    生成方式：Gitea → 设置 → 应用 → 生成令牌（需 repo 权限）
 ```
 
@@ -189,9 +186,17 @@ model: claude-haiku-4-5-20251001
 
 #### 7. 写入配置
 
-**必须写入 `.claude/settings.local.json` 的 `branchStrategy` 字段**（与 `requirementProject`、`requirementRole` 同一文件）。
+> 写入规范见 [_storage.md](./_storage.md#settings-文件写入规范)。
 
-⚠️ **禁止**创建独立的 `branchStrategy.json` 或其他文件。读取已有 `settings.local.json` 内容，合并 `branchStrategy` 字段后写回。
+**`branchStrategy`（不含 token）写入 `.claude/settings.json`**：读取已有内容，合并 `branchStrategy` 字段后写回。
+
+**`giteaToken` 单独写入 `.claude/settings.local.json`**（顶层字段，非嵌套在 `branchStrategy` 内）：
+```json
+{ "giteaToken": "<用户输入的 token>" }
+```
+非 Gitea 仓库时跳过此步骤（无需写入）。
+
+⚠️ **禁止**创建独立的 `branchStrategy.json` 或其他文件。
 
 ```
 ✅ 分支策略已配置！
@@ -222,7 +227,7 @@ model: claude-haiku-4-5-20251001
 
 #### 1. 读取策略配置
 
-从 `.claude/settings.local.json` 读取 `branchStrategy`。
+从 `.claude/settings.json` 读取 `branchStrategy`；若需要 `giteaToken`，再从 `.claude/settings.local.json` 读取顶层 `giteaToken` 字段。
 
 **未配置时：**
 ```
@@ -407,7 +412,7 @@ git branch -d hotfix/fix-order-total-calc
 ### 配置存储
 
 ```jsonc
-// .claude/settings.local.json
+// .claude/settings.json（纳入 git，团队共享）
 {
   "requirementProject": "my-saas",
   "requirementRole": "primary",
@@ -415,7 +420,6 @@ git branch -d hotfix/fix-order-total-calc
     "model": "github-flow",
     "repoType": "gitea",
     "giteaUrl": "https://git.example.com",
-    "giteaToken": null,
     "mainBranch": "main",
     "developBranch": null,
     "featurePrefix": "feat/",
@@ -427,6 +431,13 @@ git branch -d hotfix/fix-order-total-calc
     "deleteBranchAfterMerge": true,
     "reviewers": ["alice", "bob"]
   }
+}
+```
+
+```jsonc
+// .claude/settings.local.json（本地，加入 .gitignore，不提交）
+{
+  "giteaToken": "YOUR_TOKEN_HERE"
 }
 ```
 

@@ -40,7 +40,7 @@ model: claude-haiku-4-5-20251001
 
 ### 3. 读取当前绑定
 
-检查当前仓库的 `.claude/settings.local.json`：
+检查当前仓库的 `.claude/settings.json`：
 
 ```json
 {
@@ -50,9 +50,9 @@ model: claude-haiku-4-5-20251001
 
 ### 4. 更新仓库绑定
 
-> 写入规范见 [_storage.md](./_storage.md#settingslocaljson-写入规范)。
+> 写入规范见 [_storage.md](./_storage.md#settings-文件写入规范)。
 
-读取已有 `.claude/settings.local.json`，合并以下字段后写回（不覆盖已有的 `branchStrategy` 等字段）：
+读取已有 `.claude/settings.json`，合并以下字段后写回（不覆盖已有的 `branchStrategy` 等字段）：
 
 ```json
 {
@@ -99,7 +99,7 @@ model: claude-haiku-4-5-20251001
 
 #### 6.2 分支策略检查
 
-读取 `settings.local.json` 中的 `branchStrategy` 字段。
+读取 `settings.json` 中的 `branchStrategy` 字段。
 
 **未配置时提示**（不阻断）：
 
