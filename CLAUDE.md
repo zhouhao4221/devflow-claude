@@ -108,11 +108,14 @@ Write/Edit/Bash 默认全部直通。用户说"开启提交确认"→ Claude 创
 |------|------|---------|
 | `CLAUDE.md` | AI 行为指令（通用规则、引用指针） | 每次会话自动加载 |
 | `docs/prompt/architecture.md` | 项目架构知识（分层、规范、技术栈） | 命令显式 Read |
+| `docs/prompt/release.md` | 项目发版规则（版本号文件、前置检查、发版后步骤、额外附件） | `/req:release` 步骤 0 Read |
 | `docs/requirements/specs/` | 项目级公共知识层（枚举、规则、契约等散落代码知识的摘要） | 命令按仓库角色注入 |
 | `settings.local.json` | 结构化配置（分支策略、仓库角色、token） | 命令读取配置字段 |
 | `.claude/skills/<concern>.md` | 具体约定（路径变量等窄知识） | 命令扫描全量注入 |
 
 规范：skill 文件名反映关注点（`migration.md` ✅，`config.md` ❌）；`docs/prompt/` 文件按需显式 Read，缺失时打印创建提示（非阻塞）。
+
+**Prompt 文件结构验证**：插件在 `plugins/req/schemas/prompt-schema.md` 中定义各命令期望的 `docs/prompt/` 文件结构（必需章节 / 推荐章节 / 可选文件）。`/req:update` 拉取新版本后自动对照 schema 检查项目 prompt 文件是否覆盖，缺失必需章节时报错，推荐章节缺失时警告。
 
 现有示例：`.claude/skills/migration.md` → 声明 `MIGRATIONS_DIR`（migration SQL 存放目录），供 `/req:dev` 写入、`/req:release` 扫描合并。Changelog 目录固定为 `docs/changelogs/`，不参与配置。
 
