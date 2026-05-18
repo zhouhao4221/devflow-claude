@@ -49,16 +49,7 @@ from_date, to_date = parse_date_range(args.from, args.to, default_range="all")
 
 #### 2.3 代码规模（可选，当前快照）
 
-```bash
-# 代码行数（排除依赖和生成文件）
-find . -name '*.go' -o -name '*.ts' -o -name '*.vue' -o -name '*.py' -o -name '*.java' | \
-  grep -v node_modules | grep -v vendor | grep -v dist | \
-  xargs wc -l 2>/dev/null | tail -1
-
-# 文件数量
-find . -name '*.go' -o -name '*.ts' -o -name '*.vue' -o -name '*.py' -o -name '*.java' | \
-  grep -v node_modules | grep -v vendor | grep -v dist | wc -l
-```
+统计主要源码文件（`.go`、`.ts`、`.vue`、`.py`、`.java` 等）的文件数和总行数，排除 `node_modules`、`vendor`、`dist` 等目录。
 
 ### 3. 输出统计报告
 
