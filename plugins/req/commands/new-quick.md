@@ -6,6 +6,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(gh:*, curl:*)
 
 # 快速修复需求
 
+> **Audience:** Engineer
+
 用于小bug修复或小功能开发，简化流程：方案确认即可开发。
 
 ## 命令格式

@@ -8,6 +8,7 @@ allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 
 根据分支策略中的仓库类型，自动推送分支并创建 PR。
 
+> **Audience:** Engineer
 > 不受仓库角色限制，readonly 也可执行。不触发缓存同步。
 >
 > **CLI 优先级**：GitHub 走 `gh pr create`；Gitea 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测，可用 `tea` 时走 `tea pulls create --base <target> --head <branch> --title ... --description ...`，否则回退本文 curl 示例。

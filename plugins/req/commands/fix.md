@@ -8,6 +8,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, m
 
 创建修复分支，AI 辅助分析定位 bug，修复后直接提交和 PR。不创建需求文档。
 
+> **Audience:** Engineer
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
 > 不触发缓存同步（无需求文档）。
 >

@@ -9,6 +9,7 @@ model: claude-haiku-4-5-20251001
 
 生成符合 Conventional Commits 规范的 Git 提交，自动关联当前需求编号，便于后续 `/req:changelog` 生成版本说明。
 
+> **Audience:** Engineer
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
 > 不触发缓存同步。
 

@@ -9,6 +9,7 @@ model: claude-haiku-4-5-20251001
 
 提交需求评审或记录评审结果。
 
+> **Audience:** Product Manager
 > 存储路径和缓存同步规则见 [_storage.md](./_storage.md)
 
 ## 命令格式

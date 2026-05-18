@@ -9,6 +9,7 @@ model: claude-haiku-4-5-20251001
 
 准备发版产物（SQL 合并、回滚脚本、changelog、commit、PR）并**默认创建 draft Release**。加 `--tag` 额外创建 annotated git tag；加 `--no-draft` 直接正式发布。
 
+> **Audience:** Engineer
 > readonly 仓库可用。不触发缓存同步。
 > CLI 优先：GitHub → `gh`；Gitea → 检测 `tea`，不支持的接口回退 curl。详见 [`_gitea_cli.md`](./_gitea_cli.md)。
 > 设计原理和边界情况详见 [`release-rationale.md`](./release-rationale.md)。

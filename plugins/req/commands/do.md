@@ -8,6 +8,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 
 描述你要做的事，AI 自动分析意图、选择合适的流程、生成方案并执行。无需关心该用哪个命令。
 
+> **Audience:** Engineer
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
 > 不触发缓存同步（无需求文档）。
 >

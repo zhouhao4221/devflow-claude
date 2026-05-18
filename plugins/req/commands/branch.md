@@ -9,6 +9,7 @@ model: claude-haiku-4-5-20251001
 
 管理项目的 Git 分支策略，与需求流程（dev/commit/done）联动。
 
+> **Audience:** Engineer
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
 > 不触发缓存同步。
 
