@@ -42,7 +42,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 > 避免显式 sonnet：其 1M context 变体会触发 extra-usage 付费墙；Haiku 200K 对机械命令足够，复杂命令由用户会话模型决定档位。
 
-haiku 命令：`/req`、`/req:status/show/prd/projects/cache/use/done/update-template/changelog/help/commit/review/upgrade/branch/release/modules/specs/init/migrate/test_regression`、`/api:api/search/help`、`/pm:pm/standup/export/help`
+haiku 命令：`/req`、`/req:status/show/prd/projects/cache/use/done/update-template/changelog/help/commit/review/upgrade/branch/release/modules/specs/migrate/test_regression`、`/api:api/search/help`、`/pm:pm/standup/export/help`
 
 默认命令：`/req:new/do/fix/dev/test/test_new/review-pr/prd-edit/edit/new-quick/pr/issue/split`
 
