@@ -11,13 +11,14 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 ## 命令格式
 
 ```
-/req:init <project-name> [--reinit]
+/req:init <project-name> [--reinit] [--readonly]
 ```
 
 ## 参数
 
 - `project-name`: 项目名称（建议使用 kebab-case，如 `my-saas-product`）
 - `--reinit`: 重新初始化模式，为已有项目补充缺失的目录和文件（不覆盖已有内容）
+- `--readonly`: 以只读仓库角色初始化——只创建模板文件和 docs/prompt/ 等工具文件，不创建本地需求目录和全局缓存
 
 ---
 
@@ -27,40 +28,55 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 
 ```
 参数: $ARGUMENTS
-项目名称: 从参数中提取（排除 --reinit）
+项目名称: 从参数中提取（排除 --reinit / --readonly）
 重新初始化模式: 参数包含 --reinit 时为 true
+仓库角色: 见下方判断逻辑
 本地存储路径: docs/requirements
 全局缓存路径: ~/.claude-requirements/projects/<project-name>
 ```
 
 **判断逻辑**：
-- 若参数包含 `--reinit`，进入重新初始化模式
-- 重新初始化模式下，只补充缺失内容，不覆盖已有文件
+- 若参数包含 `--reinit`，进入重新初始化模式（只补充缺失内容，不覆盖已有文件）
+- **仓库角色**按以下优先级确定：
+  1. 参数包含 `--readonly` → `readonly`
+  2. `.claude/settings.local.json` 中已有 `requirementRole: "readonly"` → `readonly`（--reinit 时自动继承）
+  3. 否则 → `primary`
 
-### 2. 创建本地存储目录（主存储）
+### 2. 创建本地存储目录
 
-在 `docs/requirements/` 下创建 `active/`、`completed/`、`modules/`、`templates/` 四个子目录。
+**primary**：在 `docs/requirements/` 下创建 `active/`、`completed/`、`modules/`、`templates/` 四个子目录。
+
+**readonly**：只创建 `docs/requirements/templates/`，跳过 `active/`、`completed/`、`modules/`——readonly 仓库不在本地存储需求文档。
 
 ### 3. 复制模板文件到本地
 
-将插件 `templates/` 下的模板文件复制到 `docs/requirements/templates/`（仅当目标文件不存在时复制，`--reinit` 模式保护已有文件）。
+将插件 `templates/` 下的模板文件复制到 `docs/requirements/templates/`（**primary 和 readonly 均执行**；仅当目标文件不存在时复制，`--reinit` 模式保护已有文件）。
 
-### 4. 生成 PRD 文档
+复制的文件：`requirement-template.md`、`quick-template.md`、`prd-template.md`、`module-template.md`。
+
+### 4. 生成 PRD 文档（仅 primary）
+
+**readonly 仓库跳过此步骤。**
 
 `docs/requirements/PRD.md` 不存在时，从 prd-template.md 复制并替换 `{{PROJECT_NAME}}`、`{{DATE}}` 变量。
 
-### 4.1 创建「快速修复」模块
+### 4.1 创建「快速修复」模块（仅 primary）
+
+**readonly 仓库跳过此步骤。**
 
 `docs/requirements/modules/quick-fix.md` 不存在时，使用 Write 工具生成模块文档（含概述、核心功能、业务规则、相关需求、变更记录各章节）。
 
-### 5. 创建全局缓存目录（同步副本）
+### 5. 创建全局缓存目录（仅 primary）
 
-在 `~/.claude-requirements/projects/<project-name>/` 下创建 `active/`、`completed/`、`modules/`、`templates/` 目录，将本地模板、PRD、快速修复模块同步过去。
-```
+**readonly 仓库跳过此步骤**——readonly 仓库读取已有缓存，不创建新缓存。
 
-### 6. 更新全局索引
+primary：在 `~/.claude-requirements/projects/<project-name>/` 下创建 `active/`、`completed/`、`modules/`、`templates/` 目录，将本地模板、PRD、快速修复模块同步过去。
 
-更新 `~/.claude-requirements/index.json`：
+### 6. 更新全局索引（仅 primary）
+
+**readonly 仓库跳过此步骤。**
+
+primary：更新 `~/.claude-requirements/index.json`：
 
 ```json
 {
@@ -80,10 +96,19 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 
 读取已有 `.claude/settings.json`，合并以下字段后写回（不覆盖已有的 `branchStrategy` 等字段）：
 
+**primary**：
 ```json
 {
   "requirementProject": "<project-name>",
   "requirementRole": "primary"
+}
+```
+
+**readonly**：
+```json
+{
+  "requirementProject": "<project-name>",
+  "requirementRole": "readonly"
 }
 ```
 
@@ -341,7 +366,7 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 
 ### 10. 输出结果
 
-**初始化成功**：
+**primary 初始化成功**：
 ```
 ✅ 项目 "<project-name>" 初始化成功！
 
@@ -360,7 +385,7 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 全局缓存（同步副本，跨仓库共享）:
    ~/.claude-requirements/projects/<project-name>/
 
-当前仓库已绑定到此项目
+当前仓库已绑定到此项目（role: primary）
 
 已生成 PRD 文档: docs/requirements/PRD.md
    请填写以下关键内容:
@@ -379,7 +404,32 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
    7. /req:new <标题>   创建具体需求
 ```
 
-**重新初始化成功**（使用 `--reinit` 参数）：
+**readonly 初始化成功**（使用 `--readonly`）：
+```
+✅ 项目 "<project-name>" 初始化成功！（只读仓库）
+
+本地工具文件（纳入 git）:
+   docs/requirements/templates/   # 模板文件（供 /req:new 使用）
+     requirement-template.md
+     quick-template-template.md
+     prd-template.md
+     module-template.md
+   docs/prompt/                   # 项目架构和 Prompt 库
+   .claude/skills/                # 项目 Skill 扩展
+
+需求文档读取来源（只读）:
+   ~/.claude-requirements/projects/<project-name>/
+   （由 primary 仓库写入并同步）
+
+当前仓库已绑定到此项目（role: readonly）
+
+提示:
+   - /req:new、/req:dev、/req:test 等命令正常可用
+   - 需求文档从全局缓存只读，不写入本地 docs/requirements/
+   - 如需写入需求文档，请在 primary 仓库操作
+```
+
+**primary 重新初始化成功**（使用 `--reinit`，role = primary）：
 ```
 ✅ 项目 "<project-name>" 重新初始化完成！
 
@@ -398,16 +448,28 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
    docs/prompt/release.md         已存在（或缺失时扫描项目引导生成，见步骤 8.7）
    .claude/skills/                已检查（如为空可按引导创建 Skill 文件）
 
-当前仓库已绑定到此项目
-
-已生成 PRD 文档: docs/requirements/PRD.md
-   请填写以下关键内容:
-   - 产品愿景和目标用户
-   - 核心功能列表（P0/P1/P2 优先级）
-   - 技术架构选型
-   - 版本规划和里程碑
+当前仓库已绑定到此项目（role: primary）
 
 提示: --reinit 模式不会覆盖已有文件，仅补充缺失内容
+```
+
+**readonly 重新初始化成功**（使用 `--reinit`，role = readonly）：
+```
+✅ 项目 "<project-name>" 重新初始化完成！（只读仓库）
+
+检查并补充缺失内容:
+   + docs/requirements/templates/              模板目录
+   + docs/requirements/templates/requirement-template.md  已复制
+   + docs/requirements/templates/quick-template.md        已复制
+   + docs/requirements/templates/prd-template.md          已复制
+   docs/prompt/architecture.md    已存在（或缺失时触发扫描+生成，见步骤 8）
+   docs/prompt/ 通用 Prompt 文件  已检查（缺失时补创建）
+   docs/prompt/release.md         已存在（或缺失时扫描项目引导生成，见步骤 8.7）
+   .claude/skills/                已检查
+
+当前仓库已绑定到此项目（role: readonly）
+
+提示: readonly 仓库不创建 active/completed/modules/ 和全局缓存
 ```
 
 **项目已存在时**（未使用 `--reinit`）：
@@ -433,6 +495,7 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 | 未提供项目名 | 提示：请提供项目名称，如 `/req:init my-project` |
 | 项目名包含非法字符 | 提示：项目名只能包含字母、数字、连字符 |
 | 本地目录已存在（无 --reinit） | 提示：本地需求目录已存在，可使用 `--reinit` 补充缺失文件 |
+| readonly 仓库执行时全局缓存不存在 | 打印提示（非阻塞）：`⚠️ 全局缓存 ~/.claude-requirements/projects/<name>/ 不存在，请先在 primary 仓库执行 /req:init`；继续完成本地工具文件初始化 |
 | 权限不足 | 提示：无法创建目录，请检查权限 |
 
 ---
