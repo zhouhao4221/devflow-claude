@@ -121,14 +121,23 @@ model: claude-haiku-4-5-20251001
 
 ### 步骤 2：确定版本号和 git 范围
 
-**范围**：`FROM_REF`（上一 git tag，无则仓库首次 commit）→ `TO_REF`（`--to` 或 HEAD）
+**基线版本来源**（按优先级，取第一个成功的）：
+
+1. **平台 Release**：查询最新已发布 Release 的 tag
+   - GitHub：`gh release list --limit 1 --exclude-drafts --exclude-pre-releases`，取 `Tag` 列
+   - Gitea：调用 `/releases?limit=1&draft=false&pre-release=false`，取 `tag_name`
+   - 查询失败（网络、未初始化）→ 打印一行警告，降级到来源 2
+2. **git tag**：`git tag --sort=-v:refname` 中最新的 semver tag
+3. **兜底**：视为首次发版
+
+**范围**：`FROM_REF`（基线 tag，无则仓库首次 commit）→ `TO_REF`（`--to` 或 HEAD）
 
 **版本推导**（未传 `<version>` 时执行）：
-- 无任何 tag → 首发 `v0.1.0`
+- 无基线 → 首发 `v0.1.0`
 - 基线 tag 非 X.Y.Z semver → 阻断，提示显式传版本号
 - 扫描 `FROM_REF..TO_REF` commits，按优先级 bump：`!:` / `BREAKING CHANGE` → major；`feat:` → minor；`fix:/perf:/refactor:` → patch；仅 chore/docs/style/test/ci → 阻断
 - `--bump` 存在时直接用，跳过扫描
-- 打印 `基线 tag / 推导版本 / 推导依据`，**自动使用推导结果**（如需覆盖请显式传参）
+- 打印 `基线来源（Release/tag/首次）/ 基线版本 / 推导版本 / 推导依据`，**自动使用推导结果**（如需覆盖请显式传参）
 
 ### 步骤 2.5：更新版本号文件
 

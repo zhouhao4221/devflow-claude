@@ -37,7 +37,7 @@ description: |
 git diff --name-only <FROM_REF>..HEAD
 ```
 
-`FROM_REF` 与 release 步骤 2 中一致（上一个 git tag，无则仓库首次 commit）。
+`FROM_REF` 与 release 步骤 2 中一致（平台最新 Release 的 tag，无则最新 git tag，无则仓库首次 commit）。
 
 按文件路径前缀归属插件：
 
@@ -109,5 +109,5 @@ git add .claude-plugin/marketplace.json plugins/req/.claude-plugin/plugin.json \
 |------|------|
 | 版本号已与 tag 一致 | 跳过该文件，不重复写入 |
 | 插件仅有 docs/chore 变更 | 插件版本不 bump，仅更新 marketplace |
-| 无任何 git tag（首次发版） | FROM_REF 取仓库首次 commit，视所有 commit 为新增，各插件 minor bump |
+| 无任何 Release 也无 git tag（首次发版） | FROM_REF 取仓库首次 commit，视所有 commit 为新增，各插件 minor bump |
 | 版本号格式不符合 X.Y.Z | 打印警告并跳过该插件的 bump，不阻塞发版 |
