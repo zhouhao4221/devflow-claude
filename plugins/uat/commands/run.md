@@ -36,7 +36,7 @@ allowed-tools: Read, Write, Edit, Glob, Bash(mkdir:*)
 ❌ uat-executor skill 未安装
 
 当前环境（Codex / Claude 桌面端）需要 skill 文件才能执行测试。
-💡 请先在 Claude Code 中运行：/uat:init
+请先在 Claude Code 中运行：/uat:init
 ```
 
 ### 1. 确定执行范围
@@ -47,7 +47,7 @@ allowed-tools: Read, Write, Edit, Glob, Bash(mkdir:*)
 若 flow 文件不存在：
 ```
 ❌ 未找到测试流程文档：docs/uat/flows/<module>.md
-💡 使用 /uat:new <module> 创建
+使用 /uat:new <module> 创建
 ```
 
 ### 2. 激活 uat-executor skill
@@ -69,10 +69,10 @@ allowed-tools: Read, Write, Edit, Glob, Bash(mkdir:*)
 在终端展示执行汇总（格式见 uat-executor skill），并提示：
 
 ```
-📄 报告已保存：docs/uat/reports/YYYY-MM-DD-<module>.md
+报告已保存：docs/uat/reports/YYYY-MM-DD-<module>.md
 
-💡 /uat:report          查看完整报告
-💡 /uat:bug             将失败项（代码 bug）上报为 issue
+/uat:report          查看完整报告
+/uat:bug             将失败项（代码 bug）上报为 issue
 ```
 
 **注**：执行中发现流程文档描述有误时直接更新 `docs/uat/flows/<module>.md`，无需额外操作。

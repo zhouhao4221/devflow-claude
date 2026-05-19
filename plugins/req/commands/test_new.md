@@ -43,31 +43,31 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ### 2. 分析需求文档
 
 ```
-📋 分析需求文档...
+分析需求文档...
 
 需求：REQ-001 <需求标题>
-状态：🔨 开发中
+状态：开发中
 
-📖 功能清单：
+功能清单：
 1. <功能点 1>
 2. <功能点 2>
 3. <功能点 3>
 
-📁 涉及文件：
-├── <source-file-1>
-├── <source-file-2>
-├── <source-file-3>
-└── <source-file-N>
+涉及文件：
+<source-file-1>
+<source-file-2>
+<source-file-3>
+<source-file-N>
 
-🔍 识别测试点：
+识别测试点：
 
-┌──────────┬─────────────────────────────┬──────────┐
-│ 类型     │ 测试点                       │ 数量     │
-├──────────┼─────────────────────────────┼──────────┤
-│ UT       │ 业务层方法                    │ N        │
-│ API      │ 接口端点                     │ N        │
-│ E2E      │ 用户流程                     │ N        │
-└──────────┴─────────────────────────────┴──────────┘
+
+类型     测试点                       数量     
+
+UT       业务层方法                    N        
+API      接口端点                     N        
+E2E      用户流程                     N        
+
 ```
 
 ### 3. 选择测试类型
@@ -105,13 +105,13 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 #### 4.1 分析被测方法
 
 ```
-📦 分析业务层方法...
+分析业务层方法...
 
 <source-file>:
-├── <方法签名 1>
-├── <方法签名 2>
-├── <方法签名 3>
-└── <方法签名 N>
+<方法签名 1>
+<方法签名 2>
+<方法签名 3>
+<方法签名 N>
 ```
 
 #### 4.2 生成测试用例
@@ -124,12 +124,12 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 生成文件：<CLAUDE.md中定义的测试文件路径>
 
 测试用例列表：
-├── <TestCase_Method1_Success>        - 正常流程
-├── <TestCase_Method1_ErrorCase>      - 异常场景
-├── <TestCase_Method2_ValidInput>     - 输入校验
-├── <TestCase_Method2_InvalidInput>   - 边界条件
-├── <TestCase_Method3_NormalCase>     - 正常流程
-└── <TestCase_Method3_EdgeCase>       - 边界条件
+<TestCase_Method1_Success>        - 正常流程
+<TestCase_Method1_ErrorCase>      - 异常场景
+<TestCase_Method2_ValidInput>     - 输入校验
+<TestCase_Method2_InvalidInput>   - 边界条件
+<TestCase_Method3_NormalCase>     - 正常流程
+<TestCase_Method3_EdgeCase>       - 边界条件
 
 每个测试用例结构：
 1. Arrange - 准备数据和 Mock 依赖
@@ -140,7 +140,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 #### 4.3 生成 Mock 文件（如需要）
 
 ```
-📝 按 CLAUDE.md 测试规范生成 Mock 文件...
+按 CLAUDE.md 测试规范生成 Mock 文件...
 
 <CLAUDE.md中定义的Mock生成命令>
 
@@ -152,12 +152,12 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 #### 5.1 提取 API 定义
 
 ```
-📡 提取 API 定义...
+提取 API 定义...
 
 从需求文档提取：
-├── <HTTP_METHOD> <endpoint-1>    <描述>
-├── <HTTP_METHOD> <endpoint-2>    <描述>
-└── <HTTP_METHOD> <endpoint-3>    <描述>
+<HTTP_METHOD> <endpoint-1>    <描述>
+<HTTP_METHOD> <endpoint-2>    <描述>
+<HTTP_METHOD> <endpoint-3>    <描述>
 ```
 
 #### 5.2 生成测试代码
@@ -170,11 +170,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 生成文件：<CLAUDE.md中定义的API测试文件路径>
 
 <endpoint-1> 测试用例：
-├── 正常请求 - 完整参数         → 期望成功响应
-├── 正常请求 - 可选参数缺省      → 期望成功响应（默认值）
-├── 异常请求 - 缺少必填字段      → 期望参数校验错误
-├── 异常请求 - 业务规则冲突      → 期望业务错误码
-└── 异常请求 - 无权限            → 期望权限错误
+正常请求 - 完整参数         → 期望成功响应
+正常请求 - 可选参数缺省      → 期望成功响应（默认值）
+异常请求 - 缺少必填字段      → 期望参数校验错误
+异常请求 - 业务规则冲突      → 期望业务错误码
+异常请求 - 无权限            → 期望权限错误
 
 采用表驱动测试模式，每组包含：
 - name: 场景描述
@@ -197,7 +197,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 #### 6.1 识别用户流程
 
 ```
-🎯 识别用户流程...
+识别用户流程...
 
 核心流程：<功能名称>
 1. <用户操作步骤 1>
@@ -214,18 +214,18 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 生成文件：<CLAUDE.md中定义的E2E测试文件路径>
 
 测试场景：
-├── <场景 1>: <用户流程描述>
-│   ├── 前置：<数据准备 / 登录>
-│   ├── 操作：<页面交互步骤>
-│   └── 断言：<预期结果>
-├── <场景 2>: <边界条件描述>
-│   ├── 前置：<特定状态准备>
-│   ├── 操作：<触发边界条件>
-│   └── 断言：<预期错误提示>
-└── <场景 3>: <修改流程描述>
-    ├── 前置：<已有数据>
-    ├── 操作：<修改操作>
-    └── 断言：<修改后状态>
+<场景 1>: <用户流程描述>
+  前置：<数据准备 / 登录>
+  操作：<页面交互步骤>
+  断言：<预期结果>
+<场景 2>: <边界条件描述>
+  前置：<特定状态准备>
+  操作：<触发边界条件>
+  断言：<预期错误提示>
+<场景 3>: <修改流程描述>
+    前置：<已有数据>
+    操作：<修改操作>
+    断言：<修改后状态>
 ```
 
 ### 7. 生成手动测试用例文档 (manual)
@@ -237,16 +237,16 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 同时读取两处：
 
 ```
-📖 读取需求文档...
-├── 功能清单（待验证的功能点）
-├── 业务规则（边界条件、约束）
-├── 使用场景（正常流程 + 异常流程）
-└── 测试要点（已有的验收标准）
+读取需求文档...
+功能清单（待验证的功能点）
+业务规则（边界条件、约束）
+使用场景（正常流程 + 异常流程）
+测试要点（已有的验收标准）
 
-🔍 读取源代码...
-├── 后端：handler/controller → 提取接口路径、参数、返回码
-├── 后端：service/logic     → 提取分支逻辑、边界判断
-└── 前端：页面/组件          → 提取交互逻辑、表单校验、跳转规则
+读取源代码...
+后端：handler/controller → 提取接口路径、参数、返回码
+后端：service/logic     → 提取分支逻辑、边界判断
+前端：页面/组件          → 提取交互逻辑、表单校验、跳转规则
 ```
 
 源码补充需求文档未覆盖的细节（如实际返回的错误码、字段校验规则）。
@@ -264,7 +264,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 输出格式：
 
 ````
-📝 生成手动测试用例...
+生成手动测试用例...
 
 生成文件：docs/test-cases/REQ-XXX-testcases.md
 
@@ -280,10 +280,10 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 | 编号 | 场景 | 前置条件 | 操作步骤 | 预期结果 | 实际结果 | 通过 |
 |-----|------|---------|---------|---------|---------|-----|
-| TC-001 | <接口名>-正常 | <前置数据/权限> | `<HTTP_METHOD> <path>`<br>参数：`{...}` | HTTP <状态码>，返回 `{...}` | | ☐ |
-| TC-002 | <接口名>-缺少必填字段 | - | 省略字段 `<field>` | HTTP 400，`message` 含"<字段名>不能为空" | | ☐ |
-| TC-003 | <接口名>-无权限 | 未登录 / 低权限账号 | 发起请求 | HTTP 401 / 403 | | ☐ |
-| TC-004 | <接口名>-业务规则冲突 | <冲突前置条件> | <触发冲突的参数> | HTTP 4XX，业务错误码 `<code>` | | ☐ |
+| TC-001 | <接口名>-正常 | <前置数据/权限> | `<HTTP_METHOD> <path>`<br>参数：`{...}` | HTTP <状态码>，返回 `{...}` | | |
+| TC-002 | <接口名>-缺少必填字段 | - | 省略字段 `<field>` | HTTP 400，`message` 含"<字段名>不能为空" | | |
+| TC-003 | <接口名>-无权限 | 未登录 / 低权限账号 | 发起请求 | HTTP 401 / 403 | | |
+| TC-004 | <接口名>-业务规则冲突 | <冲突前置条件> | <触发冲突的参数> | HTTP 4XX，业务错误码 `<code>` | | |
 
 ---
 
@@ -291,10 +291,10 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 | 编号 | 页面/功能 | 场景 | 前置条件 | 操作步骤 | 预期结果 | 实际结果 | 通过 |
 |-----|---------|------|---------|---------|---------|---------|-----|
-| TC-101 | <页面名> | 正常流程 | <登录状态/数据> | 1. <操作1><br>2. <操作2><br>3. <操作3> | <可观测的页面状态> | | ☐ |
-| TC-102 | <页面名> | 表单校验-<字段> | - | 1. 不填 `<字段>`<br>2. 点击提交 | 字段下方显示"<校验提示>" | | ☐ |
-| TC-103 | <页面名> | 空数据状态 | 无相关数据 | 进入页面 | 显示空状态占位 | | ☐ |
-| TC-104 | <页面名> | 操作成功反馈 | <正常前置> | <完成操作> | 显示成功提示，数据刷新 | | ☐ |
+| TC-101 | <页面名> | 正常流程 | <登录状态/数据> | 1. <操作1><br>2. <操作2><br>3. <操作3> | <可观测的页面状态> | | |
+| TC-102 | <页面名> | 表单校验-<字段> | - | 1. 不填 `<字段>`<br>2. 点击提交 | 字段下方显示"<校验提示>" | | |
+| TC-103 | <页面名> | 空数据状态 | 无相关数据 | 进入页面 | 显示空状态占位 | | |
+| TC-104 | <页面名> | 操作成功反馈 | <正常前置> | <完成操作> | 显示成功提示，数据刷新 | | |
 
 ---
 
@@ -302,7 +302,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 | 编号 | 规则 | 场景 | 操作 | 预期结果 | 实际结果 | 通过 |
 |-----|------|------|------|---------|---------|-----|
-| TC-201 | <业务规则描述> | <触发场景> | <操作步骤> | <预期约束生效表现> | | ☐ |
+| TC-201 | <业务规则描述> | <触发场景> | <操作步骤> | <预期约束生效表现> | | |
 
 ---
 
@@ -319,7 +319,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 在需求文档「六、测试要点」末尾追加引用行：
 
 ```markdown
-📄 手动测试用例：[docs/test-cases/REQ-XXX-testcases.md](../../../test-cases/REQ-XXX-testcases.md)（生成于 YYYY-MM-DD）
+手动测试用例：[docs/test-cases/REQ-XXX-testcases.md](../../../test-cases/REQ-XXX-testcases.md)（生成于 YYYY-MM-DD）
 ```
 
 ---
@@ -327,18 +327,18 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ### 8. 测试文件汇总
 
 ```
-📊 测试文件生成完成
+测试文件生成完成
 
-┌──────────┬────────────────────────────────────────────────────┬──────────┐
-│ 类型     │ 文件                                                │ 用例数   │
-├──────────┼────────────────────────────────────────────────────┼──────────┤
-│ UT       │ <ut-test-file>                                     │ N        │
-│ API      │ <api-test-file>                                    │ N        │
-│ E2E      │ <e2e-test-file>                                    │ N        │
-│ 手动用例  │ docs/test-cases/REQ-XXX-testcases.md              │ N        │
-├──────────┼────────────────────────────────────────────────────┼──────────┤
-│ 合计     │ N 个文件                                            │ N        │
-└──────────┴────────────────────────────────────────────────────┴──────────┘
+
+类型     文件                                                用例数   
+
+UT       <ut-test-file>                                     N        
+API      <api-test-file>                                    N        
+E2E      <e2e-test-file>                                    N        
+手动用例  docs/test-cases/REQ-XXX-testcases.md              N        
+
+合计     N 个文件                                            N        
+
 
 ✅ 已生成 Mock 文件（如需要）
 ✅ 已添加测试数据 fixtures（如需要）
@@ -347,21 +347,21 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ### 9. 运行验证
 
 ```
-🔄 运行新创建的测试...
+运行新创建的测试...
 
 <CLAUDE.md中定义的UT运行命令> <ut-test-file>
-├── <TestCase_1>    --- PASS
-├── <TestCase_2>    --- PASS
+<TestCase_1>    --- PASS
+<TestCase_2>    --- PASS
 ...
 
 <CLAUDE.md中定义的API测试运行命令> <api-test-file>
-├── <TestCase_API_1>    --- PASS
-├── <TestCase_API_2>    --- PASS
+<TestCase_API_1>    --- PASS
+<TestCase_API_2>    --- PASS
 ...
 
-📊 验证结果：N/N 通过
+验证结果：N/N 通过
 
-💡 下一步：
+下一步：
 - 运行全量回归：/req:test_regression
 - 继续开发：/req:dev
 - 完成需求：/req:done

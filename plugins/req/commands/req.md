@@ -60,13 +60,13 @@ model: claude-haiku-4-5-20251001
 
 ```
 <需求根目录>/
-├── modules/       # 模块文档
-│   ├── user.md   # 用户模块
-│   └── order.md  # 订单模块
-├── active/        # 进行中的需求
-├── completed/     # 已完成的需求
-├── INDEX.md       # 需求索引（自动生成）
-└── template.md    # 需求模板
+modules/       # 模块文档
+  user.md   # 用户模块
+  order.md  # 订单模块
+active/        # 进行中的需求
+completed/     # 已完成的需求
+INDEX.md       # 需求索引（自动生成）
+template.md    # 需求模板
 ```
 
 ---
@@ -112,25 +112,25 @@ model: claude-haiku-4-5-20251001
 从 `<plugin-path>/.claude-plugin/plugin.json` 读取版本号，从 `settings.local.json` 读取 `requirementProject`、`requirementRole`、`branchStrategy`，检查 CLAUDE.md 是否含架构描述关键词。
 
 ```
-📋 需求工作流 v<version> | 项目：<project> (<role>)
+需求工作流 v<version> | 项目：<project> (<role>)
    分支策略：<strategy.model 或 "未配置"> | CLAUDE.md 架构：✅ 或 ⚠️ 未配置
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📋 活跃需求列表
 
-🔨 开发中
+活跃需求列表
+
+开发中
 | 编号 | 标题 | 类型 | 模块 | 进度 | 关联 |
 |------|------|------|------|------|------|
 | REQ-001 | 用户积分-后端 | 后端 | 用户模块 | 4/6 | REQ-002 |
 | REQ-002 | 用户积分-前端 | 前端 | 用户模块 | 2/4 | REQ-001 |
 
-👀 待评审
+待评审
 | 编号 | 标题 | 类型 | 模块 | 功能点 |
 |------|------|------|------|--------|
 | REQ-003 | 订单导出 | 后端 | 订单模块 | 3 |
 
-📝 草稿
+草稿
 | 编号 | 标题 | 类型 | 模块 | 创建时间 |
 |------|------|------|------|----------|
 | REQ-004 | 支付对账 | 全栈 | 支付模块 | 2026-01-08 |
@@ -139,7 +139,7 @@ model: claude-haiku-4-5-20251001
 ### 4. 提示可用操作
 
 ```
-💡 可用命令：
+可用命令：
 - /req:new <标题> - 创建新需求
 - /req:dev REQ-001 - 进入开发
 - /req:status REQ-001 - 查看详情

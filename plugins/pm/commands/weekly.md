@@ -64,11 +64,11 @@ from_date, to_date = parse_date_range(args.from, args.to, default_range="week")
 ### 4. 输出周报
 
 ```
-═══════════════════════════════════════════════
+
 项目周报
-═══════════════════════════════════════════════
+
 项目：<project> | 周期：<from> ~ <to>
-───────────────────────────────────────────────
+
 
 ## 本周完成
 
@@ -104,11 +104,11 @@ from_date, to_date = parse_date_range(args.from, args.to, default_range="week")
 | 贡献者 | 3 人 |
 
   提交类型分布：
-  │ feat  │ 18 │ 38% │
-  │ fix   │ 12 │ 26% │
-  │ test  │  8 │ 17% │
-  │ docs  │  5 │ 11% │
-  │ other │  4 │  8% │
+  feat  18 38% 
+  fix   12 26% 
+  test   8 17% 
+  docs   5 11% 
+  other  4  8% 
 
 ## 风险与阻塞
 
@@ -123,7 +123,7 @@ from_date, to_date = parse_date_range(args.from, args.to, default_range="week")
 - [ ] 启动 REQ-009 技术方案设计
 - [ ] REQ-007 完成测试，提交 PR
 
-═══════════════════════════════════════════════
+
 *由 /pm:weekly 自动生成 · <today>*
 ```
 

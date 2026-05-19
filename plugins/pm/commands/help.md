@@ -36,14 +36,14 @@ version = read_plugin_json("version")  # <plugin-path>/.claude-plugin/plugin.jso
 ## 中文（zh，默认）
 
 ```
-═══════════════════════════════════════════════
+
 项目管理助手 v<version> - 使用帮助
-═══════════════════════════════════════════════
+
 
 从 PRD、需求文档和 Git 记录中提取项目数据，
 按不同场景和受众生成汇报、统计、方案等内容。
 
-───────────────────────────────────────────────
+
 
 **概览**
   /pm                            项目概况仪表盘
@@ -71,20 +71,20 @@ version = read_plugin_json("version")  # <plugin-path>/.claude-plugin/plugin.jso
   /pm:ask <任何问题>              基于项目数据自由提问
   /pm:export [--format=md]       导出内容到 docs/reports/
 
-───────────────────────────────────────────────
+
 
 **数据来源**
-  ├── PRD.md           产品需求文档
-  ├── active/*.md      进行中需求
-  ├── completed/*.md   已完成需求
-  ├── modules/*.md     模块文档
-  ├── git log          提交记录
-  └── git diff         代码变更
+  PRD.md           产品需求文档
+  active/*.md      进行中需求
+  completed/*.md   已完成需求
+  modules/*.md     模块文档
+  git log          提交记录
+  git diff         代码变更
 
 **保存位置**
   所有输出均可选择保存到 docs/reports/ 目录
 
-───────────────────────────────────────────────
+
 
 **快速开始：**
   1. /pm              查看项目概况
@@ -97,7 +97,7 @@ version = read_plugin_json("version")  # <plugin-path>/.claude-plugin/plugin.jso
   - Git 仓库存在即可使用代码统计功能
   - 无需求数据时仍可使用 stats/ask 命令
 
-═══════════════════════════════════════════════
+
 ```
 
 ---
@@ -105,15 +105,15 @@ version = read_plugin_json("version")  # <plugin-path>/.claude-plugin/plugin.jso
 ## English (en)
 
 ```
-═══════════════════════════════════════════════
+
 Project Management Assistant v<version> — Help
-═══════════════════════════════════════════════
+
 
 Extracts project data from PRD, requirement docs, and Git
 history to generate reports, stats, and plans for different
 audiences.
 
-───────────────────────────────────────────────
+
 
 **Overview**
   /pm                            Project dashboard
@@ -141,20 +141,20 @@ audiences.
   /pm:ask <any question>         Free-form Q&A over project data
   /pm:export [--format=md]       Export output to docs/reports/
 
-───────────────────────────────────────────────
+
 
 **Data sources**
-  ├── PRD.md           Product requirement doc
-  ├── active/*.md      Active requirements
-  ├── completed/*.md   Completed requirements
-  ├── modules/*.md     Module docs
-  ├── git log          Commit history
-  └── git diff         Code changes
+  PRD.md           Product requirement doc
+  active/*.md      Active requirements
+  completed/*.md   Completed requirements
+  modules/*.md     Module docs
+  git log          Commit history
+  git diff         Code changes
 
 **Persistence**
   Every output can optionally be saved to docs/reports/
 
-───────────────────────────────────────────────
+
 
 **Quick start:**
   1. /pm              View project dashboard
@@ -167,7 +167,7 @@ audiences.
   - A Git repository is enough for code statistics
   - stats/ask work even without requirement data
 
-═══════════════════════════════════════════════
+
 ```
 
 ---
@@ -175,14 +175,14 @@ audiences.
 ## 한국어 (ko)
 
 ```
-═══════════════════════════════════════════════
+
 프로젝트 관리 도우미 v<version> - 도움말
-═══════════════════════════════════════════════
+
 
 PRD, 요구사항 문서, Git 기록에서 프로젝트 데이터를 추출하여
 다양한 대상자에 맞춘 리포트, 통계, 기획안을 생성합니다.
 
-───────────────────────────────────────────────
+
 
 **개요**
   /pm                            프로젝트 대시보드
@@ -210,20 +210,20 @@ PRD, 요구사항 문서, Git 기록에서 프로젝트 데이터를 추출하�
   /pm:ask <질문>                  프로젝트 데이터 기반 자유 질의응답
   /pm:export [--format=md]       docs/reports/ 에 내보내기
 
-───────────────────────────────────────────────
+
 
 **데이터 소스**
-  ├── PRD.md           제품 요구사항 문서
-  ├── active/*.md      진행 중 요구사항
-  ├── completed/*.md   완료된 요구사항
-  ├── modules/*.md     모듈 문서
-  ├── git log          커밋 기록
-  └── git diff         코드 변경
+  PRD.md           제품 요구사항 문서
+  active/*.md      진행 중 요구사항
+  completed/*.md   완료된 요구사항
+  modules/*.md     모듈 문서
+  git log          커밋 기록
+  git diff         코드 변경
 
 **저장 위치**
   모든 출력은 docs/reports/ 에 선택적으로 저장 가능
 
-───────────────────────────────────────────────
+
 
 **빠른 시작:**
   1. /pm              프로젝트 대시보드 조회
@@ -236,7 +236,7 @@ PRD, 요구사항 문서, Git 기록에서 프로젝트 데이터를 추출하�
   - Git 레포가 있으면 코드 통계 사용 가능
   - 요구사항 데이터가 없어도 stats/ask 사용 가능
 
-═══════════════════════════════════════════════
+
 ```
 
 ---

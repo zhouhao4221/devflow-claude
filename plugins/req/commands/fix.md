@@ -52,13 +52,13 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, m
 #### 1.1 问题分析
 
 ```
-🔍 Bug 分析：登录超时后 token 未清除
+Bug 分析：登录超时后 token 未清除
 
-📋 问题理解：
+问题理解：
 - 现象：用户登录超时后，本地 token 未被清除，导致后续请求携带过期 token
 - 影响范围：认证流程、请求拦截器
 
-🔎 可能涉及的代码：
+可能涉及的代码：
 ```
 
 #### 1.2 定位相关文件
@@ -66,7 +66,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, m
 AI 搜索代码库，定位可能相关的文件：
 
 ```
-📂 相关文件定位：
+相关文件定位：
 
 | 文件 | 相关度 | 原因 |
 |------|-------|------|
@@ -88,13 +88,13 @@ AI 搜索代码库，定位可能相关的文件：
 **命中时展示**：
 
 ```
-📎 关联需求：
+关联需求：
 
 | 需求 | 标题 | 关联原因 |
 |------|------|---------|
 | REQ-003 | 登录认证优化 | 修改了 src/interceptors/request.ts |
 
-💡 此 bug 可能由 REQ-003 引入，已读取其文件改动清单辅助定位。
+此 bug 可能由 REQ-003 引入，已读取其文件改动清单辅助定位。
 ```
 
 **未命中时**：静默跳过，不输出任何内容，不消耗额外 token。
@@ -113,7 +113,7 @@ AI 搜索代码库，定位可能相关的文件：
 AI 综合代码搜索结果和关联需求上下文，给出根因判断：
 
 ```
-🎯 根因分析：
+根因分析：
 
 在 src/interceptors/request.ts:45，响应拦截器捕获 401 状态码时
 调用了 router.push('/login')，但未调用 removeToken()。
@@ -125,7 +125,7 @@ AI 综合代码搜索结果和关联需求上下文，给出根因判断：
 #### 1.5 修复建议
 
 ```
-💡 修复建议：
+修复建议：
 
 1. src/interceptors/request.ts
    - 在 401 处理分支中，跳转前调用 removeToken()
@@ -164,14 +164,14 @@ AI 根据问题描述生成英文 slug（lowercase kebab-case，最多 5 词）�
 **有 `--from-issue=#N`**：分支名末尾追加 `-i<N>`（参见 [_issue.md 的 Issue 与分支关联](./_issue.md#issue-与分支提交的关联)）。
 
 ```
-🌿 创建修复分支：fix/login-token-not-cleared-i42
+创建修复分支：fix/login-token-not-cleared-i42
    基于：main（来源：branchStrategy.branchFrom）
 ```
 
 **无 `--from-issue`**：不加 issue 后缀。
 
 ```
-🌿 创建修复分支：fix/login-token-not-cleared
+创建修复分支：fix/login-token-not-cleared
    基于：main（来源：branchStrategy.branchFrom）
 ```
 
@@ -190,18 +190,18 @@ AI 按确认的方案修改代码。
 ```
 ✅ 修复完成！
 
-🌿 分支：fix/login-token-not-cleared
-📝 修改文件：
+分支：fix/login-token-not-cleared
+修改文件：
 - src/interceptors/request.ts（+3 -1）
 
-💡 后续操作：
+后续操作：
 - /req:commit - 提交修复代码
 - /req:pr - 创建 PR
 ```
 
 若来自 `--from-issue=#N`，在后续操作提示中追加：
 ```
-💡 提交时建议在 commit message 末尾添加 closes #N 以自动关联 issue
+提交时建议在 commit message 末尾添加 closes #N 以自动关联 issue
 ```
 
 ---
@@ -254,7 +254,7 @@ AI 按确认的方案修改代码。
 ✅ 一键修复完成！
 
   commit abc1234: 修复: 登录超时后 token 未清除 closes #42
-  🔗 PR: <url>
+  PR: <url>
 ```
 
 ---
@@ -268,7 +268,7 @@ AI 按确认的方案修改代码。
 在步骤 4 展示完成提示后，询问用户：
 
 ```
-🔗 本次修复来自 issue #N
+本次修复来自 issue #N
    是否关闭该 issue？(y/n)
 ```
 

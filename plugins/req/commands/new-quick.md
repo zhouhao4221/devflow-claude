@@ -21,7 +21,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(gh:*, curl:*)
 ## 简化生命周期
 
 ```
-📝 草稿 → ✅ 方案确认 → 🔨 开发中 → 🎉 已完成
+草稿 → ✅ 方案确认 → 开发中 → 已完成
 ```
 
 （跳过：评审、测试阶段）
@@ -73,7 +73,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(gh:*, curl:*)
 ```
 ❌ 未找到快速修复模板文件
 
-💡 请执行 /req:update-template quick 恢复模板
+请执行 /req:update-template quick 恢复模板
 ```
 
 读取后解析模板的完整章节结构，后续创建文档**必须严格保留模板中的所有章节、层级和格式**。
@@ -124,22 +124,22 @@ AI 分析问题/需求，生成实现方案：
 显示方案摘要，等待用户确认：
 
 ```
-📋 快速需求：QUICK-001 修复xxx问题
+快速需求：QUICK-001 修复xxx问题
 
-📌 类型：bug修复
-📊 优先级：P2
+类型：bug修复
+优先级：P2
 
-🔍 问题分析：
+问题分析：
   [问题根因分析]
 
-💡 实现方案：
+实现方案：
   [具体实现方案]
 
-📁 涉及文件：
+涉及文件：
   - internal/xxx/biz/xxx.go（修改）
   - internal/xxx/store/xxx.go（修改）
 
-📏 改动量：小（约 20 行）
+改动量：小（约 20 行）
 
 ```
 
@@ -174,7 +174,7 @@ AI 分析问题/需求，生成实现方案：
 ```
 ✅ 方案已确认，开始开发
 
-📋 开发任务：
+开发任务：
 1. [ ] 修改 internal/xxx/biz/xxx.go
 2. [ ] 修改 internal/xxx/store/xxx.go
 3. [ ] 自测验证
@@ -191,16 +191,16 @@ AI 分析问题/需求，生成实现方案：
 3. 同步缓存
 
 ```
-🎉 快速修复完成！
+快速修复完成！
 
-📋 QUICK-001 修复xxx问题
-📊 状态：已完成
-📁 改动文件：2 个
-⏱️ 耗时：约 15 分钟
+QUICK-001 修复xxx问题
+状态：已完成
+改动文件：2 个
+耗时：约 15 分钟
 
-📁 文档归档：docs/requirements/completed/QUICK-001-修复xxx问题.md
+文档归档：docs/requirements/completed/QUICK-001-修复xxx问题.md
 
-💡 下一步（可选）：
+下一步（可选）：
 - 代码审查：/code-reviewer
 - 提交代码：git add . && git commit
 ```

@@ -87,7 +87,7 @@ allowed-tools: Read, Write, Edit, Bash(python3:*)
 读取并展示 `.api-config.json` 内容：
 
 ```
-📋 API 配置
+API 配置
 
 数据源：
   1. 主服务 — http://localhost:8080/swagger/doc.json [/api/v1]

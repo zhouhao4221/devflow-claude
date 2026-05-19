@@ -170,7 +170,7 @@ step 6.5 在合并 SQL 后立即 `git rm` 源文件。设计原因：
 
 ## 11. Gitea Release API 的 emoji 处理
 
-body 必须用 `jq --rawfile body <path>` 从文件构造 JSON，**不要手工拼接 JSON 字符串**，否则 emoji（🐛、🔗、🗄️ 等 4 字节 UTF-8）会在 shell 双引号转义过程中退化成 `�` replacement char。
+body 必须用 `jq --rawfile body <path>` 从文件构造 JSON，**不要手工拼接 JSON 字符串**，否则 emoji（、、等 4 字节 UTF-8）会在 shell 双引号转义过程中退化成 `�` replacement char。
 
 curl 用 `--data-binary @file` 上传，按二进制流，不做换行/编码转换。Header 显式声明 `Content-Type: application/json; charset=utf-8`。
 
@@ -186,7 +186,7 @@ curl 用 `--data-binary @file` 上传，按二进制流，不做换行/编码转
 | 跨分支流程中 PR 未合并用户中止 | 保留已生成的 SQL/changelog/PR，不打 tag |
 | 跨分支流程中主分支 pull 后找不到合并提交 | 警告后重新等待用户确认 |
 | release-branch 流程 PR1 未合并用户中止 | 保留已生成的 SQL/changelog/PR1，不打 tag，PR2 也不发 |
-| release-branch 流程 PR2 用户选"跳过" | tag 和 Release 已完成，命令直接进入最终报告；PR2 保留等用户手动合并，报告中标记 ⏸️ 待合并 |
+| release-branch 流程 PR2 用户选"跳过" | tag 和 Release 已完成，命令直接进入最终报告；PR2 保留等用户手动合并，报告中标记 待合并 |
 | 没有 git tag | 从首次提交开始，显示警告 |
 | 范围内无 commit | 终止操作 |
 | 范围内无候选需求 | 提示后自动继续（仅打 tag + 纯 commit changelog） |

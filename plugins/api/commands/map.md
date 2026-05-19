@@ -46,22 +46,22 @@ allowed-tools: Read, Glob, Grep, Bash(python3:*)
 ### 输出格式
 
 ```
-📋 字段映射：GET /api/v1/users/{id}
+字段映射：GET /api/v1/users/{id}
 
 描述：获取用户详情
 Tag：用户管理
 
-━━━ 路径参数 ━━━
+路径参数 
 
 | 字段 | 类型 | 必填 | 前端字段名 | 说明 |
 |------|------|------|-----------|------|
 | id   | integer | ✅ | id | 用户ID |
 
-━━━ 查询参数 ━━━
+查询参数 
 
 （无）
 
-━━━ 响应字段映射 (200) ━━━
+响应字段映射 (200) 
 
 | # | 后端字段 | 类型 | 必填 | 前端字段名 | 转换 | 说明 |
 |---|---------|------|------|-----------|------|------|
@@ -72,13 +72,13 @@ Tag：用户管理
 | 5 | created_at | string(date-time) | ✅ | createdAt | snake→camel | 创建时间 |
 | 6 | is_active | boolean | — | isActive | snake→camel | 是否激活 |
 | 7 | role_list | array | — | roleList | snake→camel | 角色列表 |
-| 7.1 | └ role_id | integer | ✅ | roleId | snake→camel | 角色ID |
-| 7.2 | └ role_name | string | ✅ | roleName | snake→camel | 角色名 |
+| 7.1 | role_id | integer | ✅ | roleId | snake→camel | 角色ID |
+| 7.2 | role_name | string | ✅ | roleName | snake→camel | 角色名 |
 | 8 | department | object | — | department | — | 所属部门 |
-| 8.1 | └ dept_id | integer | ✅ | deptId | snake→camel | 部门ID |
-| 8.2 | └ dept_name | string | ✅ | deptName | snake→camel | 部门名 |
+| 8.1 | dept_id | integer | ✅ | deptId | snake→camel | 部门ID |
+| 8.2 | dept_name | string | ✅ | deptName | snake→camel | 部门名 |
 
-━━━ TypeScript 类型预览 ━━━
+TypeScript 类型预览 
 
 interface UserDetailResponse {
   id: number;
@@ -97,7 +97,7 @@ interface UserDetailResponse {
   };
 }
 
-💡 使用 /api:gen GET /api/v1/users/{id} 生成完整代码
+使用 /api:gen GET /api/v1/users/{id} 生成完整代码
 ```
 
 ### POST/PUT 请求体映射
@@ -105,7 +105,7 @@ interface UserDetailResponse {
 POST/PUT 等有请求体的接口，额外展示请求体映射：
 
 ```
-━━━ 请求体字段映射 (application/json) ━━━
+请求体字段映射 (application/json) 
 
 | # | 后端字段 | 类型 | 必填 | 前端字段名 | 转换 | 说明 |
 |---|---------|------|------|-----------|------|------|
@@ -114,7 +114,7 @@ POST/PUT 等有请求体的接口，额外展示请求体映射：
 | 3 | password | string | ✅ | password | — | 密码 |
 | 4 | role_ids | array[integer] | — | roleIds | snake→camel | 角色ID列表 |
 
-━━━ TypeScript 类型预览 ━━━
+TypeScript 类型预览 
 
 interface CreateUserParams {
   userName: string;
@@ -126,7 +126,7 @@ interface CreateUserParams {
 
 ### 嵌套对象处理
 
-- 嵌套对象使用 `└` 缩进展示层级关系
+- 嵌套对象使用 `` 缩进展示层级关系
 - 编号使用点号分隔表示层级（如 `7.1`、`7.2`）
 - TypeScript 类型中，嵌套对象复杂时提取为独立 interface
 
@@ -135,7 +135,7 @@ interface CreateUserParams {
 ```
 ❌ 未找到接口：GET /api/v1/users/{id}
 
-💡 可能原因：
+可能原因：
 - 路径拼写有误
 - 使用 /api:search 用户 查找正确路径
 - 使用 /api:import 确认数据源已导入

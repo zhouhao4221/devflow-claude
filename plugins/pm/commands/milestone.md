@@ -46,13 +46,13 @@ FROM_REF=${from:-$(git describe --tags --abbrev=0 $TO_REF^ 2>/dev/null)}
 ### 3. 输出里程碑报告
 
 ```
-═══════════════════════════════════════════════
+
 里程碑总结：<version>
-═══════════════════════════════════════════════
+
 项目：<project>
 版本范围：<from-ref> → <to-ref>
 开发周期：YYYY-MM-DD ~ YYYY-MM-DD（X 天）
-───────────────────────────────────────────────
+
 
 ## 版本概览
 
@@ -76,9 +76,9 @@ FROM_REF=${from:-$(git describe --tags --abbrev=0 $TO_REF^ 2>/dev/null)}
 | 贡献者 | X 人 |
 
   提交类型：
-  │ feat  │ XX │
-  │ fix   │ XX │
-  │ other │ XX │
+  feat  XX 
+  fix   XX 
+  other XX 
 
 ## 贡献者
 
@@ -87,7 +87,7 @@ FROM_REF=${from:-$(git describe --tags --abbrev=0 $TO_REF^ 2>/dev/null)}
 | 张三 | XX | XX% |
 | 李四 | XX | XX% |
 
-═══════════════════════════════════════════════
+
 *由 /pm:milestone 自动生成 · YYYY-MM-DD*
 ```
 

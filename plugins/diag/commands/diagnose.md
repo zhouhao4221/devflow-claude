@@ -104,27 +104,27 @@ ssh <host> "rm -f /tmp/claude-diag-<session>-*"
 **固定模板**：
 
 ```
-🔴 原因：<异常类型> - <根本原因推断>
+原因：<异常类型> - <根本原因推断>
 
-📂 相关代码：
+相关代码：
   - <file_path>:<line> - <方法/类>（<匹配方式：精确匹配 / 模糊匹配 / 本仓库外>）
   - ...
 
-📋 完整堆栈：
+完整堆栈：
   <堆栈前 5-10 帧>
 
-💡 修复建议：
+修复建议：
   <具体到文件/函数的文字建议；必要时给出代码片段，但不自动应用>
 
-🛡️ 审计：
+审计：
   - 主机：<host>
   - 拉取日志：<log_paths>
   - SSH 命令：<3-5 条>
   - 审计记录：~/.claude-diag/audit/command_audit-<date>.jsonl
 
-🛑 未改动任何远程资源和本地代码。如需应用修复，你自己决定并手动执行。
+未改动任何远程资源和本地代码。如需应用修复，你自己决定并手动执行。
 
-🧹 Session 清理：
+Session 清理：
   - 远端临时文件：/tmp/claude-diag-<session>-* 已清理 / 无遗留
   - 本地 session 文件：~/.claude-diag/tmp/.current-session
 ```

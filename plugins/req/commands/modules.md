@@ -29,13 +29,13 @@ model: claude-haiku-4-5-20251001
 
 ```
 <需求根目录>/
-├── modules/           # 模块文档目录
-│   ├── user.md       # 用户模块
-│   ├── order.md      # 订单模块
-│   └── ...
-├── active/           # 进行中的需求
-├── completed/        # 已完成的需求
-└── INDEX.md          # 需求索引（自动生成）
+modules/           # 模块文档目录
+  user.md       # 用户模块
+  order.md      # 订单模块
+  ...
+active/           # 进行中的需求
+completed/        # 已完成的需求
+INDEX.md          # 需求索引（自动生成）
 ```
 
 ---
@@ -60,7 +60,7 @@ model: claude-haiku-4-5-20251001
 ### 4. 展示模块列表
 
 ```
-📦 模块概览
+模块概览
 
 | 模块 | 功能数 | 需求 | 开发中 | 已完成 |
 |------|--------|------|--------|--------|
@@ -68,7 +68,7 @@ model: claude-haiku-4-5-20251001
 | 订单模块 | 12 | 8 | 2 | 6 |
 | 支付模块 | 6 | 3 | 0 | 3 |
 
-💡 可用操作：
+可用操作：
 - /req:modules show user - 查看用户模块详情
 - /req:modules new 新模块 - 创建新模块
 - /req --module=user - 筛选用户模块的需求
@@ -93,7 +93,7 @@ model: claude-haiku-4-5-20251001
 输出：
 
 ```
-📦 创建模块：积分模块
+创建模块：积分模块
 
 已创建模块文档：docs/requirements/modules/points.md
 
@@ -102,7 +102,7 @@ model: claude-haiku-4-5-20251001
 2. 业务规则 - 列出关键约束
 3. 关键文件 - 标注代码位置
 
-💡 创建需求时可关联此模块：/req:new --module=积分模块
+创建需求时可关联此模块：/req:new --module=积分模块
 ```
 
 ---
@@ -124,7 +124,7 @@ model: claude-haiku-4-5-20251001
 输出：
 
 ```
-📦 用户模块
+用户模块
 
 ## 概述
 管理用户账户、认证、权限
@@ -134,8 +134,8 @@ model: claude-haiku-4-5-20251001
 |------|------|------|
 | 注册登录 | REQ-001 | ✅ 已完成 |
 | 个人信息 | REQ-003 | ✅ 已完成 |
-| 密码重置 | REQ-007 | 🔨 开发中 |
-| 用户积分 | REQ-012 | 📝 草稿 |
+| 密码重置 | REQ-007 | 开发中 |
+| 用户积分 | REQ-012 | 草稿 |
 
 ## 业务规则
 - 手机号唯一
@@ -147,7 +147,7 @@ model: claude-haiku-4-5-20251001
 - internal/user/biz/
 - internal/user/controller/
 
-💡 可用操作：
+可用操作：
 - /req:dev REQ-007 - 继续开发密码重置
 - /req:new --module=用户模块 - 创建新需求
 ```

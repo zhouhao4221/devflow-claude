@@ -138,33 +138,33 @@ model: claude-haiku-4-5-20251001
 ```
 ✅ 版本说明已生成！
 
-═══════════════════════════════════════════════
-📋 Changelog：<version>
-═══════════════════════════════════════════════
 
-📌 版本信息
-├── 版本号：<version>
-├── 发布日期：YYYY-MM-DD
-├── 版本范围：<from-ref>..<to-ref>
-└── 提交数量：N
+Changelog：<version>
 
-📊 变更统计
-├── 新功能：X
-├── 问题修复：X
-├── 重构优化：X
-├── 性能优化：X
-└── 其他变更：X
 
-📋 关联需求：X 个
-├── REQ-001 需求标题
-└── QUICK-003 快速修复标题
+版本信息
+版本号：<version>
+发布日期：YYYY-MM-DD
+版本范围：<from-ref>..<to-ref>
+提交数量：N
 
-📁 文件位置
+变更统计
+新功能：X
+问题修复：X
+重构优化：X
+性能优化：X
+其他变更：X
+
+关联需求：X 个
+REQ-001 需求标题
+QUICK-003 快速修复标题
+
+文件位置
 $OUTPUT_DIR/<version>.md
 
-═══════════════════════════════════════════════
 
-💡 后续操作：
+
+后续操作：
 - 查看文件：cat $OUTPUT_DIR/<version>.md
 - 重新生成：/req:changelog <version> --from=<tag>
 - 创建 git tag：git tag <version>

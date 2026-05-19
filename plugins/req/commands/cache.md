@@ -38,22 +38,22 @@ model: claude-haiku-4-5-20251001
 ### 输出
 
 ```
-📁 全局需求缓存信息
+全局需求缓存信息
 
 路径: ~/.claude-requirements/
 大小: 1.2 MB
 项目数: 3
 
-📊 项目统计:
+项目统计:
 | 项目 | 活跃 | 已完成 | 大小 | 关联仓库 |
 |------|------|--------|------|---------|
 | my-saas-product | 5 | 12 | 500 KB | 2 |
 | internal-tools | 2 | 8 | 300 KB | 1 |
 | client-portal | 0 | 0 | 50 KB | 0 |
 
-📌 当前仓库绑定: my-saas-product
+当前仓库绑定: my-saas-product
 
-💡 可用操作:
+可用操作:
 - /req:cache clear <project>  清理指定项目
 - /req:cache clear-all        清理所有缓存
 - /req:cache export <project> 导出项目需求
@@ -74,12 +74,12 @@ model: claude-haiku-4-5-20251001
 ```
 ⚠️ 即将删除项目: <project-name>
 
-📊 将删除的内容:
+将删除的内容:
 - 活跃需求: X 个
 - 已完成需求: Y 个
 - 模板文件: 1 个
 
-🔗 关联仓库 (将自动解绑):
+关联仓库 (将自动解绑):
 - /Users/xxx/backend
 - /Users/xxx/frontend
 
@@ -97,15 +97,15 @@ model: claude-haiku-4-5-20251001
 ```
 ✅ 项目 "<project-name>" 已删除
 
-📊 已清理:
+已清理:
 - 需求文档: X 个
 - 释放空间: XXX KB
 
-🔗 以下仓库的绑定已自动解除:
+以下仓库的绑定已自动解除:
 - /Users/xxx/backend
 - /Users/xxx/frontend
 
-💡 这些仓库现在将使用本地模式 (docs/requirements/)
+这些仓库现在将使用本地模式 (docs/requirements/)
 ```
 
 ---
@@ -117,9 +117,9 @@ model: claude-haiku-4-5-20251001
 ### 确认提示
 
 ```
-🚨 危险操作：清理所有全局缓存
+危险操作：清理所有全局缓存
 
-📊 将删除的内容:
+将删除的内容:
 - 项目数: 3 个
 - 总需求: 27 个
 - 总大小: 1.2 MB
@@ -143,13 +143,13 @@ model: claude-haiku-4-5-20251001
 ```
 ✅ 全局缓存已清理
 
-📊 已删除:
+已删除:
 - 项目: 3 个
 - 需求文档: 27 个
 - 释放空间: 1.2 MB
 
-💡 所有仓库现在将使用本地模式
-💡 使用 /req:init <project-name> 重新创建项目
+所有仓库现在将使用本地模式
+使用 /req:init <project-name> 重新创建项目
 ```
 
 ---
@@ -179,16 +179,16 @@ model: claude-haiku-4-5-20251001
 ### 输出
 
 ```
-🔄 重建项目缓存: my-saas-product
+重建项目缓存: my-saas-product
 
-📂 源目录: docs/requirements/
-📂 目标: ~/.claude-requirements/projects/my-saas-product/
+源目录: docs/requirements/
+目标: ~/.claude-requirements/projects/my-saas-product/
 
 同步内容:
-├── modules/: 3 个文件
-├── active/: 5 个文件
-├── completed/: 12 个文件
-└── INDEX.md
+modules/: 3 个文件
+active/: 5 个文件
+completed/: 12 个文件
+INDEX.md
 
 ✅ 缓存重建完成
 ```
@@ -208,13 +208,13 @@ model: claude-haiku-4-5-20251001
 ```
 ✅ 导出完成
 
-📁 导出路径: ./requirements-export-my-saas-product-2026-01-08/
-📊 导出内容:
+导出路径: ./requirements-export-my-saas-product-2026-01-08/
+导出内容:
 - 活跃需求: 5 个
 - 已完成需求: 12 个
 - 模板文件: 1 个
 
-💡 可用于备份或分享给团队成员
+可用于备份或分享给团队成员
 ```
 
 ---

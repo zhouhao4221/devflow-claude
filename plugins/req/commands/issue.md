@@ -55,7 +55,7 @@ OWNER/REPO 从 `git remote get-url origin` 解析，支持 SSH 和 HTTPS 格式�
 
 **禁止硬编码中英文对照表**，始终从仓库拉取真实 labels 再匹配。
 
-匹配顺序：① 完全匹配（忽略大小写）→ ② 去空格/连字符/下划线后匹配 → ③ 子串包含。
+匹配顺序：完全匹配（忽略大小写）→ 去空格/连字符/下划线后匹配 → 子串包含。
 
 无匹配时询问是否在仓库创建该标签；用户拒绝则跳过，不终止。
 
@@ -96,7 +96,7 @@ OWNER/REPO 从 `git remote get-url origin` 解析，支持 SSH 和 HTTPS 格式�
 **强制预览**，不受 `--auto` 影响：
 
 ```
-📝 Issue 草稿：
+Issue 草稿：
   仓库：owner/repo (gitea)
   标题：登录超时后 token 未清除
   标签：bug, authentication
@@ -114,11 +114,11 @@ OWNER/REPO 从 `git remote get-url origin` 解析，支持 SSH 和 HTTPS 格式�
 
 ```
 ✅ Issue 已创建
-  🔗 <url>
+  <url>
   #170 登录超时后 token 未清除
 
-💡 /req:fix --from-issue=#170   创建修复
-💡 /req:new --from-issue=#170   创建正式需求
+/req:fix --from-issue=#170   创建修复
+/req:new --from-issue=#170   创建正式需求
 ```
 
 ---
@@ -170,14 +170,14 @@ OWNER/REPO 从 `git remote get-url origin` 解析，支持 SSH 和 HTTPS 格式�
 输出格式：
 
 ```
-📋 Open issues @owner/repo（第 1 页 / 20 条）
+Open issues @owner/repo（第 1 页 / 20 条）
 
   #    状态   标题                          标签       指派      更新
-  ─────────────────────────────────────────────────────────────────
+  
   170  open   登录超时后 token 未清除        bug        @haiqing  2h
   165  open   导出 Excel 中文乱码            bug, 紧急  -         1d
 
-💡 /req:issue list --page=2
+/req:issue list --page=2
 ```
 
 ---
@@ -191,18 +191,18 @@ OWNER/REPO 从 `git remote get-url origin` 解析，支持 SSH 和 HTTPS 格式�
 拉取 issue 主体和全部评论，渲染格式：
 
 ```
-📌 Issue #170 登录超时后 token 未清除
+Issue #170 登录超时后 token 未清除
   状态：open  作者：@haiqing（2026-04-15 14:32）
   标签：bug   指派：@haiqing
 
-─── 正文 ────────────────────────
+正文 
 ...
 
-─── 💬 评论（共 3 条）──────────
+评论（共 3 条）
 [1] @alice（15:01）  我能复现。
 [2] @haiqing（16:22）已定位到 src/interceptors/request.ts:45
 
-💡 /req:issue comment 170 <文本>
+/req:issue comment 170 <文本>
 ```
 
 ---

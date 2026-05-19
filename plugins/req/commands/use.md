@@ -104,7 +104,7 @@ model: claude-haiku-4-5-20251001
 **未配置时提示**（不阻断）：
 
 ```
-💡 未配置分支策略，/req:dev 将使用默认行为
+未配置分支策略，/req:dev 将使用默认行为
    建议执行 /req:branch init 配置分支策略
 ```
 
@@ -113,17 +113,17 @@ model: claude-haiku-4-5-20251001
 ```
 ✅ 已切换到项目 "<project-name>"
 
-📊 项目状态:
+项目状态:
    - 活跃需求: X 个
    - 已完成: Y 个
 
-📋 活跃需求列表:
+活跃需求列表:
    | 编号 | 标题 | 状态 |
    |------|------|------|
-   | REQ-001 | ... | 🔨 开发中 |
-   | REQ-002 | ... | 👀 待评审 |
+   | REQ-001 | ... | 开发中 |
+   | REQ-002 | ... | 待评审 |
 
-💡 使用 /req 查看完整列表
+使用 /req 查看完整列表
 ```
 
 ---
@@ -135,10 +135,10 @@ model: claude-haiku-4-5-20251001
 ### 显示当前绑定
 
 ```
-📂 当前项目: <project-name>
-📁 路径: ~/.claude-requirements/projects/<project-name>/
+当前项目: <project-name>
+路径: ~/.claude-requirements/projects/<project-name>/
 
-💡 可用命令:
+可用命令:
    - /req:use <project-name>  切换到其他项目
    - /req:projects            查看所有项目
 ```

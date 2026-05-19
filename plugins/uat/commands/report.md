@@ -34,7 +34,7 @@ model: claude-haiku-4-5-20251001
 ```
 ❌ 暂无测试报告
 
-💡 先执行 /uat:run <module> 生成报告
+先执行 /uat:run <module> 生成报告
 ```
 
 ### 2. 展示报告
@@ -44,6 +44,6 @@ model: claude-haiku-4-5-20251001
 报告末尾追加操作提示：
 
 ```
-💡 /uat:bug   将失败项上报为 Gitea issue
-💡 /uat:run   重新执行测试
+/uat:bug   将失败项上报为 Gitea issue
+/uat:run   重新执行测试
 ```

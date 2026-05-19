@@ -15,7 +15,7 @@ model: claude-haiku-4-5-20251001
 
 ---
 
-## 🚫 绝对禁止：在保护分支上执行 git commit
+## 绝对禁止：在保护分支上执行 git commit
 
 **执行本命令时，第一件事是检查当前分支。如果在保护分支上，绝对不允许执行 git add 或 git commit。必须先切换到功能分支。**
 
@@ -69,8 +69,8 @@ model: claude-haiku-4-5-20251001
 **命中 1 个需求** → 自动切换/创建分支：
 
 ```
-🚫 当前在保护分支 <CURRENT>，不允许直接提交。
-🔀 根据当前改动关联到 <REQ-ID>，自动切换分支...
+当前在保护分支 <CURRENT>，不允许直接提交。
+根据当前改动关联到 <REQ-ID>，自动切换分支...
 ```
 
 - 需求有 branch 字段 → `git stash` → `git checkout <branch>` → `git stash pop`
@@ -79,7 +79,7 @@ model: claude-haiku-4-5-20251001
 **命中多个需求** → 列出让用户选择（**没有跳过选项**）：
 
 ```
-🚫 当前在保护分支 <CURRENT>，不允许直接提交。请选择需求：
+当前在保护分支 <CURRENT>，不允许直接提交。请选择需求：
 
   1. REQ-001 用户积分规则管理
   2. REQ-002 订单状态流转
@@ -102,8 +102,8 @@ model: claude-haiku-4-5-20251001
 3. 展示给用户确认，然后执行：
 
 ```
-🚫 当前在保护分支 <CURRENT>，未关联到活跃需求。
-🔀 根据当前改动自动生成分支：<新分支名>（基于 <branchFrom>）
+当前在保护分支 <CURRENT>，未关联到活跃需求。
+根据当前改动自动生成分支：<新分支名>（基于 <branchFrom>）
 
 确认使用该分支名？（回车确认 / 输入自定义分支名）
 ```
@@ -118,7 +118,7 @@ model: claude-haiku-4-5-20251001
 ```
 ❌ 没有可提交的变更
 
-💡 请先暂存文件：
+请先暂存文件：
 - git add <file>       暂存指定文件
 - git add -A           暂存所有变更
 ```
@@ -127,7 +127,7 @@ model: claude-haiku-4-5-20251001
 自动将所有变更暂存（`git add -A`），展示暂存结果：
 
 ```
-📁 已暂存所有变更：
+已暂存所有变更：
   M  internal/sys/biz/dept_channel.go
   A  internal/sys/model/sys_dept_channel_model.go
   M  internal/sys/controller/v1/sys_dept.go
@@ -163,7 +163,7 @@ model: claude-haiku-4-5-20251001
 非 auto 模式下，如果用户未提供消息，交互式选择：
 
 ```
-📝 选择提交类型：
+选择提交类型：
 
   1. 新功能     新增功能
   2. 修复       问题修复
@@ -220,7 +220,7 @@ model: claude-haiku-4-5-20251001
 展示完整提交预览：
 
 ```
-📋 提交预览：
+提交预览：
 
   类型：新功能
   描述：实现部门渠道关联
@@ -249,7 +249,7 @@ model: claude-haiku-4-5-20251001
 
   4 files changed, 156 insertions(+), 3 deletions(-)
 
-💡 是否创建 PR？
+是否创建 PR？
 - /req:pr           创建 PR
 - 继续开发          稍后再说
 ```

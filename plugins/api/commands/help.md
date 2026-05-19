@@ -41,7 +41,7 @@ model: claude-haiku-4-5-20251001
 ### 中文（zh）
 
 ```
-📡 API 对接插件 - 使用教程
+API 对接插件 - 使用教程
 
 章节：
  1. 快速开始
@@ -59,7 +59,7 @@ model: claude-haiku-4-5-20251001
 ### English (en)
 
 ```
-📡 API Plugin — Tutorial
+API Plugin — Tutorial
 
 Sections:
  1. Quick start
@@ -77,7 +77,7 @@ Enter a section number to view details.
 ### 한국어 (ko)
 
 ```
-📡 API 플러그인 - 튜토리얼
+API 플러그인 - 튜토리얼
 
 섹션:
  1. 빠른 시작

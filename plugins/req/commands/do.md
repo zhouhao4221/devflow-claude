@@ -43,7 +43,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 根据用户描述，AI 判断任务类型和规模：
 
 ```
-🧠 分析：<用户描述>
+分析：<用户描述>
 
   类型：<优化 | 重构 | 升级 | 规范 | 小功能 | 修复>
   规模：<轻量（无需文档）| 中等（建议创建 QUICK）| 正式（建议创建 REQ）>
@@ -71,7 +71,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 
 **规模为中等或正式时**：
 ```
-💡 此任务规模较大，建议使用正式流程以便追踪：
+此任务规模较大，建议使用正式流程以便追踪：
 
   /req:new-quick <标题>    有文档记录的轻量任务
   /req:new <标题>          正式需求（含评审、测试）
@@ -88,9 +88,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 AI 搜索代码库，定位相关文件：
 
 ```
-🔍 代码分析：
+代码分析：
 
-📂 涉及文件：
+涉及文件：
 
 | 文件 | 改动类型 | 说明 |
 |------|---------|------|
@@ -98,7 +98,7 @@ AI 搜索代码库，定位相关文件：
 | internal/order/biz/order_list.go | 修改 | 增加分页缓存逻辑 |
 | internal/order/model/order_model.go | 修改 | 补充索引注解 |
 
-💡 修改方案：
+修改方案：
 
 1. order_model.go
    - Order 表 `status` + `created_at` 添加复合索引
@@ -136,19 +136,19 @@ AI 按确认的方案修改代码。
 ```
 ✅ 完成！
 
-📝 修改文件：
+修改文件：
 - internal/order/store/order_store.go（+25 -3）
 - internal/order/biz/order_list.go（+40 -5）
 - internal/order/model/order_model.go（+2 -0）
 
-💡 后续操作：
+后续操作：
 - /req:commit       提交代码
 - /req:pr           创建 PR
 ```
 
 若来自 `--from-issue=#N`，在后续操作提示中追加：
 ```
-💡 提交时建议在 commit message 末尾添加 closes #N 以自动关联 issue
+提交时建议在 commit message 末尾添加 closes #N 以自动关联 issue
 ```
 
 ### 5. （可选）关闭 issue
@@ -158,7 +158,7 @@ AI 按确认的方案修改代码。
 在步骤 4 展示完成提示后，询问用户：
 
 ```
-🔗 本次任务来自 issue #N
+本次任务来自 issue #N
    是否关闭该 issue？(y/n)
 ```
 

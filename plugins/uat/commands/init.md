@@ -52,7 +52,7 @@ cp plugins/uat/skills/uat-executor/SKILL.md .claude/skills/uat-executor/SKILL.md
 
 ```
 ❌ 未找到 uat 插件源文件
-💡 请先通过 devflow 安装 uat 插件后重试
+请先通过 devflow 安装 uat 插件后重试
 ```
 
 ### 4. 更新 .gitignore
@@ -84,6 +84,6 @@ docs/uat/screenshots/
 已生成约定文档：
   docs/uat/testid-convention.md    data-testid 命名约定（提交 git，供前端参考）
 
-💡 Codex / Claude 桌面端现在可以使用 /uat:run 执行测试
-💡 使用 /uat:new 创建第一个测试流程文档
+Codex / Claude 桌面端现在可以使用 /uat:run 执行测试
+使用 /uat:new 创建第一个测试流程文档
 ```

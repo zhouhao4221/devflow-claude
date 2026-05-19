@@ -119,9 +119,9 @@ else:
 成功输出：
 ```
 ✅ PR 已创建
-   🔗 <url>
-👤 已请求审核：@user1, @user2     ← reviewers 非空时输出
-💡 /req:review-pr review / merge，或 /req:done 归档
+   <url>
+已请求审核：@user1, @user2     ← reviewers 非空时输出
+/req:review-pr review / merge，或 /req:done 归档
 ```
 
 #### github

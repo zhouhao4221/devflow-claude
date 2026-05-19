@@ -80,7 +80,7 @@ updated: <YYYY-MM-DD>
 ## 列表输出格式
 
 ```
-📋 规范文档
+规范文档
 
 | 文档 | 分类 | 描述 | 更新时间 |
 |------|------|------|----------|
@@ -88,7 +88,7 @@ updated: <YYYY-MM-DD>
 
 共 N 份规范文档
 
-💡 /req:specs show <名称> · /req:specs new <名称> · /req:specs edit <名称>
+/req:specs show <名称> · /req:specs new <名称> · /req:specs edit <名称>
 ```
 
 无文档时提示：`/req:specs new <名称>`

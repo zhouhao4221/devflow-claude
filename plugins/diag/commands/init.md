@@ -117,11 +117,11 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/services-config.sh" validate
 ```
 ✅ Diag 插件初始化完成
 
-📂 配置：~/.claude-diag/config/services.yaml（2 个服务）
-📂 审计：~/.claude-diag/audit/
-📂 Runbook：docs/runbooks/（4 个骨架文件，诊断完事故后补写内容）
+配置：~/.claude-diag/config/services.yaml（2 个服务）
+审计：~/.claude-diag/audit/
+Runbook：docs/runbooks/（4 个骨架文件，诊断完事故后补写内容）
 
-💡 下一步：
+下一步：
 - /diag:diagnose <报错描述>   开始诊断
 - /diag:audit                 查审计日志
 ```

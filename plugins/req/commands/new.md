@@ -55,15 +55,15 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 ```
 1. 扫描 docs/requirements/modules/ 获取现有模块列表
 2. 展示选项：
-   ┌─────────────────────────────────────┐
-   │ 请选择所属模块：                      │
-   │                                     │
-   │ 1. 用户模块                          │
-   │ 2. 订单模块                          │
-   │ 3. 支付模块                          │
-   │ ──────────────────────              │
-   │ n. 创建新模块                        │
-   └─────────────────────────────────────┘
+   
+   请选择所属模块：                      
+                                       
+   1. 用户模块                          
+   2. 订单模块                          
+   3. 支付模块                          
+                
+   n. 创建新模块                        
+   
 3. 用户选择：
    - 选择现有模块 → 继续下一步
    - 选择"创建新模块" → 输入模块名 → 创建模块文档 → 继续
@@ -86,7 +86,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 ```
 ❌ 未找到需求模板文件
 
-💡 请执行 /req:update-template requirement 恢复模板
+请执行 /req:update-template requirement 恢复模板
 ```
 
 读取后解析模板的完整章节结构，后续创建文档**必须严格保留模板中的所有章节、层级和格式**。
@@ -156,11 +156,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 
 ```
 ✅ 需求文档已创建
-📁 路径：docs/requirements/active/REQ-XXX-标题.md
-📦 模块：用户模块
-📋 状态：📝 草稿
+路径：docs/requirements/active/REQ-XXX-标题.md
+模块：用户模块
+状态：草稿
 
-💡 下一步：
+下一步：
 - /req:edit REQ-XXX - 继续完善
 - /req:review REQ-XXX - 提交评审
 ```

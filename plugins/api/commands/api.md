@@ -31,7 +31,7 @@ model: claude-haiku-4-5-20251001
 ### 无配置时
 
 ```
-📡 API 对接工具
+API 对接工具
 
 ⚠️ 尚未初始化配置
 
@@ -51,7 +51,7 @@ model: claude-haiku-4-5-20251001
 3. 展示概览：
 
    ```
-   📡 API 对接工具
+   API 对接工具
 
    数据源：
      1. 主服务 — http://localhost:8080/swagger/doc.json
@@ -73,20 +73,20 @@ model: claude-haiku-4-5-20251001
 ```
 /api --tag=用户管理
 
-📡 用户管理 — 8 个接口
+用户管理 — 8 个接口
 
-┌────┬─────────┬──────────────────────────┬─────────────────┐
-│ #  │ 方法    │ 路径                      │ 描述            │
-├────┼─────────┼──────────────────────────┼─────────────────┤
-│ 1  │ GET     │ /api/v1/users            │ 获取用户列表     │
-│ 2  │ POST    │ /api/v1/users            │ 创建用户         │
-│ 3  │ GET     │ /api/v1/users/{id}       │ 获取用户详情     │
-│ 4  │ PUT     │ /api/v1/users/{id}       │ 更新用户信息     │
-│ 5  │ DELETE  │ /api/v1/users/{id}       │ 删除用户         │
-│ 6  │ POST    │ /api/v1/users/{id}/reset │ 重置密码         │
-│ 7  │ GET     │ /api/v1/users/export     │ 导出用户数据     │
-│ 8  │ POST    │ /api/v1/users/import     │ 导入用户数据     │
-└────┴─────────┴──────────────────────────┴─────────────────┘
+
+#  方法    路径                      描述            
+
+1  GET     /api/v1/users            获取用户列表     
+2  POST    /api/v1/users            创建用户         
+3  GET     /api/v1/users/{id}       获取用户详情     
+4  PUT     /api/v1/users/{id}       更新用户信息     
+5  DELETE  /api/v1/users/{id}       删除用户         
+6  POST    /api/v1/users/{id}/reset 重置密码         
+7  GET     /api/v1/users/export     导出用户数据     
+8  POST    /api/v1/users/import     导入用户数据     
+
 ```
 
 ### 数据源连接失败

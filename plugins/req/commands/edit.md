@@ -47,7 +47,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 ```
 ❌ 未找到对应类型的模板文件
 
-💡 请执行 /req:update-template <requirement|quick> 恢复模板
+请执行 /req:update-template <requirement|quick> 恢复模板
 ```
 
 读取后解析模板的完整章节结构，编辑时**必须严格保持模板中的所有章节、层级和格式**。
@@ -57,7 +57,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 如果用户意图是**新增功能点**（而非修改已有内容），先判断是否应新建 REQ：
 
 ```
-🤔 检测到您要新增功能点
+检测到您要新增功能点
 
 核心问题：去掉这个功能点，原需求还能独立交付吗？
 
@@ -124,7 +124,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 修改内容写入文档前，向用户展示变更摘要：
 
 ```
-📝 变更预览
+变更预览
 
 【将修改的章节】：
 - 使用场景：新增"批量导入"场景
@@ -140,7 +140,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 如果需求已在开发中，分析变更影响：
 
 ```
-📊 变更影响分析
+变更影响分析
 
 修改内容：
 - 接口需求：新增渠道关联能力
@@ -166,10 +166,10 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 ```
 ✅ 需求已更新：REQ-XXX
-📁 路径：docs/requirements/active/REQ-XXX-标题.md
-🔄 缓存：已同步
+路径：docs/requirements/active/REQ-XXX-标题.md
+缓存：已同步
 
-💡 下一步：
+下一步：
 - /req:edit REQ-XXX - 继续编辑
 - /req:review - 提交评审
 ```

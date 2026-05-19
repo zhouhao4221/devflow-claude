@@ -40,7 +40,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 ```
 ❌ 未找到关联的 PR
 
-💡 请先创建 PR：/req:pr [REQ-XXX]
+请先创建 PR：/req:pr [REQ-XXX]
 ```
 
 ---
@@ -59,15 +59,15 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 ### 3. 展示状态
 
 ```
-📋 PR 状态：REQ-001 用户积分规则管理
+PR 状态：REQ-001 用户积分规则管理
 
-  🔗 PR #42: feat(REQ-001): 用户积分规则管理
-  📊 状态：Open
-  🎯 合并方向：feat/REQ-001-user-points → develop
-  🔀 可合并：✅ 无冲突 / ❌ 有冲突
-  📝 审查：未审查 / ✅ 已通过 / ❌ 需修改
+  PR #42: feat(REQ-001): 用户积分规则管理
+  状态：Open
+  合并方向：feat/REQ-001-user-points → develop
+  可合并：✅ 无冲突 / ❌ 有冲突
+  审查：未审查 / ✅ 已通过 / ❌ 需修改
 
-💡 可用操作：
+可用操作：
 - /req:review-pr review   AI 代码审查
 - /req:review-pr merge    合并 PR
 ```
@@ -89,7 +89,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 
 ### 2.5 对比需求文档与实际实现
 
-读取需求文档并与 diff 实际内容交叉检查，找出**文档与代码不一致**的地方，稍后在报告中以「📌 需求文档同步」章节提醒用户更新。
+读取需求文档并与 diff 实际内容交叉检查，找出**文档与代码不一致**的地方，稍后在报告中以「需求文档同步」章节提醒用户更新。
 
 **检查维度：**
 
@@ -130,60 +130,60 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 
 | 级别 | 含义 | 影响 |
 |------|------|------|
-| 🔴 阻塞 | 必须修复才能合并 | 阻止合并 |
-| 🟡 建议 | 建议修改但不阻止合并 | 不阻止 |
-| 🔵 信息 | 知识分享、风格偏好 | 不阻止 |
+| 阻塞 | 必须修复才能合并 | 阻止合并 |
+| 建议 | 建议修改但不阻止合并 | 不阻止 |
+| 信息 | 知识分享、风格偏好 | 不阻止 |
 
 报告结构包含两部分：
-1. **代码审查**：🔴/🟡/🔵 分级的代码问题
-2. **📌 需求文档同步**：步骤 2.5 中发现的文档与代码偏差（不阻止合并，但建议用户 `/req:edit` 补齐）
+1. **代码审查**：//分级的代码问题
+2. **需求文档同步**：步骤 2.5 中发现的文档与代码偏差（不阻止合并，但建议用户 `/req:edit` 补齐）
 
 输出格式：
 
 ```
-📝 AI 代码审查报告：PR #42
+AI 代码审查报告：PR #42
 
   审查文件：8 个
-  审查结果：🔴 1 个阻塞 | 🟡 3 个建议 | 🔵 2 个信息
+  审查结果：1 个阻塞 | 3 个建议 | 2 个信息
   需求同步：⚠️ 3 项待更新
 
 ---
 
-🔴 阻塞问题：
+阻塞问题：
 
-  📄 internal/user/biz/points.go:45
+  internal/user/biz/points.go:45
   问题：积分扣减未检查余额是否充足，可能导致负数
   建议：添加余额校验 `if user.Points < amount { return ErrInsufficientPoints }`
 
 ---
 
-🟡 建议：
+建议：
 
-  📄 internal/user/controller/v1/points.go:23
+  internal/user/controller/v1/points.go:23
   问题：缺少请求参数校验
   建议：对 amount 字段添加 min=1 校验
 
-  📄 internal/user/store/points_store.go:67
+  internal/user/store/points_store.go:67
   问题：批量操作未使用事务
   建议：用 db.Transaction() 包裹
 
-  📄 internal/user/model/points_record.go:12
+  internal/user/model/points_record.go:12
   问题：CreatedAt 字段缺少 json tag
   建议：添加 `json:"created_at"`
 
 ---
 
-🔵 信息：
+信息：
 
-  📄 internal/user/biz/points.go:20
+  internal/user/biz/points.go:20
   备注：可以考虑将积分规则抽为配置，方便后续调整
 
-  📄 internal/user/router.go:34
+  internal/user/router.go:34
   备注：路由分组命名建议统一为 /api/v1/points（当前为 /api/v1/point）
 
 ---
 
-📌 需求文档同步（REQ-001）：
+需求文档同步（REQ-001）：
 
   ⚠️ 文件改动清单未同步
     文档第 11.3 节缺失：
@@ -199,13 +199,13 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
     文档第二章列出但 diff 中未找到实现：
       - "积分过期自动清理"
 
-  💡 建议执行：/req:edit REQ-001，补齐以上内容
+  建议执行：/req:edit REQ-001，补齐以上内容
 
 ---
 
-📊 总结：有 1 个阻塞问题需修复后才能合并；3 项需求文档待同步
+总结：有 1 个阻塞问题需修复后才能合并；3 项需求文档待同步
 
-💡 可用操作：
+可用操作：
 - 修复后重新提交：/req:commit
 - 修复后重新审查：/req:review-pr review
 - 更新需求文档：/req:edit REQ-001
@@ -220,16 +220,16 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 
 当同时满足以下条件时，判定为"完全没有问题"，跳过 5.1 的预览和 5.2 的询问，直接用固定模板提交通过评论：
 
-- 🔴 阻塞数 = 0
-- 🟡 建议数 = 0
-- 📌 需求文档同步项 = 0
+- 阻塞数 = 0
+- 建议数 = 0
+- 需求文档同步项 = 0
 
-🔵 信息级备注不影响判定（纯知识分享，不算问题）。
+信息级备注不影响判定（纯知识分享，不算问题）。
 
 **固定通过评论模板**（上传到 PR 的 Markdown 内容）：
 
 ```markdown
-### 🤖 AI 审查通过 ✅
+### AI 审查通过 ✅
 
 本次 PR 未发现阻塞问题、改进建议或需求文档同步项，代码符合项目规范，可以合并。
 ```
@@ -238,23 +238,23 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 
 ```
 ✅ AI 审查未发现问题，已自动提交通过评论到 PR #42
-   🔗 ${PR_URL}
+   ${PR_URL}
 ```
 
 随后进入步骤 6（无阻塞后续操作）。
 
-有任一 🔴/🟡/📌 项时，走下方 5.1/5.2/5.3 的原流程。
+有任一 //项时，走下方 5.1/5.2/5.3 的原流程。
 
 **5.1 展示精简版预览**
 
 在询问前，先完整打印将要提交的精简版 Markdown 内容（见下面的"精简规则"和"精简后示例"），让用户看清楚要上传什么：
 
 ```
-📤 即将提交到 PR #42 的评审评论（预览）：
+即将提交到 PR #42 的评审评论（预览）：
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 <精简版 Markdown 内容>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 
 是否提交到 PR？(y/n，或输入修改意见)
 ```
@@ -281,16 +281,16 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 识别到 `--auto` 时，回复须明确说明能力边界：
 
 ```
-🧠 识别：/req:review-pr review --auto
+识别：/req:review-pr review --auto
 
-⚙️ --auto 会自动跳过：
-  ✓ 上传评论前的确认询问
-  ✓ 直接把精简版提交到 PR（本地仍保留完整报告）
+--auto 会自动跳过：
+  上传评论前的确认询问
+  直接把精简版提交到 PR（本地仍保留完整报告）
 
-🔒 无法跳过（Claude Code harness 层）：
+无法跳过（Claude Code harness 层）：
   - 首次调用 Bash（curl / gh）的工具权限确认
 
-🛑 不会跳过：
+不会跳过：
   - AI 对代码的实际分析（审查逻辑本身）
   - 无阻塞问题时仍会明确结论"未发现明显问题"，不凑字数
 
@@ -309,9 +309,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 
 | 保留 | 去除 |
 |------|------|
-| 🔴 阻塞问题（全部） | 🔵 信息级备注 |
-| 🟡 建议中与需求/安全/正确性相关的关键项 | 🟡 风格、命名等次要建议 |
-| 📌 需求文档同步的关键缺失（接口、数据模型、功能清单覆盖不全） | 文件改动清单的双向差异、关联需求列表 |
+| 阻塞问题（全部） | 信息级备注 |
+| 建议中与需求/安全/正确性相关的关键项 | 风格、命名等次要建议 |
+| 需求文档同步的关键缺失（接口、数据模型、功能清单覆盖不全） | 文件改动清单的双向差异、关联需求列表 |
 | 一行总结：阻塞数、建议数、文档同步项数 | 「审查文件：X 个」「可用操作」等过程信息 |
 
 - 只有"未发现明显问题"结论时，评论就一两句话，不要凑字数。
@@ -321,15 +321,15 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 **精简后示例（上传到 PR 的评论内容）：**
 
 ```markdown
-### 🤖 AI 审查：1 阻塞 / 1 建议 / 2 项文档待同步
+### AI 审查：1 阻塞 / 1 建议 / 2 项文档待同步
 
-**🔴 阻塞**
+**阻塞**
 - `internal/user/biz/points.go:45` 积分扣减未检查余额，可能为负 → 加 `if user.Points < amount` 校验
 
-**🟡 关键建议**
+**关键建议**
 - `internal/user/store/points_store.go:67` 批量操作未使用事务
 
-**📌 需求文档同步（REQ-001）**
+**需求文档同步（REQ-001）**
 - 新增路由 `POST /api/v1/points/transfer` 未记录（第五章）
 - 文件改动清单（11.3）与实际 diff 不一致
 
@@ -343,20 +343,20 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 **上传成功**：
 ```
 ✅ 审查报告已提交到 PR #42（精简版）
-   🔗 ${PR_URL}
-   📋 完整报告见上方本地输出
+   ${PR_URL}
+   完整报告见上方本地输出
 ```
 
 **用户拒绝上传**（仅在交互模式下可能）：
 ```
-⏭️ 已跳过上传，完整审查报告保留在本地终端输出
-💡 如需重新上传：/req:review-pr review --auto
+已跳过上传，完整审查报告保留在本地终端输出
+如需重新上传：/req:review-pr review --auto
 ```
 
 ### 6. 无阻塞时的后续操作
 
 **触发条件**（同时满足）：
-- 🔴 阻塞数 = 0（可以有 🟡/🔵 问题）
+- 阻塞数 = 0（可以有 /问题）
 - PR 当前为 Open 状态（审核中）
 
 不满足时（有阻塞问题 / PR 已合并或关闭）：跳过本步骤，结束。
@@ -396,7 +396,7 @@ has_reviewer = bool(pr_reviewers or config_reviewers)
 ```
 ✅ 审查完成，PR #42 无阻塞问题（无分配审核人）
 
-💡 如需合并：/req:review-pr merge
+如需合并：/req:review-pr merge
 ```
 
 **y — 审核通过**（仅 `has_reviewer = True` 时出现）
@@ -408,10 +408,10 @@ has_reviewer = bool(pr_reviewers or config_reviewers)
 成功后输出：
 ```
 ✅ PR #42 审核状态已更新为「已通过（Approved）」
-   🔗 ${PR_URL}
+   ${PR_URL}
    （审核通过 ≠ 合并，PR 仍处于 Open 状态）
 
-💡 如需合并：/req:review-pr merge
+如需合并：/req:review-pr merge
 ```
 
 失败时输出：
@@ -423,15 +423,15 @@ has_reviewer = bool(pr_reviewers or config_reviewers)
 - 当前用户不在 PR 审核人列表
 - 网络问题
 
-💡 请在平台手动操作：${PR_URL}
+请在平台手动操作：${PR_URL}
 ```
 
 **n / 回车 — 暂不处理**（`has_reviewer = True`）
 
 ```
-⏭️ 已跳过，PR #42 保持当前状态
+已跳过，PR #42 保持当前状态
 
-💡 后续可执行：
+后续可执行：
 - /req:review-pr merge    合并 PR
 ```
 
@@ -460,7 +460,7 @@ has_reviewer = bool(pr_reviewers or config_reviewers)
 排除以下评论，避免无效循环：
 - 作者为当前 git 用户（`git config user.name` / `git config user.email`）的评论
 - 已 resolved / outdated 状态的行评论（Gitea 字段 `resolved`，GitHub 字段无需过滤，按时间戳排序）
-- AI 自动提交的审查报告（body 以 `📝 AI 代码审查报告` 开头）
+- AI 自动提交的审查报告（body 以 `AI 代码审查报告` 开头）
 
 可用「上次 fetch-comments 执行时间」作为增量标记（存储在需求文档「开发记录」或 `.claude/settings.local.json` 的 `reviewPrLastFetch` 字段）。**首次执行时拉取全部**。
 
@@ -469,21 +469,21 @@ has_reviewer = bool(pr_reviewers or config_reviewers)
 分组展示，带编号供后续引用：
 
 ```
-💬 PR #42 评论（7 条，已过滤 2 条 AI 自提交）
+PR #42 评论（7 条，已过滤 2 条 AI 自提交）
 
-🧵 整体讨论：
+整体讨论：
 
   [1] @reviewer-a (2026-04-15 10:21)
       整体逻辑 OK，但 user_points 表建议加软删除字段，方便回滚。
 
-📍 行内评论：
+行内评论：
 
   [2] @reviewer-b (2026-04-15 10:30)
-      📄 internal/user/biz/points.go:45
+      internal/user/biz/points.go:45
       余额检查应该放在事务开头，现在位置会有并发问题。
 
   [3] @reviewer-b (2026-04-15 10:32)
-      📄 internal/user/controller/v1/points.go:23
+      internal/user/controller/v1/points.go:23
       这里返回 500 不合适，参数错误应该返回 400。
 ```
 
@@ -497,19 +497,19 @@ has_reviewer = bool(pr_reviewers or config_reviewers)
 输出格式：
 
 ```
-🔧 修改方案
+修改方案
 
 [1] ✅ 可执行 — 加软删除字段
-   📄 internal/user/model/points_record.go
-   📝 在 PointsRecord 结构体追加 `DeletedAt gorm.DeletedAt` 字段，并在 migration SQL 增补列。
+   internal/user/model/points_record.go
+   在 PointsRecord 结构体追加 `DeletedAt gorm.DeletedAt` 字段，并在 migration SQL 增补列。
 
 [2] ✅ 可执行 — 调整余额校验位置
-   📄 internal/user/biz/points.go:42-50
-   📝 把余额检查从方法末尾移到事务 `tx.Begin()` 之后、`UPDATE` 之前。
+   internal/user/biz/points.go:42-50
+   把余额检查从方法末尾移到事务 `tx.Begin()` 之后、`UPDATE` 之前。
 
 [3] ⚠️ 需确认 — 错误码调整
-   📄 internal/user/controller/v1/points.go:23
-   📝 原代码统一返回 500，建议改为 400。**但项目 CLAUDE.md 约定由中间件统一处理 400 错误**，需确认是手工返回还是调中间件。
+   internal/user/controller/v1/points.go:23
+   原代码统一返回 500，建议改为 400。**但项目 CLAUDE.md 约定由中间件统一处理 400 错误**，需确认是手工返回还是调中间件。
 
 是否按以上方案执行？（回复序号跳过某项，如 "跳过 3"；或直接回复 y 全部执行）
 ```
@@ -526,11 +526,11 @@ has_reviewer = bool(pr_reviewers or config_reviewers)
 ```
 ✅ 已应用 2 项修改（跳过 1 项待确认）
 
-📝 修改文件：
+修改文件：
 - internal/user/model/points_record.go（+2 -0）
 - internal/user/biz/points.go（+5 -3）
 
-💡 下一步：
+下一步：
 - /req:commit        提交修改（建议在 commit message 中引用 PR #42 review）
 - /req:review-pr review   可选：再次 AI 自审查
 ```
@@ -560,7 +560,7 @@ review: 处理 PR #42 的审查评论
 ```
 ❌ PR #42 存在合并冲突
 
-💡 解决方式：
+解决方式：
   git checkout <branch>
   git merge <merge_target>
   # 解决冲突后
@@ -582,7 +582,7 @@ review: 处理 PR #42 的审查评论
 
 **repoType = "other"**：
 ```
-🔀 请手动合并 PR
+请手动合并 PR
 
   合并命令：
   git checkout <merge_target>
@@ -595,11 +595,11 @@ review: 处理 PR #42 的审查评论
 ```
 ✅ PR #42 已合并！
 
-  🔗 ${PR_URL}
-  🎯 feat/REQ-001-user-points → develop
-  📋 合并方式：merge
+  ${PR_URL}
+  feat/REQ-001-user-points → develop
+  合并方式：merge
 
-💡 后续操作：
+后续操作：
 - /req:done REQ-001   归档需求
 ```
 
@@ -610,7 +610,7 @@ review: 处理 PR #42 的审查评论
 **配置为 true 或未配置时**：
 
 ```
-🗑️ 是否删除已合并的分支？
+是否删除已合并的分支？
 
   将执行：
   git checkout <merge_target>
@@ -633,7 +633,7 @@ review: 处理 PR #42 的审查评论
 此时分别展示/审查/合并两个 PR：
 
 ```
-📋 Hotfix 关联 2 个 PR：
+Hotfix 关联 2 个 PR：
 
   1. PR #42: hotfix/fix-order-calc → main     状态：Open
   2. PR #43: hotfix/fix-order-calc → develop   状态：Open

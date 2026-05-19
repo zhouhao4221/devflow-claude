@@ -62,7 +62,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(python3:*)
 将 Swagger 最新 schema 与项目中已有的 interface 逐字段比对：
 
 ```
-🔍 检测到已有类型：UserDetailResponse
+检测到已有类型：UserDetailResponse
 
   字段变更：
 
@@ -96,29 +96,29 @@ AI 在项目中搜索引用了该类型或该请求函数的文件，识别受�
 输出影响分析报告：
 
 ```
-📋 关联页面影响分析：
+关联页面影响分析：
 
   变更字段：+2 新增, 1 类型变更, 1 删除
 
   受影响文件（4个）：
 
-  📄 src/pages/user/UserForm.tsx（表单）
+  src/pages/user/UserForm.tsx（表单）
      - nickName（新增）→ 建议添加表单项
      - phone（删除）→ 需移除表单项和校验规则
 
-  📄 src/pages/user/UserList.tsx（列表）
+  src/pages/user/UserList.tsx（列表）
      - nickName（新增）→ 可选：添加表格列
      - phone（删除）→ 需移除表格列定义
 
-  📄 src/pages/user/UserDetail.tsx（详情）
+  src/pages/user/UserDetail.tsx（详情）
      - nickName（新增）→ 建议添加展示项
      - avatarUrl（类型变更）→ 需处理 null 值
      - phone（删除）→ 需移除展示项
 
-  📄 src/hooks/useUserPermission.ts（逻辑）
+  src/hooks/useUserPermission.ts（逻辑）
      - roleList[].permissions（新增）→ 无需改动（新字段）
 
-💡 是否自动生成调整方案？
+是否自动生成调整方案？
 ```
 
 #### 3.3 生成调整方案（用户确认后）
@@ -126,9 +126,9 @@ AI 在项目中搜索引用了该类型或该请求函数的文件，识别受�
 用户确认后，AI 对每个受影响文件给出具体的修改方案：
 
 ```
-📝 调整方案：
+调整方案：
 
-━━━ 1/3 src/pages/user/UserForm.tsx ━━━
+1/3 src/pages/user/UserForm.tsx 
 
   + 添加 nickName 表单项（在 email 字段后）：
     <Form.Item label="昵称" name="nickName">
@@ -137,12 +137,12 @@ AI 在项目中搜索引用了该类型或该请求函数的文件，识别受�
 
   - 移除 phone 表单项和校验规则
 
-━━━ 2/3 src/pages/user/UserList.tsx ━━━
+2/3 src/pages/user/UserList.tsx 
 
   - 移除 phone 列定义
   (nickName 为列表非关键字段，建议暂不添加)
 
-━━━ 3/3 src/pages/user/UserDetail.tsx ━━━
+3/3 src/pages/user/UserDetail.tsx 
 
   + 添加 nickName 展示项
   ~ avatarUrl 添加空值处理：{detail.avatarUrl ?? '—'}
@@ -168,16 +168,16 @@ AI 在项目中搜索引用了该类型或该请求函数的文件，识别受�
 ### 输出格式
 
 ```
-🔧 代码生成：GET /api/v1/users/{id}
+代码生成：GET /api/v1/users/{id}
 
 检测请求库：axios（封装文件：src/utils/request.ts）
 
-━━━ 生成文件 ━━━
+生成文件 
 
 1. src/types/api/user.ts（类型定义）
 2. src/api/user.ts（请求函数）
 
-━━━ 预览 ━━━
+预览 
 
 // src/types/api/user.ts
 

@@ -64,7 +64,7 @@ cat ... | jq -c 'select(.tmp_write != null)'
 表格形式（默认）：
 
 ```
-📋 Diag 审计（2026-04-13 至 2026-04-20，共 23 条）
+Diag 审计（2026-04-13 至 2026-04-20，共 23 条）
 
 时间                    主机            服务        命令                                        退出码
 2026-04-20T02:30:15Z   prod-web-01    order-api   ssh prod-web-01 tail -n 2000 /v/l/order.l    0
@@ -72,12 +72,12 @@ cat ... | jq -c 'select(.tmp_write != null)'
 2026-04-19T22:05:42Z   prod-web-02    user-svc    ssh prod-web-02 tail -n 500 /v/l/user.log    0
 ...
 
-💡 完整记录：cat ~/.claude-diag/audit/command_audit-*.jsonl | jq '.'
+完整记录：cat ~/.claude-diag/audit/command_audit-*.jsonl | jq '.'
 ```
 
 聚合摘要（若记录 > 20）：
 ```
-📊 统计
+统计
 - 主机分布：prod-web-01 (15), prod-web-02 (8)
 - 服务分布：order-api (15), user-svc (8)
 - 成功率：23/23 (100%)

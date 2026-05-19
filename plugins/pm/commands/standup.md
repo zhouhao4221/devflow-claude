@@ -40,7 +40,7 @@ git log --name-only --no-merges --since='$YESTERDAY' --until='$TODAY' --pretty=f
 
 ```python
 # 当前进行中的需求
-in_progress = [r for r in reqs if r["status"] in ["🔨 开发中", "🧪 测试中"]]
+in_progress = [r for r in reqs if r["status"] in ["开发中", "测试中"]]
 
 # 阻塞项
 blocked = [r for r in in_progress if days_since(r["updated"]) > 3]
@@ -49,9 +49,9 @@ blocked = [r for r in in_progress if days_since(r["updated"]) > 3]
 ### 2. 输出站会摘要
 
 ```
-───────────────────────────────────────────────
+
 站会摘要 · YYYY-MM-DD
-───────────────────────────────────────────────
+
 
 **昨日完成：**
 - feat: 完成订单导出模板引擎 (REQ-006)
@@ -65,7 +65,7 @@ blocked = [r for r in in_progress if days_since(r["updated"]) > 3]
 **阻塞/风险：**
 - REQ-006 依赖第三方 SDK 版本确认（等待中）
 
-───────────────────────────────────────────────
+
 ```
 
 **特点：**
@@ -76,9 +76,9 @@ blocked = [r for r in in_progress if days_since(r["updated"]) > 3]
 ### 3. 无昨日活动时
 
 ```
-───────────────────────────────────────────────
+
 站会摘要 · YYYY-MM-DD
-───────────────────────────────────────────────
+
 
 **昨日完成：**
   （无提交记录）
@@ -88,7 +88,7 @@ blocked = [r for r in in_progress if days_since(r["updated"]) > 3]
 
 **阻塞/风险：**
   （无）
-───────────────────────────────────────────────
+
 ```
 
 ## 用户输入

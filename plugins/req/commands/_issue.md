@@ -51,7 +51,7 @@ gh issue view ${N} --json title,body,number,url,labels
 **repoType = "other" 或未配置**：
 ```
 ❌ 未配置支持的 Git 平台（需 repoType=github 或 gitea）
-💡 请先执行 /req:branch init 配置
+请先执行 /req:branch init 配置
 ```
 
 ## Issue 与分支/提交的关联

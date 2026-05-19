@@ -70,7 +70,7 @@ CURRENT_VER=$(jq -r '.version // "unknown"' "$SOURCE_PATH/plugins/req/.claude-pl
 
 有更新时打印待拉取的提交列表：
 ```
-📦 发现更新（当前 v<CURRENT_VER>）：
+发现更新（当前 v<CURRENT_VER>）：
   <git log HEAD..@{u} --oneline --no-merges 的输出>
 ```
 
@@ -108,7 +108,7 @@ NEW_VER=$(jq -r '.version // "unknown"' "$SOURCE_PATH/plugins/req/.claude-plugin
 按结果分级输出：
 
 ```
-📋 Prompt 文件检查（schema v<VERSION>）：
+Prompt 文件检查（schema v<VERSION>）：
 
   docs/prompt/architecture.md
     ✅ 技术栈      ✅ 分层      ✅ 目录      ❌ 命名规范（必需，/req:dev 依赖）

@@ -36,7 +36,7 @@ model: claude-haiku-4-5-20251001
 #### 1. 选择策略模型
 
 ```
-📋 选择分支管理策略：
+选择分支管理策略：
 
   1. GitHub Flow（推荐）
      所有分支从 main 拉，合回 main
@@ -129,7 +129,7 @@ model: claude-haiku-4-5-20251001
 #### 4. 选择仓库托管类型
 
 ```
-🏠 仓库托管类型：
+仓库托管类型：
 
   1. GitHub
      使用 gh CLI 创建 PR
@@ -146,14 +146,14 @@ model: claude-haiku-4-5-20251001
 **选择 Gitea 时追加配置：**
 
 ```
-🔗 Gitea 实例地址（如 https://git.example.com）：
+Gitea 实例地址（如 https://git.example.com）：
 ```
 
 自动从 git remote URL 解析 owner/repo（SSH/HTTPS 均支持）。
 
 **Gitea Token 说明：**
 ```
-🔑 Gitea API Token：
+Gitea API Token：
    token 存入 .claude/settings.local.json 的顶层 giteaToken 字段（不提交 git）
    生成方式：Gitea → 设置 → 应用 → 生成令牌（需 repo 权限）
 ```
@@ -161,7 +161,7 @@ model: claude-haiku-4-5-20251001
 #### 5. 配置默认审核人（可选）
 
 ```
-👤 默认审核人（创建 PR 时自动设置，无需每次确认）：
+默认审核人（创建 PR 时自动设置，无需每次确认）：
    多个用逗号分隔，留空则不设置（如：alice,bob）：
 ```
 
@@ -201,17 +201,17 @@ model: claude-haiku-4-5-20251001
 ```
 ✅ 分支策略已配置！
 
-📋 策略：GitHub Flow
-🏠 仓库类型：Gitea（https://git.example.com）
-🌿 主分支：main
-🔀 功能分支：feat/REQ-XXX-slug（从 main 拉）
-🐛 修复分支：fix/QUICK-XXX-slug（从 main 拉）
-🚨 紧急修复：hotfix/xxx（从 main 拉）
-🎯 合并目标：main
-🗑️ 合并后删除分支：是
-👤 默认审核人：@alice, @bob   ← reviewers 非空时输出，空数组不输出此行
+策略：GitHub Flow
+仓库类型：Gitea（https://git.example.com）
+主分支：main
+功能分支：feat/REQ-XXX-slug（从 main 拉）
+修复分支：fix/QUICK-XXX-slug（从 main 拉）
+紧急修复：hotfix/xxx（从 main 拉）
+合并目标：main
+合并后删除分支：是
+默认审核人：@alice, @bob   ← reviewers 非空时输出，空数组不输出此行
 
-💡 后续使用：
+后续使用：
 - /req:dev 创建分支时会自动遵循此策略
 - /req:commit 会检查分支合规性
 - /req:done 会根据仓库类型自动创建 PR 或提示合并命令
@@ -233,13 +233,13 @@ model: claude-haiku-4-5-20251001
 ```
 ⚠️ 未配置分支策略，使用默认行为
 
-💡 建议执行 /req:branch init 配置分支策略
+建议执行 /req:branch init 配置分支策略
 ```
 
 #### 2. 展示策略信息
 
 ```
-📋 分支策略：GitHub Flow
+分支策略：GitHub Flow
 
 | 配置项 | 值 |
 |-------|-----|
@@ -259,7 +259,7 @@ model: claude-haiku-4-5-20251001
 
 获取当前分支名并展示：
 ```
-🌿 当前分支：feat/REQ-001-user-points
+当前分支：feat/REQ-001-user-points
 ```
 
 #### 4. 展示活跃需求的分支信息
@@ -267,7 +267,7 @@ model: claude-haiku-4-5-20251001
 扫描活跃需求文档，提取 branch 字段：
 
 ```
-📊 需求分支状态：
+需求分支状态：
 
 | 需求 | 分支 | 状态 | 是否当前 |
 |------|------|------|---------|
@@ -280,8 +280,8 @@ model: claude-haiku-4-5-20251001
 
 ```
 ✅ 分支健康检查：
-- 当前在需求分支，关联 REQ-001 ✓
-- 需求分支与主分支无冲突 ✓
+- 当前在需求分支，关联 REQ-001 
+- 需求分支与主分支无冲突 
 ```
 
 或：
@@ -324,13 +324,13 @@ hotfix/<slug>
 fetch 并基于 `branchStrategy.mainBranch`（默认 main）创建 `hotfix/<slug>` 分支。
 
 ```
-🚨 紧急修复分支已创建
+紧急修复分支已创建
 
-🌿 分支：hotfix/fix-order-total-calc
-📌 基于：main (最新)
-🎯 完成后合并到：main
+分支：hotfix/fix-order-total-calc
+基于：main (最新)
+完成后合并到：main
 
-💡 后续步骤：
+后续步骤：
 1. 修复问题
 2. /req:commit 修复订单金额计算错误
 3. 合并到 main：git checkout main && git merge hotfix/fix-order-total-calc
@@ -342,7 +342,7 @@ fetch 并基于 `branchStrategy.mainBranch`（默认 main）创建 `hotfix/<slug
 如果使用 Git Flow 策略，hotfix 完成后需要合并到**两个分支**：
 
 ```
-🎯 完成后需合并到：
+完成后需合并到：
 1. main（生产环境）
 2. develop（开发分支同步）
 

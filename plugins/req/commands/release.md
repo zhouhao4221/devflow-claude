@@ -92,7 +92,7 @@ model: claude-haiku-4-5-20251001
 逐条执行检查命令，打印每条结果（✅ 通过 / ❌ 失败）。**任意一条失败则硬停止**，不进入后续步骤。
 
 ```
-🔍 发版前检查：
+发版前检查：
   ✅ npm test
   ❌ npm run build（exit 1）
 
@@ -232,7 +232,7 @@ Release notes 取 `docs/changelogs/<version>.md`。**`target_commitish` 固定�
 
 - 标题：`chore(release): backmerge <version> → <develop_branch>`
 - Body：说明回流目的（使下次 release 不重复产物）+ tag 已落在 `<main_branch>`
-- 等待用户确认（**非阻塞**，可跳过）；跳过时最终报告标记 ⏸️
+- 等待用户确认（**非阻塞**，可跳过）；跳过时最终报告标记 
 
 ### 步骤 15：清理 release 分支（仅 release-branch）
 
@@ -243,34 +243,34 @@ PR2 merged → 删除本地和远程 release 分支（remote ref 不存在视为
 **16a 正式 Release（`--no-draft`）**：
 ```
 ✅ 版本 <version> 已颁布！
-📋 需求清单 / 📄 SQL 脚本 / 📝 版本说明
-🏷️ <若 --tag：✅ annotated tag 已推送 | 否则：— 无本地 tag（平台自动生成 lightweight tag）>
-🚀 <Release URL>
-💡 检查回滚 SQL：cat $MIGRATIONS_DIR/released/<version>.rollback.sql
+需求清单 / SQL 脚本 / 版本说明
+<若 --tag：✅ annotated tag 已推送 | 否则：— 无本地 tag（平台自动生成 lightweight tag）>
+<Release URL>
+检查回滚 SQL：cat $MIGRATIONS_DIR/released/<version>.rollback.sql
 ```
 
 **16b draft Release（默认）**：
 ```
 ⚠️ DRAFT：<version> 草稿已创建，需手工 Publish
-📋/📄/📝 同上
-🏷️ <若 --tag：gitea: ✅ annotated tag 已推 | github: ⚠️ publish 时生成 | 否则：— 无本地 tag>
-🚀 <Draft Release URL>（仅作者/管理员可见）
+//同上
+<若 --tag：gitea: ✅ annotated tag 已推 | github: ⚠️ publish 时生成 | 否则：— 无本地 tag>
+<Draft Release URL>（仅作者/管理员可见）
 ⚠️ 未 publish 前：CI/CD 不触发，release 不可见
-💡 放弃：gitea 需删 draft（若有 tag 一并删）；github 只删 draft
+放弃：gitea 需删 draft（若有 tag 一并删）；github 只删 draft
 ```
 
 **16c 跳过 Release（`--no-release`）**：
 ```
 ✅ 版本 <version> 产物已就绪！
-📋/📄/📝 同上
-🏷️ <若 --tag：✅ tag 已推送 | 否则：— 无 tag>
-🚀 — 已跳过（--no-release）
-🔀 PR: <PR URL>（等待合并到 <main_branch>）
+//同上
+<若 --tag：✅ tag 已推送 | 否则：— 无 tag>
+— 已跳过（--no-release）
+PR: <PR URL>（等待合并到 <main_branch>）
 ```
 
 **发版后步骤**（`POST_RELEASE_NOTES` 非空，且非 draft 模式时追加）：
 ```
-📌 发版后待办：
+发版后待办：
   <POST_RELEASE_NOTES 内容逐条列出>
 ```
 

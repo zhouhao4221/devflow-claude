@@ -56,7 +56,7 @@ model: claude-haiku-4-5-20251001
 ### 6. 输出确认
 
 ```
-🎉 REQ-XXX <标题> 已完成
+REQ-XXX <标题> 已完成
    归档至 docs/requirements/completed/REQ-XXX-<slug>.md
 ```
 
@@ -77,7 +77,7 @@ model: claude-haiku-4-5-20251001
 否则询问用户：
 
 ```
-🔗 检测到关联 issue: #123
+检测到关联 issue: #123
    是否关闭该 issue？(y/n)
 ```
 

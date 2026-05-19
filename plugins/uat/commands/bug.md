@@ -45,7 +45,7 @@ model: claude-haiku-4-5-20251001
 ### 3. 展示候选列表并询问
 
 ```
-📋 发现 3 个需上报场景：
+发现 3 个需上报场景：
 
 ❌ 失败（2 个）：
   1. S02 密码错误提示
@@ -69,7 +69,7 @@ model: claude-haiku-4-5-20251001
 - `giteaUrl` 和 `giteaToken` 非空，否则提示：
   ```
   ❌ 未配置 giteaUrl / giteaToken
-  💡 在 settings.local.json 中配置后重试
+  在 settings.local.json 中配置后重试
   ```
 
 **CLI 优先**（与 req 插件保持一致）：
@@ -147,8 +147,8 @@ curl -s -X POST "$GITEA_URL/api/v1/repos/$OWNER/$REPO/issues/$ISSUE_NUM/assets" 
 ```
 ✅ 已创建 2 个 issue：
 
-  #42 [UAT] 用户登录 - S02 密码错误提示   🖼 截图已上传
+  #42 [UAT] 用户登录 - S02 密码错误提示   截图已上传
   #43 [UAT] 用户登录 - S05 退出登录后跳转  ⚠ 无截图
 
-💡 /uat:run   修复后重新验证
+/uat:run   修复后重新验证
 ```

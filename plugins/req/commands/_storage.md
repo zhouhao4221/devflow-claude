@@ -66,11 +66,11 @@ config = merge(settings.json, settings.local.json)
 
 ```
 本地存储（主）: docs/requirements/
-├── modules/      # 模块文档
-├── specs/        # 规范文档（数据类型、接口契约等，跨仓库共享）
-├── active/       # 进行中需求
-├── completed/    # 已完成需求
-└── INDEX.md      # 索引
+modules/      # 模块文档
+specs/        # 规范文档（数据类型、接口契约等，跨仓库共享）
+active/       # 进行中需求
+completed/    # 已完成需求
+INDEX.md      # 索引
 
 全局缓存（副）: ~/.claude-requirements/projects/<project>/
 ```

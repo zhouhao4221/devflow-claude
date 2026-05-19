@@ -147,7 +147,7 @@ CLAUDE.md 中已包含架构章节       → 跳过，不覆盖
 生成后展示内容，请用户确认：
 
 ```
-📋 已扫描项目结构，生成架构文件草稿：
+已扫描项目结构，生成架构文件草稿：
 
    技术栈：Go 1.22 · Gin · GORM · MySQL
    分层：Model → Store → Biz → Controller → Router
@@ -254,7 +254,7 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 展示草稿并请用户确认：
 
 ```
-📋 已扫描项目，生成 release.md 草稿：
+已扫描项目，生成 release.md 草稿：
 
    版本号文件：package.json → version
    发版前检查：npm test, npm run build
@@ -282,7 +282,7 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 **后端项目（Go / Java / 其他服务端）**：
 
 ```
-💡 后端项目通常需要声明 migration SQL 目录路径：
+后端项目通常需要声明 migration SQL 目录路径：
 
    .claude/skills/migration.md
    /req:dev 生成数据库变更 SQL 时会自动读取
@@ -345,31 +345,31 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 ```
 ✅ 项目 "<project-name>" 初始化成功！
 
-📁 本地存储（主存储，纳入 git）:
+本地存储（主存储，纳入 git）:
    docs/requirements/
-   ├── active/         # 进行中的需求
-   ├── completed/      # 已完成的需求
-   ├── modules/        # 模块文档
-   │   └── quick-fix.md  # 快速修复模块（预置）
-   ├── templates/      # 模板文件
-   │   ├── requirement-template.md  # 需求模板
-   │   ├── quick-template.md        # 快速修复模板
-   │   └── prd-template.md          # PRD 模板
-   └── PRD.md          # 产品需求文档
+   active/         # 进行中的需求
+   completed/      # 已完成的需求
+   modules/        # 模块文档
+     quick-fix.md  # 快速修复模块（预置）
+   templates/      # 模板文件
+     requirement-template.md  # 需求模板
+     quick-template.md        # 快速修复模板
+     prd-template.md          # PRD 模板
+   PRD.md          # 产品需求文档
 
-🔄 全局缓存（同步副本，跨仓库共享）:
+全局缓存（同步副本，跨仓库共享）:
    ~/.claude-requirements/projects/<project-name>/
 
-🔗 当前仓库已绑定到此项目
+当前仓库已绑定到此项目
 
-📋 已生成 PRD 文档: docs/requirements/PRD.md
+已生成 PRD 文档: docs/requirements/PRD.md
    请填写以下关键内容:
    - 产品愿景和目标用户
    - 核心功能列表（P0/P1/P2 优先级）
    - 技术架构选型
    - 版本规划和里程碑
 
-💡 下一步:
+下一步:
    1. 检查 docs/prompt/architecture.md 内容是否准确
    2. 补充 docs/prompt/release.md 中「发版后步骤」章节（通知渠道、部署触发等）
    3. 确认 .claude/skills/migration.md 中的路径是否正确（如已创建）
@@ -383,44 +383,44 @@ CLAUDE.md 不包含架构内容本身，只持有指针。
 ```
 ✅ 项目 "<project-name>" 重新初始化完成！
 
-📁 检查并补充缺失内容:
-   ✓ docs/requirements/active/      目录已存在
-   ✓ docs/requirements/completed/   目录已存在
-   ✓ docs/requirements/modules/     目录已存在
+检查并补充缺失内容:
+   docs/requirements/active/      目录已存在
+   docs/requirements/completed/   目录已存在
+   docs/requirements/modules/     目录已存在
    + docs/requirements/templates/   模板目录
    + docs/requirements/templates/requirement-template.md  已复制
    + docs/requirements/templates/quick-template.md        已复制
    + docs/requirements/templates/prd-template.md          已复制
    + docs/requirements/modules/quick-fix.md  已生成（新增）
    + docs/requirements/PRD.md       已生成（新增）
-   ✓ docs/prompt/architecture.md    已存在（或缺失时触发扫描+生成，见步骤 8）
-   ✓ docs/prompt/ 通用 Prompt 文件  已检查（7 个骨架 + prompt-craft.md，缺失时补创建）
-   ✓ docs/prompt/release.md         已存在（或缺失时扫描项目引导生成，见步骤 8.7）
-   ✓ .claude/skills/                已检查（如为空可按引导创建 Skill 文件）
+   docs/prompt/architecture.md    已存在（或缺失时触发扫描+生成，见步骤 8）
+   docs/prompt/ 通用 Prompt 文件  已检查（7 个骨架 + prompt-craft.md，缺失时补创建）
+   docs/prompt/release.md         已存在（或缺失时扫描项目引导生成，见步骤 8.7）
+   .claude/skills/                已检查（如为空可按引导创建 Skill 文件）
 
-🔗 当前仓库已绑定到此项目
+当前仓库已绑定到此项目
 
-📋 已生成 PRD 文档: docs/requirements/PRD.md
+已生成 PRD 文档: docs/requirements/PRD.md
    请填写以下关键内容:
    - 产品愿景和目标用户
    - 核心功能列表（P0/P1/P2 优先级）
    - 技术架构选型
    - 版本规划和里程碑
 
-💡 提示: --reinit 模式不会覆盖已有文件，仅补充缺失内容
+提示: --reinit 模式不会覆盖已有文件，仅补充缺失内容
 ```
 
 **项目已存在时**（未使用 `--reinit`）：
 ```
 ⚠️ 项目 "<project-name>" 已存在
 
-📊 项目状态:
+项目状态:
    - 活跃需求: X 个
    - 已完成: Y 个
    - 主仓库: /path/to/primary/repo
    - 关联仓库: Z 个
 
-💡 若要为历史项目补充缺失文件，请使用:
+若要为历史项目补充缺失文件，请使用:
    /req:init <project-name> --reinit
 ```
 
