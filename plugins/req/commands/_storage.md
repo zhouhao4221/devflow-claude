@@ -76,7 +76,7 @@ INDEX.md      # 索引
 ```
 
 **解析规则**：
-1. 读取 `.claude/settings.local.json` 的 `requirementProject` 和 `requirementRole`
+1. 先读 `.claude/settings.json` 的 `requirementProject` 和 `requirementRole`，再用 `.claude/settings.local.json` 中同名字段覆盖
 2. 有值 → 使用全局缓存路径
 3. 无值 → 使用本地 `docs/requirements/`
 
