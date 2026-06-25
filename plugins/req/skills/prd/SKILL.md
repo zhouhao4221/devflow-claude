@@ -346,6 +346,72 @@ INDEX.md      # 索引
 | branch | 开发分支名（/req:dev 首次进入时生成） |
 | issue | 关联的 Git 平台 issue 编号（如 `#123`），无关联为 `-`。`/req:new --from-issue` 自动填充，`/req:done` 读取后可选关闭 |
 
+## 附录：_branch.md
+
+# 公共逻辑参考 - 分支策略
+
+> 此文档定义分支策略配置（`branchStrategy`）的结构、预设和读取规则。
+>
+> 同伴文档：`_storage.md`（见附录：_storage.md）、`_issue.md`（见附录：_issue.md）、`_template.md`（见附录：_template.md）、`_granularity.md`（见附录：_granularity.md）、`_claude-md.md`（见附录：_claude-md.md）。
+
+## 分支策略配置
+
+分支策略存储在 `.claude/settings.json` 的 `branchStrategy` 字段中，通过 `/req:branch init` 初始化。`giteaToken` 敏感字段单独存入 `.claude/settings.local.json`（不纳入 git）。
+
+### 配置结构
+
+`settings.json`（团队共享，纳入 git）：
+```jsonc
+{
+  "branchStrategy": {
+    "model": "github-flow",       // github-flow | git-flow | trunk-based
+    "repoType": "github",         // github | gitea | other（仓库托管类型）
+    "giteaUrl": null,             // Gitea 实例地址（repoType=gitea 时必填，如 https://git.example.com）
+    "mainBranch": "main",         // 生产分支
+    "developBranch": null,        // git-flow 模式下的开发分支
+    "featurePrefix": "feat/",     // REQ-XXX 分支前缀
+    "fixPrefix": "fix/",          // QUICK-XXX 分支前缀
+    "hotfixPrefix": "hotfix/",    // 紧急修复前缀
+    "branchFrom": "main",         // 功能/修复分支的拉取基准
+    "mergeTarget": "main",        // 默认合并目标
+    "mergeMethod": "merge",       // 合并方式：merge | squash | rebase
+    "deleteBranchAfterMerge": true
+  }
+}
+```
+
+`settings.local.json`（本地私有，禁止提交）：
+```jsonc
+{
+  "giteaToken": null             // Gitea API Token（tea 未配置时的 curl 回退凭据）
+}
+```
+
+### 三种策略预设
+
+| 配置项 | GitHub Flow | Git Flow | Trunk-Based |
+|--------|------------|----------|-------------|
+| branchFrom | main | develop | main |
+| mergeTarget | main | develop | main |
+| developBranch | null | develop | null |
+| hotfix 合并目标 | main | main + develop | main |
+
+### 读取规则
+
+1. 先读 `.claude/settings.json` 的 `branchStrategy`，再用 `.claude/settings.local.json` 中同名字段覆盖（`giteaToken` 以 local 为准）
+2. **有配置** → 使用配置值
+3. **无配置** → 使用默认行为（`feat/`、`fix/` 前缀，自动检测主分支）
+
+### 各命令的策略消费
+
+| 命令 | 读取的配置 | 用途 |
+|------|-----------|------|
+| `/req:dev` | `branchFrom`、`featurePrefix`、`fixPrefix` | 创建分支时的基准和前缀 |
+| `/req:commit` | `mainBranch`、`developBranch` | 检查当前分支是否合规 |
+| `/req:done` | `mergeTarget`、`deleteBranchAfterMerge`、`repoType`、`giteaUrl` | 合并提醒、PR 创建（Gitea）|
+| `/req:branch hotfix` | `mainBranch`、`hotfixPrefix` | 从主分支创建紧急修复 |
+| `/req:branch status` | `repoType` | 显示仓库托管类型 |
+
 ## 附录：_issue.md
 
 # 公共逻辑参考 - Issue 关联
@@ -454,159 +520,6 @@ Git 平台（GitHub / Gitea）会自动将该 commit 关联到 issue，并在合
 | `/req:do --from-issue` | 分支名 `-iN` | `/req:do` 完成时询问 + API 关闭 | 任务完成时 |
 | `/req:fix --from-issue` | 分支名 `-iN` | `/req:fix` 完成时询问 + API 关闭 | 修复完成时 |
 | 以上所有 | commit message `closes #N` | Git 平台自动关闭 | PR 合并时 |
-
-## 附录：_branch.md
-
-# 公共逻辑参考 - 分支策略
-
-> 此文档定义分支策略配置（`branchStrategy`）的结构、预设和读取规则。
->
-> 同伴文档：`_storage.md`（见附录：_storage.md）、`_issue.md`（见附录：_issue.md）、`_template.md`（见附录：_template.md）、`_granularity.md`（见附录：_granularity.md）、`_claude-md.md`（见附录：_claude-md.md）。
-
-## 分支策略配置
-
-分支策略存储在 `.claude/settings.json` 的 `branchStrategy` 字段中，通过 `/req:branch init` 初始化。`giteaToken` 敏感字段单独存入 `.claude/settings.local.json`（不纳入 git）。
-
-### 配置结构
-
-`settings.json`（团队共享，纳入 git）：
-```jsonc
-{
-  "branchStrategy": {
-    "model": "github-flow",       // github-flow | git-flow | trunk-based
-    "repoType": "github",         // github | gitea | other（仓库托管类型）
-    "giteaUrl": null,             // Gitea 实例地址（repoType=gitea 时必填，如 https://git.example.com）
-    "mainBranch": "main",         // 生产分支
-    "developBranch": null,        // git-flow 模式下的开发分支
-    "featurePrefix": "feat/",     // REQ-XXX 分支前缀
-    "fixPrefix": "fix/",          // QUICK-XXX 分支前缀
-    "hotfixPrefix": "hotfix/",    // 紧急修复前缀
-    "branchFrom": "main",         // 功能/修复分支的拉取基准
-    "mergeTarget": "main",        // 默认合并目标
-    "mergeMethod": "merge",       // 合并方式：merge | squash | rebase
-    "deleteBranchAfterMerge": true
-  }
-}
-```
-
-`settings.local.json`（本地私有，禁止提交）：
-```jsonc
-{
-  "giteaToken": null             // Gitea API Token（tea 未配置时的 curl 回退凭据）
-}
-```
-
-### 三种策略预设
-
-| 配置项 | GitHub Flow | Git Flow | Trunk-Based |
-|--------|------------|----------|-------------|
-| branchFrom | main | develop | main |
-| mergeTarget | main | develop | main |
-| developBranch | null | develop | null |
-| hotfix 合并目标 | main | main + develop | main |
-
-### 读取规则
-
-1. 先读 `.claude/settings.json` 的 `branchStrategy`，再用 `.claude/settings.local.json` 中同名字段覆盖（`giteaToken` 以 local 为准）
-2. **有配置** → 使用配置值
-3. **无配置** → 使用默认行为（`feat/`、`fix/` 前缀，自动检测主分支）
-
-### 各命令的策略消费
-
-| 命令 | 读取的配置 | 用途 |
-|------|-----------|------|
-| `/req:dev` | `branchFrom`、`featurePrefix`、`fixPrefix` | 创建分支时的基准和前缀 |
-| `/req:commit` | `mainBranch`、`developBranch` | 检查当前分支是否合规 |
-| `/req:done` | `mergeTarget`、`deleteBranchAfterMerge`、`repoType`、`giteaUrl` | 合并提醒、PR 创建（Gitea）|
-| `/req:branch hotfix` | `mainBranch`、`hotfixPrefix` | 从主分支创建紧急修复 |
-| `/req:branch status` | `repoType` | 显示仓库托管类型 |
-
-## 附录：_granularity.md
-
-# 公共逻辑参考 - 需求粒度
-
-> 此文档定义需求粒度规则、REQ 与 QUICK 的选择、前后端拆分规则。
->
-> 同伴文档：`_storage.md`（见附录：_storage.md）、`_branch.md`（见附录：_branch.md）、`_issue.md`（见附录：_issue.md）、`_template.md`（见附录：_template.md）、`_claude-md.md`（见附录：_claude-md.md）。
-
-## 需求粒度规则
-
-### 基本原则
-
-一个 REQ **对应一个可独立交付的业务功能**，不按技术层拆分，不按开发步骤拆分。
-
-判断标准：**这个需求完成后，用户能感知到一个完整的功能变化吗？** 如果能，粒度合适；如果不能，说明拆得太细。
-
-### 粒度参考
-
-| 粒度 | 是否合适 | 说明 |
-|------|---------|------|
-| 「用户积分系统」含积分规则+积分查询+积分兑换+积分排行 | 太大 | 拆为多个 REQ |
-| 「用户积分-积分规则管理」含 CRUD + 规则校验 | 合适 | 一个完整功能 |
-| 「用户积分-积分规则-新增接口」仅一个 API | 太小 | 合并到功能级 REQ |
-| 「用户积分-新增 model 层」按技术层拆分 | 错误 | 按功能拆，不按层拆 |
-
-### 拆分建议
-
-**应该拆分的情况：**
-- 功能可独立上线、独立使用（如：积分规则管理 vs 积分兑换）
-- 不同功能由不同人负责
-- 功能之间无强时序依赖（可并行开发）
-- 单个需求涉及文件超过 15 个
-
-**不应该拆分的情况：**
-- CRUD 属于同一业务实体（增删改查放一个 REQ）
-- 功能之间强耦合，必须同时上线
-- 拆开后单个 REQ 无法独立验证
-
-### 已有需求的功能扩展
-
-当 REQ 已存在，需要新增功能点时，按以下规则判断是修改原 REQ 还是新建：
-
-**核心问题：去掉这个功能点，原需求还能独立交付吗？**
-- **能** → 新建 REQ，通过关联字段链接
-- **不能** → 修改原 REQ（`/req:edit`），在功能清单中补充
-
-| 场景 | 建议 | 原因 |
-|------|------|------|
-| 新功能是原需求的自然延伸，缺少则不完整 | 修改原 REQ | 属于同一个可交付单元 |
-| 新功能可独立上线，不依赖原 REQ | 新建 REQ | 独立交付，独立测试 |
-| 原 REQ 已 `已完成` | 必须新建 REQ | 已归档需求不应回退状态 |
-| 原 REQ 在 `开发中`/`测试中`，新功能会影响已写代码 | 新建 REQ | 避免范围蔓延，保持进度可控 |
-
-**修改原 REQ 时**：使用 `/req:edit`，在变更记录章节说明新增内容。
-**新建 REQ 时**：使用 `/req:new`，在关联信息中填写原 REQ 编号。
-
-### 前后端拆分
-
-前后端按类型字段区分，不按 REQ 编号拆分同一端的功能：
-
-```
-正确：
-  REQ-001 用户积分规则管理-后端    （含 CRUD 全部接口）
-  REQ-002 用户积分规则管理-前端    （含 CRUD 全部页面）
-
-错误：
-  REQ-001 用户积分规则-新增接口
-  REQ-002 用户积分规则-查询接口
-  REQ-003 用户积分规则-修改接口
-```
-
-### REQ 与 QUICK 的选择
-
-| 场景 | 使用 | 理由 |
-|------|------|------|
-| 新业务功能（CRUD、新页面） | REQ | 需完整设计和评审 |
-| 已有功能的小调整（加字段、改逻辑） | QUICK | 改动范围小、风险低 |
-| Bug 修复 | QUICK | 除非修复涉及重构 |
-| 重构/优化（不改变功能） | QUICK 或 REQ | 按改动范围判断，超过 5 个文件用 REQ |
-
-### 创建时的 AI 辅助判断
-
-`/req:new` 创建需求时，AI 应根据以上规则辅助判断粒度是否合适：
-- 标题过于宽泛（如「XX系统」「XX模块」） → 建议拆分，列出子功能
-- 标题过于具体（如「新增XX接口」「修改XX字段」） → 建议合并或改用 QUICK
-- 不确定时询问用户业务目标，再给出建议
 
 ## 附录：_template.md
 
@@ -717,6 +630,93 @@ Git 平台（GitHub / Gitea）会自动将该 commit 关联到 issue，并在合
 `scripts/validate-requirement.sh` 在 Write/Edit 后自动验证：
 - REQ-XXX：检查所有章节（元信息、生命周期、一~十）
 - QUICK-XXX：检查简化模板的所有章节（元信息、生命周期、问题描述、实现方案、验证方式、开发记录）
+
+## 附录：_granularity.md
+
+# 公共逻辑参考 - 需求粒度
+
+> 此文档定义需求粒度规则、REQ 与 QUICK 的选择、前后端拆分规则。
+>
+> 同伴文档：`_storage.md`（见附录：_storage.md）、`_branch.md`（见附录：_branch.md）、`_issue.md`（见附录：_issue.md）、`_template.md`（见附录：_template.md）、`_claude-md.md`（见附录：_claude-md.md）。
+
+## 需求粒度规则
+
+### 基本原则
+
+一个 REQ **对应一个可独立交付的业务功能**，不按技术层拆分，不按开发步骤拆分。
+
+判断标准：**这个需求完成后，用户能感知到一个完整的功能变化吗？** 如果能，粒度合适；如果不能，说明拆得太细。
+
+### 粒度参考
+
+| 粒度 | 是否合适 | 说明 |
+|------|---------|------|
+| 「用户积分系统」含积分规则+积分查询+积分兑换+积分排行 | 太大 | 拆为多个 REQ |
+| 「用户积分-积分规则管理」含 CRUD + 规则校验 | 合适 | 一个完整功能 |
+| 「用户积分-积分规则-新增接口」仅一个 API | 太小 | 合并到功能级 REQ |
+| 「用户积分-新增 model 层」按技术层拆分 | 错误 | 按功能拆，不按层拆 |
+
+### 拆分建议
+
+**应该拆分的情况：**
+- 功能可独立上线、独立使用（如：积分规则管理 vs 积分兑换）
+- 不同功能由不同人负责
+- 功能之间无强时序依赖（可并行开发）
+- 单个需求涉及文件超过 15 个
+
+**不应该拆分的情况：**
+- CRUD 属于同一业务实体（增删改查放一个 REQ）
+- 功能之间强耦合，必须同时上线
+- 拆开后单个 REQ 无法独立验证
+
+### 已有需求的功能扩展
+
+当 REQ 已存在，需要新增功能点时，按以下规则判断是修改原 REQ 还是新建：
+
+**核心问题：去掉这个功能点，原需求还能独立交付吗？**
+- **能** → 新建 REQ，通过关联字段链接
+- **不能** → 修改原 REQ（`/req:edit`），在功能清单中补充
+
+| 场景 | 建议 | 原因 |
+|------|------|------|
+| 新功能是原需求的自然延伸，缺少则不完整 | 修改原 REQ | 属于同一个可交付单元 |
+| 新功能可独立上线，不依赖原 REQ | 新建 REQ | 独立交付，独立测试 |
+| 原 REQ 已 `已完成` | 必须新建 REQ | 已归档需求不应回退状态 |
+| 原 REQ 在 `开发中`/`测试中`，新功能会影响已写代码 | 新建 REQ | 避免范围蔓延，保持进度可控 |
+
+**修改原 REQ 时**：使用 `/req:edit`，在变更记录章节说明新增内容。
+**新建 REQ 时**：使用 `/req:new`，在关联信息中填写原 REQ 编号。
+
+### 前后端拆分
+
+前后端按类型字段区分，不按 REQ 编号拆分同一端的功能：
+
+```
+正确：
+  REQ-001 用户积分规则管理-后端    （含 CRUD 全部接口）
+  REQ-002 用户积分规则管理-前端    （含 CRUD 全部页面）
+
+错误：
+  REQ-001 用户积分规则-新增接口
+  REQ-002 用户积分规则-查询接口
+  REQ-003 用户积分规则-修改接口
+```
+
+### REQ 与 QUICK 的选择
+
+| 场景 | 使用 | 理由 |
+|------|------|------|
+| 新业务功能（CRUD、新页面） | REQ | 需完整设计和评审 |
+| 已有功能的小调整（加字段、改逻辑） | QUICK | 改动范围小、风险低 |
+| Bug 修复 | QUICK | 除非修复涉及重构 |
+| 重构/优化（不改变功能） | QUICK 或 REQ | 按改动范围判断，超过 5 个文件用 REQ |
+
+### 创建时的 AI 辅助判断
+
+`/req:new` 创建需求时，AI 应根据以上规则辅助判断粒度是否合适：
+- 标题过于宽泛（如「XX系统」「XX模块」） → 建议拆分，列出子功能
+- 标题过于具体（如「新增XX接口」「修改XX字段」） → 建议合并或改用 QUICK
+- 不确定时询问用户业务目标，再给出建议
 
 ## 附录：_claude-md.md
 
