@@ -1,7 +1,6 @@
 ---
 name: release-rationale
-description: |
-  release-rationale
+description: 
 ---
 
 # /req:release 设计原理与边界情况

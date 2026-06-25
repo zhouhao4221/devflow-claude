@@ -13,6 +13,7 @@ model: claude-haiku-4-5-20251001
 > readonly 仓库可用。不触发缓存同步。
 > CLI 优先：GitHub → `gh`；Gitea → 检测 `tea`，不支持的接口回退 curl。详见 [`_gitea_cli.md`](./_gitea_cli.md)。
 > 设计原理和边界情况详见 [`release-rationale.md`](./release-rationale.md)。
+> **发布前置（REQ-003）**：先运行 `python3 scripts/gen-skills.py --check` 校验 skill 与 command 一致；若报漂移，运行 `python3 scripts/gen-skills.py` 重新派生并纳入本次发布。skill 由 command 单源派生，禁止手改。
 
 ## 参数
 
