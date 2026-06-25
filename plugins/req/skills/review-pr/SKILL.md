@@ -1,25 +1,21 @@
 ---
 name: review-pr
-description: |
-  PR 审查与合并 - AI 代码审查、提交评论、合并 PR
+description: PR 审查与合并 - AI 代码审查、提交评论、合并 PR
 ---
 
 # PR 审查与合并
 
-对已创建的 PR 进行 AI 代码审查，可将审查意见提交到平台（Gitea/GitHub），审查通过后合并 PR。
+对已创建的 PR 进行 AI 代码审查，可将审查意见提交到平台，审查通过后合并 PR。
 
-> 此命令**不受仓库角色限制**，readonly 仓库也可执行。
-> 不触发缓存同步。
+> 不受仓库角色限制，readonly 可执行。不触发缓存同步。
 >
-> **CLI 优先级**：GitHub 走 `gh pr` / `gh api`；Gitea 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`：**列表/查看/合并** 走 `tea pulls ls|<N>|merge`，**评论** 走 `tea comment <PR-N>`；但 **PR diff、行内 review 评论、reviews 详情**等 tea 未覆盖的接口仍走本文中的 curl 示例。
+> CLI 优先级：GitHub → `gh pr`/`gh api`；Gitea → 按 `_gitea_cli.md`（见附录：_gitea_cli.md） 检测 `tea`。tea 未覆盖的接口走 curl。
 
 ## 命令格式
 
 ```
 /req:review-pr [子命令] [REQ-XXX]
 ```
-
-## 子命令
 
 | 子命令 | 说明 | 示例 |
 |--------|------|------|
@@ -28,672 +24,815 @@ description: |
 | `fetch-comments` | 拉取 PR 评论，AI 生成修改清单并应用 | `/req:review-pr fetch-comments` |
 | `merge` | 合并 PR | `/req:review-pr merge` |
 
-- 省略编号时从当前分支自动匹配需求
-- 未指定子命令时展示 PR 状态概览
+省略编号时从当前分支自动匹配需求。未指定子命令时展示 PR 状态概览。
 
 ---
 
 ## 前置条件
 
-本命令依赖 `/req:pr` 已创建的 PR。如果需求没有关联的 PR：
-
-```
-❌ 未找到关联的 PR
-
-请先创建 PR：/req:pr [REQ-XXX]
-```
+依赖 `/req:pr` 已创建 PR。未找到关联 PR 时提示先创建。
 
 ---
 
-## 执行流程（查看状态）
+## 查看状态
 
-### 1. 识别需求和 PR
-
-**指定编号** → 读取该需求文档
-**未指定** → 从当前分支名匹配需求编号（`REQ-\d+` 或 `QUICK-\d+`）
-
-### 2. 查询 PR 信息
-
-根据 `repoType` 查询 PR：从需求文档 `branch` 字段取分支名，按平台 API 查询关联的 open PR（Gitea 需指定 `head=OWNER:branch`）。
-
-### 3. 展示状态
-
-```
-PR 状态：REQ-001 用户积分规则管理
-
-  PR #42: feat(REQ-001): 用户积分规则管理
-  状态：Open
-  合并方向：feat/REQ-001-user-points → develop
-  可合并：✅ 无冲突 / ❌ 有冲突
-  审查：未审查 / ✅ 已通过 / ❌ 需修改
-
-可用操作：
-- /req:review-pr review   AI 代码审查
-- /req:review-pr merge    合并 PR
-```
+根据 `repoType` 查询 PR（从需求文档 `branch` 字段取分支名，Gitea 需指定 `head=OWNER:branch`）。展示：PR 编号、标题、状态、合并方向、是否可合并、审查状态、可用操作。
 
 ---
 
-## 执行流程（review - AI 代码审查）
+## review — AI 代码审查
 
 ### 1. 获取 PR diff
 
-按平台获取 PR diff（Gitea：`GET /pulls/{N}.diff`；GitHub：`gh pr diff`）。
+按平台获取：Gitea `GET /pulls/{N}.diff`，GitHub `gh pr diff`。
 
-### 2. 读取审查规范
+### 2. 读取审查依据
 
-按优先级读取审查依据：
-1. 项目 CLAUDE.md 中的**开发规范**章节（错误处理、日志、API 风格等）
-2. 项目 CLAUDE.md 中的**测试规范**章节
-3. 需求文档中的**功能清单**和**业务规则**（验证实现是否匹配需求）
+按优先级：项目 CLAUDE.md 开发规范 → 测试规范 → 需求文档功能清单和业务规则。
 
-### 2.5 对比需求文档与实际实现
+### 3. 对比需求文档与实际实现
 
-读取需求文档并与 diff 实际内容交叉检查，找出**文档与代码不一致**的地方，稍后在报告中以「需求文档同步」章节提醒用户更新。
+检查维度：
 
-**检查维度：**
+| 检查项 | 判断依据 |
+|--------|---------|
+| 状态字段 | 文档状态是否为「开发中/测试中」 |
+| 功能清单 (第二章) | diff 是否覆盖清单每一项 |
+| 接口需求 (第五章) | diff 中路由/DTO 是否在文档中记录 |
+| 数据模型 (11.1) | 表/字段变更是否在文档中描述 |
+| 文件改动清单 (11.3) | diff 实际文件 vs 清单列出文件 |
+| 实现步骤 (11.4) | 清单步骤是否在 diff 中能找到 |
+| 业务规则 (第三章) | 关键规则是否在代码中体现（如校验逻辑） |
+| 关联需求 | 文档「关联」字段引用 |
 
-| 检查项 | 如何判断 | 提醒内容 |
-|--------|---------|---------|
-| 状态字段 | 文档状态是否为「开发中 / 测试中」 | 仍为「待评审/草稿」时提醒先走 `/req:review pass` 再合并 |
-| 功能清单 (第二章) | diff 是否覆盖清单中每一项 | 未覆盖的项列出；diff 多出的新功能也列出 |
-| 接口需求 (第五章) | diff 中新增/修改的路由、DTO 是否在文档中记录 | 缺失的接口列出，建议补充 |
-| 数据模型 (11.1) | diff 中的表/字段变更是否在文档中描述 | 未记录的 Model 变更列出 |
-| 文件改动清单 (11.3) | diff 实际修改的文件 vs 清单列出的文件 | 两侧差异双向列出（实际多了哪些 / 清单多了哪些） |
-| 实现步骤 (11.4) | 清单步骤是否都能在 diff 中找到对应痕迹 | 未落实的步骤列出 |
-| 业务规则 (第三章) | 关键规则是否在代码中体现（如余额校验、权限校验） | 代码里找不到校验痕迹的规则列出 |
-| 关联需求 | 文档「关联」字段引用的其他需求 | 列出便于用户判断是否需同步更新关联方 |
+> primary 读 `docs/requirements/active/`，readonly 读 `~/.claude-requirements/projects/<project>/active/`。未找到需求文档时跳过此步。
 
-**读取路径**：
-- `primary` 仓库：`docs/requirements/active/<REQ-ID>-*.md`
-- `readonly` 仓库：`~/.claude-requirements/projects/<project>/active/<REQ-ID>-*.md`
+### 4. AI 逐文件审查
 
-**未找到需求文档时**（如 `/req:fix`、`/req:do` 创建的无文档分支）跳过本步骤，仅做代码审查。
+审查维度：正确性、安全性、错误处理、命名规范、代码风格、需求匹配、测试覆盖。
 
-### 3. AI 逐文件审查
+### 5. 输出审查报告
 
-对 diff 中每个变更文件进行审查，检查维度：
+问题分三级：**阻塞**（阻止合并）、**建议**（不阻止）、**信息**（知识分享）。
 
-| 维度 | 检查内容 |
-|------|---------|
-| 正确性 | 逻辑是否正确，边界条件是否处理 |
-| 安全性 | SQL 注入、XSS、敏感信息泄露、权限校验 |
-| 错误处理 | 异常是否捕获，错误是否正确返回 |
-| 命名规范 | 变量/函数/文件命名是否符合项目规范 |
-| 代码风格 | 是否符合项目 CLAUDE.md 中的编码规范 |
-| 需求匹配 | 实现是否覆盖需求文档中的功能清单 |
-| 测试覆盖 | 关键逻辑是否有测试，测试是否充分 |
+报告分两部分：代码审查 + 需求文档同步（文档与代码偏差，不阻止合并但建议 `/req:edit` 补齐）。
 
-### 4. 输出审查报告
+### 6. 提交审查评论
 
-问题分三级：
+**零问题直通**：阻塞=0、建议=0、文档同步项=0 时，自动用固定模板提交通过评论，跳过确认。
 
-| 级别 | 含义 | 影响 |
-|------|------|------|
-| 阻塞 | 必须修复才能合并 | 阻止合并 |
-| 建议 | 建议修改但不阻止合并 | 不阻止 |
-| 信息 | 知识分享、风格偏好 | 不阻止 |
+**有任意问题时**：展示精简版预览 → 询问用户是否提交（`--auto` 跳过确认）。
 
-报告结构包含两部分：
-1. **代码审查**：//分级的代码问题
-2. **需求文档同步**：步骤 2.5 中发现的文档与代码偏差（不阻止合并，但建议用户 `/req:edit` 补齐）
+> 精简规则：保留阻塞（全部）、关键建议、文档同步关键缺失；去除信息级备注、风格命名建议、过程信息。控制在 300 字以内。
+>
+> Gitea：PR 评论用 `/issues/{N}/comments`（不是 `/pulls/`）。`repoType = "other"` 仅本地展示。
 
-输出格式：
+### 7. 无阻塞时的后续操作
 
-```
-AI 代码审查报告：PR #42
-
-  审查文件：8 个
-  审查结果：1 个阻塞 | 3 个建议 | 2 个信息
-  需求同步：⚠️ 3 项待更新
+阻塞=0 且 PR 为 Open 时：
+- **有审核人**（PR reviewers 或 `branchStrategy.reviewers`）→ 提示是否提交 Approved（Gitea `POST /pulls/{N}/reviews` body `{"event":"APPROVED"}`，GitHub `gh pr review --approve`）
+- **无审核人** → 仅展示结果，提示可 `/req:review-pr merge`
 
 ---
 
-阻塞问题：
+## fetch-comments — 拉取评论并修改代码
 
-  internal/user/biz/points.go:45
-  问题：积分扣减未检查余额是否充足，可能导致负数
-  建议：添加余额校验 `if user.Points < amount { return ErrInsufficientPoints }`
+### 1. 拉取评论
 
----
+同时拉取 Issue Comments（整体讨论）和 Review Comments（行内评论，含 `path` 和 `line` 字段）。
+Gitea：整体评论 `/issues/{N}/comments`，行内评论先 `GET /pulls/{N}/reviews` 再逐条 `/reviews/{ID}/comments`。
 
-建议：
+### 2. 过滤评论
 
-  internal/user/controller/v1/points.go:23
-  问题：缺少请求参数校验
-  建议：对 amount 字段添加 min=1 校验
+排除：当前 git 用户自己的评论、已 resolved/outdated 的行评论、AI 自提交的审查报告（body 以 `AI 代码审查报告` 开头）。
 
-  internal/user/store/points_store.go:67
-  问题：批量操作未使用事务
-  建议：用 db.Transaction() 包裹
+### 3. 展示 & 分析
 
-  internal/user/model/points_record.go:12
-  问题：CreatedAt 字段缺少 json tag
-  建议：添加 `json:"created_at"`
+分组展示评论清单，逐条读取引用源码位置（±20 行上下文），判断可执行/需讨论，生成修改方案。用户确认后执行。
 
 ---
 
-信息：
+## merge — 合并 PR
 
-  internal/user/biz/points.go:20
-  备注：可以考虑将积分规则抽为配置，方便后续调整
+### 前置检查
 
-  internal/user/router.go:34
-  备注：路由分组命名建议统一为 /api/v1/points（当前为 /api/v1/point）
+PR 存在 → PR 为 Open → 无合并冲突。逐项失败时提示处理方式。
 
----
+### 执行合并
 
-需求文档同步（REQ-001）：
+读取 `branchStrategy.mergeMethod`（默认 `merge`），按平台执行（GitHub `gh pr merge --<mergeMethod>`，Gitea merge method 通过 `Do` 字段传递）。`repoType = "other"` 展示手动合并命令。
 
-  ⚠️ 文件改动清单未同步
-    文档第 11.3 节缺失：
-      + internal/user/store/points_record_store.go
-      + internal/user/model/points_record.go
-    文档第 11.3 节多余（实际未改动）：
-      - internal/user/controller/v1/admin_points.go
+### 合并后
 
-  ⚠️ 接口未记录
-    diff 新增路由 POST /api/v1/points/transfer，文档第五章未记录
-
-  ⚠️ 功能清单覆盖不全
-    文档第二章列出但 diff 中未找到实现：
-      - "积分过期自动清理"
-
-  建议执行：/req:edit REQ-001，补齐以上内容
-
----
-
-总结：有 1 个阻塞问题需修复后才能合并；3 项需求文档待同步
-
-可用操作：
-- 修复后重新提交：/req:commit
-- 修复后重新审查：/req:review-pr review
-- 更新需求文档：/req:edit REQ-001
-- 无阻塞后合并：/req:review-pr merge
-```
-
-### 5. 提交审查评论到平台
-
-**默认先询问用户是否提交**，除非指定 `--auto`。理由：AI 审查结果是会被 reviewer 看到的公开评论，上传前让用户有机会微调或取消。
-
-**5.0 零问题直通（无需询问）**
-
-当同时满足以下条件时，判定为"完全没有问题"，跳过 5.1 的预览和 5.2 的询问，直接用固定模板提交通过评论：
-
-- 阻塞数 = 0
-- 建议数 = 0
-- 需求文档同步项 = 0
-
-信息级备注不影响判定（纯知识分享，不算问题）。
-
-**固定通过评论模板**（上传到 PR 的 Markdown 内容）：
-
-```markdown
-### AI 审查通过 ✅
-
-本次 PR 未发现阻塞问题、改进建议或需求文档同步项，代码符合项目规范，可以合并。
-```
-
-**终端输出**：
-
-```
-✅ AI 审查未发现问题，已自动提交通过评论到 PR #42
-   ${PR_URL}
-```
-
-随后进入步骤 6（无阻塞后续操作）。
-
-有任一 //项时，走下方 5.1/5.2/5.3 的原流程。
-
-**5.1 展示精简版预览**
-
-在询问前，先完整打印将要提交的精简版 Markdown 内容（见下面的"精简规则"和"精简后示例"），让用户看清楚要上传什么：
-
-```
-即将提交到 PR #42 的评审评论（预览）：
-
-
-<精简版 Markdown 内容>
-
-
-是否提交到 PR？(y/n，或输入修改意见)
-```
-
-**5.2 等待确认**
-
-| 用户回复 | 行为 |
-|---------|------|
-| `y` / `yes` / `是` / 回车 | 执行上传 |
-| `n` / `no` / `否` / `取消` | 跳过上传，仅保留本地完整报告 |
-| 自由文本（修改意见） | 按用户意见调整精简版内容后重新预览并询问 |
-
-**5.3 `--auto` 跳过确认**
-
-若用户传入 `--auto`（或通过自然语言触发词），跳过 5.2 的询问，直接上传。预览仍然打印，但不等待用户输入。
-
-`--auto` 触发方式：
-- 显式参数：`/req:review-pr review --auto`
-- 自然语言触发词（由 `natural-language-dispatcher` 识别）：
-  - "自动审查"、"一键审查"、"审查并提交"、"审完直接评论"
-  - "不用确认"、"别问我"、"跑完再说"
-  - 在 Git 平台 URL 场景下："自动审查 owner/repo/pulls/158"
-
-识别到 `--auto` 时，回复须明确说明能力边界：
-
-```
-识别：/req:review-pr review --auto
-
---auto 会自动跳过：
-  上传评论前的确认询问
-  直接把精简版提交到 PR（本地仍保留完整报告）
-
-无法跳过（Claude Code harness 层）：
-  - 首次调用 Bash（curl / gh）的工具权限确认
-
-不会跳过：
-  - AI 对代码的实际分析（审查逻辑本身）
-  - 无阻塞问题时仍会明确结论"未发现明显问题"，不凑字数
-
-开始执行？
-```
-
-用户语气明确（"一切自动"、"完全不用问我"）时省略末尾的"开始执行？"，直接执行。
-
----
-
-**精简规则**
-
-**上传到 PR 的是精简版，完整报告仅在本地终端展示**。PR 评论是给 reviewer 看的，只保留需要被看到的重点，过程性描述、逐文件列表、低优先级信息留在本地即可。
-
-**精简规则：**
-
-| 保留 | 去除 |
-|------|------|
-| 阻塞问题（全部） | 信息级备注 |
-| 建议中与需求/安全/正确性相关的关键项 | 风格、命名等次要建议 |
-| 需求文档同步的关键缺失（接口、数据模型、功能清单覆盖不全） | 文件改动清单的双向差异、关联需求列表 |
-| 一行总结：阻塞数、建议数、文档同步项数 | 「审查文件：X 个」「可用操作」等过程信息 |
-
-- 只有"未发现明显问题"结论时，评论就一两句话，不要凑字数。
-- 评论总长度控制在 **300 字以内**为佳，超过时进一步压缩建议项。
-- 文件路径保留绝对路径和行号，便于 reviewer 跳转。
-
-**精简后示例（上传到 PR 的评论内容）：**
-
-```markdown
-### AI 审查：1 阻塞 / 1 建议 / 2 项文档待同步
-
-**阻塞**
-- `internal/user/biz/points.go:45` 积分扣减未检查余额，可能为负 → 加 `if user.Points < amount` 校验
-
-**关键建议**
-- `internal/user/store/points_store.go:67` 批量操作未使用事务
-
-**需求文档同步（REQ-001）**
-- 新增路由 `POST /api/v1/points/transfer` 未记录（第五章）
-- 文件改动清单（11.3）与实际 diff 不一致
-
-> 完整报告见本地终端输出。
-```
-
-按平台提交评论。**Gitea 注意**：PR 评论使用 `/issues/{N}/comments` 端点（不是 `/pulls/`）。
-
-**repoType = "other"**：仅本地展示，不提交评论，不触发确认询问。
-
-**上传成功**：
-```
-✅ 审查报告已提交到 PR #42（精简版）
-   ${PR_URL}
-   完整报告见上方本地输出
-```
-
-**用户拒绝上传**（仅在交互模式下可能）：
-```
-已跳过上传，完整审查报告保留在本地终端输出
-如需重新上传：/req:review-pr review --auto
-```
-
-### 6. 无阻塞时的后续操作
-
-**触发条件**（同时满足）：
-- 阻塞数 = 0（可以有 /问题）
-- PR 当前为 Open 状态（审核中）
-
-不满足时（有阻塞问题 / PR 已合并或关闭）：跳过本步骤，结束。
-
-**6.0 检查是否有审核人**
-
-```python
-# 来源 1：PR 上已分配的 reviewers（从 PR 详情读取）
-pr_reviewers = [r["login"] for r in pr_info.get("reviewers", [])]
-
-# 来源 2：branchStrategy.reviewers 配置（/req:pr 时自动设置的默认审核人）
-config_reviewers = settings.get("branchStrategy", {}).get("reviewers", [])
-
-has_reviewer = bool(pr_reviewers or config_reviewers)
-```
-
-**有审核人**（`has_reviewer = True`）→ 展示「审核通过」选项（见 6.1）。
-
-**无审核人**（`has_reviewer = False`）→ 跳到 6.2，仅展示合并选项。
-
-**6.1 有审核人时——提示是否提交审核通过状态**
-
-```
-✅ 审查完成，PR #42 无阻塞问题
-
-审核人：@alice, @bob
-
-是否在平台提交「审核通过」状态？
-  [y] 提交审核通过  — 在 GitHub/Gitea 将你的 Review 状态更新为 Approved
-  [n] 暂不处理     — 保留当前审核状态不变
-
-请输入（y/n，回车默认不处理）：
-```
-
-**6.2 无审核人时——仅展示当前结果**
-
-```
-✅ 审查完成，PR #42 无阻塞问题（无分配审核人）
-
-如需合并：/req:review-pr merge
-```
-
-**y — 审核通过**（仅 `has_reviewer = True` 时出现）
-
-按平台提交「Approved」评审。**Gitea**：`POST /pulls/{N}/reviews`，body 为 `{"event": "APPROVED"}`。GitHub：`gh pr review --approve`。
-
-**repoType = "other"**：跳过，告知用户在平台手动操作。
-
-成功后输出：
-```
-✅ PR #42 审核状态已更新为「已通过（Approved）」
-   ${PR_URL}
-   （审核通过 ≠ 合并，PR 仍处于 Open 状态）
-
-如需合并：/req:review-pr merge
-```
-
-失败时输出：
-```
-❌ 审核状态提交失败
-
-可能原因：
-- Token 权限不足（需要 repo 写入权限）
-- 当前用户不在 PR 审核人列表
-- 网络问题
-
-请在平台手动操作：${PR_URL}
-```
-
-**n / 回车 — 暂不处理**（`has_reviewer = True`）
-
-```
-已跳过，PR #42 保持当前状态
-
-后续可执行：
-- /req:review-pr merge    合并 PR
-```
-
----
-
-## 执行流程（fetch-comments - 拉取评论并修改代码）
-
-> 用途：PR 已被人工或 AI 审查并留下评论，开发者用此子命令拉取评论、让 AI 分析并应用修改。
-
-### 1. 识别需求和 PR
-
-与「查看状态」流程相同（支持从当前分支名反查）。
-
-### 2. 拉取 PR 评论
-
-同时拉取两类评论：
-- **Issue Comments（整体讨论评论）**：针对 PR 整体的讨论
-- **Review Comments（行内评论）**：针对 diff 具体行的评论，含 `path` 和 `position`/`line` 字段
-
-按平台拉取。**Gitea 注意**：整体评论用 `/issues/{N}/comments`；行内评论需两级拉取——先 `GET /pulls/{N}/reviews`，再对每条 review 拉 `/reviews/{ID}/comments`。GitHub：`gh api` 直接支持两个独立端点。
-
-**repoType = "other"**：提示不支持，结束。
-
-### 3. 过滤评论
-
-排除以下评论，避免无效循环：
-- 作者为当前 git 用户（`git config user.name` / `git config user.email`）的评论
-- 已 resolved / outdated 状态的行评论（Gitea 字段 `resolved`，GitHub 字段无需过滤，按时间戳排序）
-- AI 自动提交的审查报告（body 以 `AI 代码审查报告` 开头）
-
-可用「上次 fetch-comments 执行时间」作为增量标记（存储在需求文档「开发记录」或 `.claude/settings.local.json` 的 `reviewPrLastFetch` 字段）。**首次执行时拉取全部**。
-
-### 4. 展示评论清单
-
-分组展示，带编号供后续引用：
-
-```
-PR #42 评论（7 条，已过滤 2 条 AI 自提交）
-
-整体讨论：
-
-  [1] @reviewer-a (2026-04-15 10:21)
-      整体逻辑 OK，但 user_points 表建议加软删除字段，方便回滚。
-
-行内评论：
-
-  [2] @reviewer-b (2026-04-15 10:30)
-      internal/user/biz/points.go:45
-      余额检查应该放在事务开头，现在位置会有并发问题。
-
-  [3] @reviewer-b (2026-04-15 10:32)
-      internal/user/controller/v1/points.go:23
-      这里返回 500 不合适，参数错误应该返回 400。
-```
-
-### 5. AI 分析并生成修改清单
-
-对每条评论：
-1. 读取评论引用的源码位置（使用 Read，范围为评论行的 ±20 行上下文）
-2. 判断评论是否**可执行**（改代码）或**需讨论**（需要人判断）
-3. 生成修改方案
-
-输出格式：
-
-```
-修改方案
-
-[1] ✅ 可执行 — 加软删除字段
-   internal/user/model/points_record.go
-   在 PointsRecord 结构体追加 `DeletedAt gorm.DeletedAt` 字段，并在 migration SQL 增补列。
-
-[2] ✅ 可执行 — 调整余额校验位置
-   internal/user/biz/points.go:42-50
-   把余额检查从方法末尾移到事务 `tx.Begin()` 之后、`UPDATE` 之前。
-
-[3] ⚠️ 需确认 — 错误码调整
-   internal/user/controller/v1/points.go:23
-   原代码统一返回 500，建议改为 400。**但项目 CLAUDE.md 约定由中间件统一处理 400 错误**，需确认是手工返回还是调中间件。
-
-是否按以上方案执行？（回复序号跳过某项，如 "跳过 3"；或直接回复 y 全部执行）
-```
-
-### 6. 执行修改
-
-用户确认后：
-1. 按方案修改代码（Edit 工具）
-2. 对跳过项不做改动
-3. 对「需确认」项，等用户进一步说明
-
-### 7. 完成提示
-
-```
-✅ 已应用 2 项修改（跳过 1 项待确认）
-
-修改文件：
-- internal/user/model/points_record.go（+2 -0）
-- internal/user/biz/points.go（+5 -3）
-
-下一步：
-- /req:commit        提交修改（建议在 commit message 中引用 PR #42 review）
-- /req:review-pr review   可选：再次 AI 自审查
-```
-
-提交建议的 commit message 格式：
-```
-review: 处理 PR #42 的审查评论
-
-- 加软删除字段 (reviewer-a)
-- 调整余额校验位置到事务开头 (reviewer-b)
-```
-
----
-
-## 执行流程（merge - 合并 PR）
-
-### 1. 前置检查
-
-依次检查以下条件：
-
-| 检查项 | 失败时行为 |
-|--------|-----------|
-| PR 是否存在 | ❌ 提示先创建 PR |
-| PR 是否 Open 状态 | ❌ 提示 PR 已关闭/已合并 |
-| 是否有合并冲突 | ❌ 提示解决冲突后重试 |
-
-```
-❌ PR #42 存在合并冲突
-
-解决方式：
-  git checkout <branch>
-  git merge <merge_target>
-  # 解决冲突后
-  git add . && git commit
-  git push
-```
-
-### 2. 执行合并
-
-读取 `branchStrategy.mergeMethod` 配置（默认 `merge`）：
-
-| 值 | 说明 | 适用场景 |
-|------|------|---------|
-| `merge` | 保留完整提交历史 | 默认，适合大多数团队 |
-| `squash` | 压缩为一个提交 | 希望主分支历史简洁 |
-| `rebase` | 变基到目标分支 | 追求线性历史 |
-
-按平台合并。**Gitea 注意**：merge method 通过 `Do` 字段传递（不是 `method`），值为 `"merge"` / `"squash"` / `"rebase"`。GitHub：`gh pr merge --<mergeMethod>`。
-
-**repoType = "other"**：
-```
-请手动合并 PR
-
-  合并命令：
-  git checkout <merge_target>
-  git merge <branch>
-  git push
-```
-
-### 3. 合并成功
-
-```
-✅ PR #42 已合并！
-
-  ${PR_URL}
-  feat/REQ-001-user-points → develop
-  合并方式：merge
-
-后续操作：
-- /req:done REQ-001   归档需求
-```
-
-### 4. 分支清理
-
-合并成功后，读取 `branchStrategy.deleteBranchAfterMerge` 配置（默认 `true`）。
-
-**配置为 true 或未配置时**：
-
-```
-是否删除已合并的分支？
-
-  将执行：
-  git checkout <merge_target>
-  git pull
-  git branch -d <branch>
-```
-
-等待用户确认：
-- 确认 → 执行切换、拉取最新、删除本地分支
-- 拒绝 → 保留分支
-
-**配置为 false 时**：不提示，跳过清理。
+输出合并信息，提示 `/req:done` 归档。读取 `branchStrategy.deleteBranchAfterMerge`（默认 `true`），询问是否删除已合并分支。
 
 ---
 
 ## Git Flow 双 PR 场景
 
-当策略为 `git-flow` 且分支是 hotfix 时，可能存在两个 PR（→ main + → develop）。
-
-此时分别展示/审查/合并两个 PR：
-
-```
-Hotfix 关联 2 个 PR：
-
-  1. PR #42: hotfix/fix-order-calc → main     状态：Open
-  2. PR #43: hotfix/fix-order-calc → develop   状态：Open
-
-请选择操作的 PR（或输入 all 全部处理）：
-```
-
-合并时按顺序：先合并 → main，再合并 → develop。
-
----
-
-## 与其他命令的衔接
-
-```
-/req:dev        开发完成后
-    ↓
-/req:commit     提交代码
-    ↓
-/req:pr         创建 PR
-    ↓
-/req:review-pr review          AI 审查代码 + 提交评论
-    ↓
-（他人/AI 留下评论）
-    ↓
-/req:review-pr fetch-comments  拉取评论 + AI 应用修改
-    ↓
-/req:commit                    提交修改
-    ↓
-/req:review-pr merge           合并 PR + 清理分支
-    ↓
-/req:done       归档需求
-```
+hotfix 分支可能存在两个 PR（→ main + → develop），分别展示，按先 main 后 develop 顺序操作。
 
 ---
 
 ## 与 `/req:release` 的关系
 
-**`/req:review-pr merge` 只是完成单个需求的里程碑，不是发版**。具体边界：
-
-1. **migration SQL 在 merge 时不会被归档**
-   合并 PR 后，`docs/migrations/` 下该需求的 SQL 文件仍然保留在原目录，不会被搬到 `released/`。这些 SQL 会等到下一次 `/req:release` 被命令合并到 `docs/migrations/released/<version>.sql`，并 `git rm` 原文件。
-2. **合并到 `developBranch` ≠ 发布**
-   在 git-flow 下，merge 通常是把 feat 分支合到 `developBranch`。发版仍需要跑 `/req:release`，由它走 cross-branch 流程打开 develop → main 的 release PR。
-3. **不要为"发版"手工 tag 或手工建 Release**
-   发版的所有动作（合并 SQL、生成回滚、changelog、tag、平台 Release）都应该由 `/req:release` 原子化完成。v3.0.0+ 默认 draft 模式，命令完成后你在 Gitea/GitHub 手工 publish 才真正发版——这是"双闸门"的核心。
-
-**典型发版流水线**：
-
-```
-REQ-1 /req:review-pr merge     ← 单需求合并（不发版）
-REQ-2 /req:review-pr merge     ← 单需求合并（不发版）
-REQ-3 /req:review-pr merge     ← 单需求合并（不发版）
-                ↓
-        /req:release            ← 真正发版，自动推导版本号 + draft
-                ↓
-        在 Gitea/GitHub 点 Publish
-```
+`/req:review-pr merge` 是单需求里程碑，不是发版：
+- migration SQL 在 merge 时不会被归档，等 `/req:release` 统一处理
+- 合并到 developBranch ≠ 发布
+- 不要手工 tag 或建 Release，应由 `/req:release` 原子化完成
 
 ---
 
 ## 用户输入
 
 $ARGUMENTS
+
+---
+
+# 附录（自动内联的共享约定）
+
+> 以下内容由 command 引用的共享子文件自动内联，供不支持 slash 的 Claude 客户端离线阅读。请勿手动编辑本文件——改动应在对应 command 进行。
+
+## 附录：_gitea_cli.md
+
+# 公共逻辑参考 - Gitea CLI 优先
+
+> 此文档定义在 `repoType=gitea` 场景下，何时使用 [`tea`](https://gitea.com/gitea/tea) CLI、何时回退到 `curl + REST API`。GitHub 侧统一使用 `gh`，不在此讨论。
+>
+> 同伴文档：`_issue.md`（见附录：_issue.md）、`_branch.md`（见附录：_branch.md）。
+
+## 总体原则
+
+1. **优先 `tea`**：当本机存在 `tea` 且已为目标 Gitea 实例配置 login 时，凡是 `tea` 能覆盖的操作一律走 `tea`。
+2. **回退 `curl`**：以下任一条件不满足即回退到 `curl + giteaToken`：
+   - `command -v tea` 不存在
+   - `tea login list` 中没有匹配 `branchStrategy.giteaUrl` 的条目
+   - 操作不在 `tea` 覆盖范围（见下方矩阵）
+3. **绝不自动 `tea login add`**：`tea login add` 会把 token 写入 `~/.config/tea/config.yml`，属用户可见的全局副作用，必须由用户主动配置。命令检测到 tea 未登录时，**只回退 curl**，最多在首次提示一次："已检测到 `tea` 但未配置当前 Gitea 实例，可手动 `tea login add --name <name> --url ${giteaUrl} --token <token>` 启用 tea CLI 工作流"。
+
+## 检测脚本
+
+各命令在执行 Gitea 调用前先跑一次：
+
+```bash
+USE_TEA=0
+if command -v tea &>/dev/null; then
+  if tea login list 2>/dev/null | awk 'NR>1 {print $3}' | grep -qx "${GITEA_URL%/}"; then
+    USE_TEA=1
+    # 取匹配的 login name 备用（多 login 场景需要 --login <name>）
+    TEA_LOGIN=$(tea login list 2>/dev/null | awk -v u="${GITEA_URL%/}" 'NR>1 && $3==u {print $2; exit}')
+  fi
+fi
+```
+
+- `tea login list` 输出列：`Name | URL | SSHHost | User`，第 3 列是 URL
+- 多 login 场景务必显式 `--login "${TEA_LOGIN}"`，避免选错实例
+- 检测结果在同一命令会话内复用，不重复探测
+
+## 操作覆盖矩阵
+
+| 操作 | tea 命令 | tea 是否够用 | 不够用时回退原因 |
+|------|---------|------------|----------------|
+| 查看 issue 详情 | `tea issues <N>` | ✅ | — |
+| 列出 issues | `tea issues ls --state ... --labels ...` | ✅ | — |
+| 创建 issue | `tea issues create --title --body --labels --assignees` | ✅ | — |
+| 编辑 issue 标题/正文 | `tea issues edit <N> --title --description` | ⚠️ 部分 | tea 无 `--add-labels` / `--remove-labels`，标签增删仍用 curl |
+| 关闭 / 重开 issue | `tea issues close <N>` / `tea issues reopen <N>` | ✅ | tea 不支持 `--reason`（GitHub 专属），保持原静默降级提示 |
+| 评论 issue | `tea comment <N> <body>` | ✅ | — |
+| 列出 issue 评论 | — | ❌ | tea 无对应子命令，使用 `curl /issues/{n}/comments` |
+| 创建 PR | `tea pulls create --title --description --base --head` | ✅ | — |
+| 列出 PR | `tea pulls ls --state ... --base ...` | ✅ | — |
+| 查看 PR 详情 | `tea pulls <N>` | ✅ | — |
+| 拉取 PR diff | — | ❌ | tea 无 `pulls diff`，用 `curl ${url}/pulls/${N}.diff` |
+| PR 评论（讨论级） | `tea comment <PR-N> <body>` | ✅ | — |
+| PR Review（行内评论 / approve） | — | ❌ | tea 无 reviews API，全部走 curl |
+| 合并 PR | `tea pulls merge <N> --style merge|rebase|squash` | ✅ | — |
+| 创建 Release | `tea releases create --tag --title --note` | ⚠️ 部分 | 上传附件不便（无 `--asset` 一致语义），SQL 资产仍用 curl |
+| 列出 / 查看 Release | `tea releases ls` / `tea releases <tag>` | ✅ | — |
+| 标签 CRUD（仓库级 labels） | `tea labels ls` / `tea labels create` | ⚠️ 部分 | 删除/批量场景用 curl |
+
+> 不在表中的 Gitea 接口（如 `collaborators`、`/user`、PR review threads 等）默认走 curl。
+
+## 命令执行约定
+
+**有 tea 的分支**：
+
+```bash
+# 示例：关闭 issue
+if [[ $USE_TEA -eq 1 ]]; then
+  tea issues close --login "${TEA_LOGIN}" "${N}"
+else
+  curl -s -X PATCH "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/issues/${N}" \
+    -H "Authorization: token ${TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d '{"state":"closed"}'
+fi
+```
+
+**输出解析差异**：
+- `tea` 默认输出人类可读表格，要 JSON 用 `--output json`（部分子命令支持）
+- 解析需求复杂时，依旧用 curl + jq，保持稳定
+- 状态码 / 错误处理：`tea` 失败时 exit code 非 0 + stderr 文字，不要试图按 HTTP code 判断
+
+## 与 `_issue.md` 的关系
+
+`_issue.md` 中所有 `repoType="gitea"` 的 curl 示例都视为 **`USE_TEA=0` 时的回退路径**。命令文件不必在每个 curl 块前重复 `USE_TEA` 判断，但必须在 Gitea 操作总入口处引用本文，让 Claude 在执行时按矩阵选 CLI。
+
+## 不实现的部分
+
+- **不自动 `tea login add`**：理由见上方原则 3
+- **不内置 `tea` 安装**：仅检测，缺失时静默回退到 curl，不打断流程
+- **不为每个 curl 例改写成 if/else 模板**：命令文件是给 Claude 的指令，Claude 按本文矩阵在运行时挑选即可
+
+## 附录：_branch.md
+
+# 公共逻辑参考 - 分支策略
+
+> 此文档定义分支策略配置（`branchStrategy`）的结构、预设和读取规则。
+>
+> 同伴文档：`_storage.md`（见附录：_storage.md）、`_issue.md`（见附录：_issue.md）、`_template.md`（见附录：_template.md）、`_granularity.md`（见附录：_granularity.md）、`_claude-md.md`（见附录：_claude-md.md）。
+
+## 分支策略配置
+
+分支策略存储在 `.claude/settings.json` 的 `branchStrategy` 字段中，通过 `/req:branch init` 初始化。`giteaToken` 敏感字段单独存入 `.claude/settings.local.json`（不纳入 git）。
+
+### 配置结构
+
+`settings.json`（团队共享，纳入 git）：
+```jsonc
+{
+  "branchStrategy": {
+    "model": "github-flow",       // github-flow | git-flow | trunk-based
+    "repoType": "github",         // github | gitea | other（仓库托管类型）
+    "giteaUrl": null,             // Gitea 实例地址（repoType=gitea 时必填，如 https://git.example.com）
+    "mainBranch": "main",         // 生产分支
+    "developBranch": null,        // git-flow 模式下的开发分支
+    "featurePrefix": "feat/",     // REQ-XXX 分支前缀
+    "fixPrefix": "fix/",          // QUICK-XXX 分支前缀
+    "hotfixPrefix": "hotfix/",    // 紧急修复前缀
+    "branchFrom": "main",         // 功能/修复分支的拉取基准
+    "mergeTarget": "main",        // 默认合并目标
+    "mergeMethod": "merge",       // 合并方式：merge | squash | rebase
+    "deleteBranchAfterMerge": true
+  }
+}
+```
+
+`settings.local.json`（本地私有，禁止提交）：
+```jsonc
+{
+  "giteaToken": null             // Gitea API Token（tea 未配置时的 curl 回退凭据）
+}
+```
+
+### 三种策略预设
+
+| 配置项 | GitHub Flow | Git Flow | Trunk-Based |
+|--------|------------|----------|-------------|
+| branchFrom | main | develop | main |
+| mergeTarget | main | develop | main |
+| developBranch | null | develop | null |
+| hotfix 合并目标 | main | main + develop | main |
+
+### 读取规则
+
+1. 先读 `.claude/settings.json` 的 `branchStrategy`，再用 `.claude/settings.local.json` 中同名字段覆盖（`giteaToken` 以 local 为准）
+2. **有配置** → 使用配置值
+3. **无配置** → 使用默认行为（`feat/`、`fix/` 前缀，自动检测主分支）
+
+### 各命令的策略消费
+
+| 命令 | 读取的配置 | 用途 |
+|------|-----------|------|
+| `/req:dev` | `branchFrom`、`featurePrefix`、`fixPrefix` | 创建分支时的基准和前缀 |
+| `/req:commit` | `mainBranch`、`developBranch` | 检查当前分支是否合规 |
+| `/req:done` | `mergeTarget`、`deleteBranchAfterMerge`、`repoType`、`giteaUrl` | 合并提醒、PR 创建（Gitea）|
+| `/req:branch hotfix` | `mainBranch`、`hotfixPrefix` | 从主分支创建紧急修复 |
+| `/req:branch status` | `repoType` | 显示仓库托管类型 |
+
+## 附录：_issue.md
+
+# 公共逻辑参考 - Issue 关联
+
+> 此文档定义 `--from-issue` 拉取规范、OWNER/REPO 解析、Issue 与分支/提交的关联规则、Issue 编号读取优先级、关闭策略。
+>
+> 同伴文档：`_storage.md`（见附录：_storage.md）、`_branch.md`（见附录：_branch.md）、`_template.md`（见附录：_template.md）、`_granularity.md`（见附录：_granularity.md）、`_claude-md.md`（见附录：_claude-md.md）、`_gitea_cli.md`（见附录：_gitea_cli.md）。
+>
+> **CLI 优先级**：所有 Gitea 调用先按 `_gitea_cli.md`（见附录：_gitea_cli.md） 检测 `tea`，可用即走 `tea`；本文中的 `curl` 示例视为 `USE_TEA=0` 时的回退路径。
+
+## Issue 拉取规范
+
+`--from-issue=#N` 参数用于从 Git 平台拉取 issue 信息。各命令统一使用以下逻辑：
+
+### 变量来源
+
+| 变量 | 来源 | 说明 |
+|------|------|------|
+| `GITEA_URL` | `branchStrategy.giteaUrl` | Gitea 实例地址，**必须从配置读取，禁止从 git remote 猜测** |
+| `TOKEN` | `branchStrategy.giteaToken` | Gitea API Token |
+| `OWNER/REPO` | `git remote get-url origin` 解析 | 从 remote URL 提取，支持 SSH 和 HTTPS 格式 |
+| `repoType` | `branchStrategy.repoType` | 决定使用 Gitea API 还是 gh CLI |
+
+### OWNER/REPO 解析
+
+从 `git remote get-url origin` 的结果中提取：
+```
+ssh://git@gitea.example.com:10022/owner/repo.git  →  owner/repo
+git@github.com:owner/repo.git                     →  owner/repo
+https://github.com/owner/repo.git                 →  owner/repo
+```
+
+去掉 `.git` 后缀，取最后两段路径作为 `OWNER/REPO`。
+
+### 拉取逻辑
+
+**repoType = "gitea"**：
+```bash
+# tea 可用 + 已 login（详见 _gitea_cli.md）
+tea issues --login "${TEA_LOGIN}" "${N}" --output json
+
+# 回退：curl
+curl -s "${GITEA_URL}/api/v1/repos/${OWNER}/${REPO}/issues/${N}" \
+  -H "Authorization: token ${TOKEN}"
+```
+- `GITEA_URL` 和 `TOKEN` 未配置时提示：`❌ Gitea 未配置 giteaUrl 或 giteaToken，请先执行 /req:branch init`
+
+**repoType = "github"**：
+```bash
+gh issue view ${N} --json title,body,number,url,labels
+```
+
+**repoType = "other" 或未配置**：
+```
+❌ 未配置支持的 Git 平台（需 repoType=github 或 gitea）
+请先执行 /req:branch init 配置
+```
+
+## Issue 与分支/提交的关联
+
+### Issue 编号在分支名中的传递
+
+当需求或任务来自 `--from-issue=#N`，分支名末尾追加 `-iN` 后缀，使 issue 编号可从分支名推断：
+
+```
+feat/REQ-001-user-points-i12       ← /req:dev，需求文档 issue=#12
+fix/QUICK-003-fix-login-i5         ← /req:dev，快速修复 issue=#5
+fix/optimize-order-query-i42       ← /req:do --from-issue=#42
+fix/login-token-not-cleared-i42    ← /req:fix --from-issue=#42
+feat/REQ-001-user-points           ← 无 issue 关联，不加后缀
+```
+
+**规则**：
+- `-iN` 仅当 issue 编号存在时追加（需求文档 `issue` 字段非 `-`，或 `/req:do`、`/req:fix` 的 `--from-issue` 参数）
+- `N` 为纯数字，不带 `#`
+- 位于分支名最末尾，不影响 REQ-XXX / QUICK-XXX 的提取
+
+### Issue 编号的读取优先级
+
+各命令需要获取当前 issue 编号时，按以下顺序查找：
+
+| 优先级 | 来源 | 适用场景 |
+|-------|------|---------|
+| 1 | 需求文档元信息 `issue` 字段 | `/req:done`、`/req:commit`（有需求文档时） |
+| 2 | 当前分支名的 `-iN` 后缀 | `/req:commit`、`/req:do`、`/req:fix` 完成时（无需求文档时） |
+
+**解析正则**：`-i(\d+)$` 匹配分支名末尾的 issue 编号。
+
+### Issue 在 commit message 中的关联
+
+当检测到 issue 编号时，`/req:commit` 在 commit message 末尾追加 `closes #N`：
+
+```
+优化: 订单查询添加索引 closes #42
+新功能: 实现用户积分规则 (REQ-001) closes #12
+```
+
+Git 平台（GitHub / Gitea）会自动将该 commit 关联到 issue，并在合并时关闭 issue。
+
+### Issue 关闭策略
+
+| 场景 | issue 来源 | 关闭方式 | 关闭时机 |
+|------|-----------|---------|---------|
+| `/req:new --from-issue` | 需求文档 `issue` 字段 | `/req:done` 询问 + API 关闭 | 需求完成时 |
+| `/req:new-quick --from-issue` | 需求文档 `issue` 字段 | `/req:done` 询问 + API 关闭 | 需求完成时 |
+| `/req:do --from-issue` | 分支名 `-iN` | `/req:do` 完成时询问 + API 关闭 | 任务完成时 |
+| `/req:fix --from-issue` | 分支名 `-iN` | `/req:fix` 完成时询问 + API 关闭 | 修复完成时 |
+| 以上所有 | commit message `closes #N` | Git 平台自动关闭 | PR 合并时 |
+
+## 附录：_granularity.md
+
+# 公共逻辑参考 - 需求粒度
+
+> 此文档定义需求粒度规则、REQ 与 QUICK 的选择、前后端拆分规则。
+>
+> 同伴文档：`_storage.md`（见附录：_storage.md）、`_branch.md`（见附录：_branch.md）、`_issue.md`（见附录：_issue.md）、`_template.md`（见附录：_template.md）、`_claude-md.md`（见附录：_claude-md.md）。
+
+## 需求粒度规则
+
+### 基本原则
+
+一个 REQ **对应一个可独立交付的业务功能**，不按技术层拆分，不按开发步骤拆分。
+
+判断标准：**这个需求完成后，用户能感知到一个完整的功能变化吗？** 如果能，粒度合适；如果不能，说明拆得太细。
+
+### 粒度参考
+
+| 粒度 | 是否合适 | 说明 |
+|------|---------|------|
+| 「用户积分系统」含积分规则+积分查询+积分兑换+积分排行 | 太大 | 拆为多个 REQ |
+| 「用户积分-积分规则管理」含 CRUD + 规则校验 | 合适 | 一个完整功能 |
+| 「用户积分-积分规则-新增接口」仅一个 API | 太小 | 合并到功能级 REQ |
+| 「用户积分-新增 model 层」按技术层拆分 | 错误 | 按功能拆，不按层拆 |
+
+### 拆分建议
+
+**应该拆分的情况：**
+- 功能可独立上线、独立使用（如：积分规则管理 vs 积分兑换）
+- 不同功能由不同人负责
+- 功能之间无强时序依赖（可并行开发）
+- 单个需求涉及文件超过 15 个
+
+**不应该拆分的情况：**
+- CRUD 属于同一业务实体（增删改查放一个 REQ）
+- 功能之间强耦合，必须同时上线
+- 拆开后单个 REQ 无法独立验证
+
+### 已有需求的功能扩展
+
+当 REQ 已存在，需要新增功能点时，按以下规则判断是修改原 REQ 还是新建：
+
+**核心问题：去掉这个功能点，原需求还能独立交付吗？**
+- **能** → 新建 REQ，通过关联字段链接
+- **不能** → 修改原 REQ（`/req:edit`），在功能清单中补充
+
+| 场景 | 建议 | 原因 |
+|------|------|------|
+| 新功能是原需求的自然延伸，缺少则不完整 | 修改原 REQ | 属于同一个可交付单元 |
+| 新功能可独立上线，不依赖原 REQ | 新建 REQ | 独立交付，独立测试 |
+| 原 REQ 已 `已完成` | 必须新建 REQ | 已归档需求不应回退状态 |
+| 原 REQ 在 `开发中`/`测试中`，新功能会影响已写代码 | 新建 REQ | 避免范围蔓延，保持进度可控 |
+
+**修改原 REQ 时**：使用 `/req:edit`，在变更记录章节说明新增内容。
+**新建 REQ 时**：使用 `/req:new`，在关联信息中填写原 REQ 编号。
+
+### 前后端拆分
+
+前后端按类型字段区分，不按 REQ 编号拆分同一端的功能：
+
+```
+正确：
+  REQ-001 用户积分规则管理-后端    （含 CRUD 全部接口）
+  REQ-002 用户积分规则管理-前端    （含 CRUD 全部页面）
+
+错误：
+  REQ-001 用户积分规则-新增接口
+  REQ-002 用户积分规则-查询接口
+  REQ-003 用户积分规则-修改接口
+```
+
+### REQ 与 QUICK 的选择
+
+| 场景 | 使用 | 理由 |
+|------|------|------|
+| 新业务功能（CRUD、新页面） | REQ | 需完整设计和评审 |
+| 已有功能的小调整（加字段、改逻辑） | QUICK | 改动范围小、风险低 |
+| Bug 修复 | QUICK | 除非修复涉及重构 |
+| 重构/优化（不改变功能） | QUICK 或 REQ | 按改动范围判断，超过 5 个文件用 REQ |
+
+### 创建时的 AI 辅助判断
+
+`/req:new` 创建需求时，AI 应根据以上规则辅助判断粒度是否合适：
+- 标题过于宽泛（如「XX系统」「XX模块」） → 建议拆分，列出子功能
+- 标题过于具体（如「新增XX接口」「修改XX字段」） → 建议合并或改用 QUICK
+- 不确定时询问用户业务目标，再给出建议
+
+## 附录：_template.md
+
+# 公共逻辑参考 - 模板格式与状态确认
+
+> 此文档定义状态更新确认机制、确认操作规范、状态流转、Memory 隔离规则、模板格式约束等共用规则。
+>
+> 同伴文档：`_storage.md`（见附录：_storage.md）（存储与配置）、`_branch.md`（见附录：_branch.md）、`_issue.md`（见附录：_issue.md）、`_granularity.md`（见附录：_granularity.md）、`_claude-md.md`（见附录：_claude-md.md）。
+
+## 状态更新确认机制
+
+不同命令对状态更新的确认要求：
+
+| 命令 | 状态变更 | 确认机制 |
+|-----|---------|---------|
+| `/req:review pass/reject` | 待评审 → 评审通过/驳回 | 显式参数即为确认 |
+| `/req:dev` | 评审通过 → 开发中 | 首次进入时自动更新 |
+| `/req:test` | 开发中 → 测试中 | 测试完成后自动更新 |
+| `/req:done` | 测试中 → 已完成 | **必须明确确认（y/n）** |
+
+## 确认操作规范
+
+默认**不弹任何原生确认对话框**——命令已通过多轮讨论 / 显式参数 / y/n 完成意图确认，Claude Code 本身也足够稳定，无需再叠加一层打断。用户可按需通过自然语言开启 Bash 侧拦截，**无需手动编辑任何配置文件**。
+
+### 开启/关闭拦截（记忆 + marker 文件）
+
+开关由项目内 `.claude/.req-confirm-commit` 标记文件承载。Claude 根据用户自然语言意图维护该文件并在 memory 中落 feedback：
+
+| 用户说 | Claude 动作 |
+|-------|-------------|
+| "以后 git commit 前帮我确认" / "开启提交确认" / "commit 前弹一下" | `mkdir -p .claude && touch .claude/.req-confirm-commit`，保存/更新 feedback memory 记录偏好 |
+| "不用确认了" / "关闭提交确认" / "别再弹框了" | `rm -f .claude/.req-confirm-commit`，更新 memory |
+
+标记文件已加入 `.gitignore`（每台机器独立）。Claude 在新会话首次感知到偏好与 marker 状态不一致时，可按 memory 中的 feedback 自动补 `touch`，用户无需重复交代。
+
+### Hook 原生确认（仅在 marker 存在时生效）
+
+| 操作 | Hook 脚本 | 触发条件 |
+|------|----------|---------|
+| git commit | confirm-before-commit.sh | Bash 命令包含 git commit |
+| 移动需求文件 | confirm-before-commit.sh | Bash 命令包含 mv ... REQ-/QUICK- |
+| 删除需求文件 | confirm-before-commit.sh | Bash 命令包含 rm ... REQ-/QUICK- |
+
+> `--auto` 模式标记（`.claude/.req-auto`）仍由 `/req:fix --auto` 等流程负责建立/清理；在 marker 启用拦截时它负责让 Hook 放行自动化流水线。
+
+### 执行规则
+
+1. **展示预览后直接执行** — 不输出"回车继续"等文本确认提示
+2. **默认直通** — 任何 Write/Edit/Bash 都不走 Hook 原生对话框
+3. **需要用户输入的场景仍需等待** — 选择章节编号、选择目标需求、描述修改意图等由命令层负责
+4. **`/req:done` 等显式 y/n 场景** — 由命令层提示，不依赖 Hook
+
+## 状态流转
+
+```
+草稿 → 待评审 → ✅ 评审通过 → 开发中 → 测试中 → 已完成
+```
+
+## Memory 隔离规则（强制）
+
+涉及模板的命令和 skill **禁止受 auto-memory 影响**。模板化输出必须完全由模板结构和用户当前输入决定，不得因 memory 中的偏好、历史记录或反馈而改变文档结构、章节内容或格式。
+
+**适用范围**：
+- 命令：`/req:new`、`/req:new-quick`、`/req:edit`、`/req:upgrade`、`/req:prd-edit`
+- skill：`requirement-analyzer`、`prd-analyzer`
+
+**具体禁止行为**：
+1. 不得根据 memory 中的偏好跳过或合并模板章节
+2. 不得根据 memory 中的历史需求自动填充当前需求内容
+3. 不得根据 memory 中的反馈调整模板格式（如章节顺序、表格列数）
+4. 不得读取 `~/.claude/projects/*/memory/` 目录下的文件来辅助文档生成
+
+**允许的行为**：memory 可影响**交互风格**（如提问的详略程度），但不得影响**文档产出物**。
+
+---
+
+## 模板格式约束（强制）
+
+创建和编辑需求文档时，**必须严格遵循模板格式**：
+
+### 模板读取优先级
+
+| 需求类型 | 优先读取 | 回退读取 |
+|---------|---------|---------|
+| REQ-XXX | `docs/requirements/templates/requirement-template.md` | `<plugin-path>/templates/requirement-template.md` |
+| QUICK-XXX | `docs/requirements/templates/quick-template.md` | `<plugin-path>/templates/quick-template.md` |
+| PRD | `docs/requirements/templates/prd-template.md` | `<plugin-path>/templates/prd-template.md` |
+
+**模板不存在时终止**：两个路径都不存在时，**必须终止操作**，提示用户执行 `/req:update-template` 恢复模板。不得在无模板的情况下创建或编辑文档。
+
+### 格式规则
+
+1. **章节结构不可变**：不得新增、删除、合并或重命名模板中的章节
+2. **层级标题不可变**：章节标题、编号（一、二、三...）必须与模板完全一致
+3. **表格格式不可变**：表格的列名、列数必须与模板一致
+4. **保留空章节**：未涉及的章节保留模板占位文本，不得删除
+5. **仅填充内容**：在模板对应章节的占位文本处填充实际内容
+
+### 适用命令
+
+- `/req:new` - 创建时严格按模板生成
+- `/req:new-quick` - 创建时严格按快速模板生成
+- `/req:edit` - 编辑时保持模板结构不变
+- `/req:upgrade` - 转换时按目标模板结构生成
+
+### 验证机制
+
+`scripts/validate-requirement.sh` 在 Write/Edit 后自动验证：
+- REQ-XXX：检查所有章节（元信息、生命周期、一~十）
+- QUICK-XXX：检查简化模板的所有章节（元信息、生命周期、问题描述、实现方案、验证方式、开发记录）
+
+## 附录：_claude-md.md
+
+# 公共逻辑参考 - CLAUDE.md 架构检查
+
+> 此文档定义命令对项目 CLAUDE.md「项目架构」章节的依赖检查规则。
+>
+> 同伴文档：`_storage.md`（见附录：_storage.md）、`_branch.md`（见附录：_branch.md）、`_issue.md`（见附录：_issue.md）、`_template.md`（见附录：_template.md）、`_granularity.md`（见附录：_granularity.md）。
+
+## CLAUDE.md 架构检查
+
+### 为什么需要
+
+插件不硬编码任何项目架构细节（如分层顺序、目录结构、命名规范）。这些信息由项目自己的 CLAUDE.md 提供。dev-guide、test-guide 等 skill 读取 CLAUDE.md 后适配引导。
+
+### 检查时机
+
+以下命令执行前检查 CLAUDE.md 是否包含架构信息：
+
+| 命令 | 依赖的架构信息 | 缺失时影响 |
+|------|--------------|-----------|
+| `/req:dev` | 分层架构、目录结构 | 无法生成准确的实现方案和文件清单 |
+| `/req:test`、`/req:test_new` | 测试规范、测试目录 | 无法定位测试文件和生成测试代码 |
+| `/req:new`（后端/全栈类型） | API 风格 | 无法生成准确的接口需求章节 |
+
+### 检查规则
+
+```python
+claude_md_path = "CLAUDE.md"  # 项目根目录
+architecture_keywords = [
+    "分层架构", "目录结构", "技术栈", "项目架构",
+    "Architecture", "Tech Stack", "Project Structure"
+]
+
+if os.path.exists(claude_md_path):
+    content = read_file(claude_md_path)
+    has_architecture = any(kw in content for kw in architecture_keywords)
+else:
+    has_architecture = False
+```
+
+### 缺失时的提醒（非阻断，仅警告）
+
+```
+⚠️ CLAUDE.md 中未检测到项目架构描述
+
+   /req:dev 需要架构信息来生成实现方案（分层顺序、目录结构、开发规范）
+   /req:test 需要测试规范来定位测试文件和生成测试代码
+
+   添加方式：
+   - /req:init <project> --reinit  交互式生成架构片段
+   - 手动在 CLAUDE.md 中添加「项目架构」章节
+
+   继续执行，但生成的方案可能不够准确。
+```
+
+### 架构片段模板
+
+插件提供预置模板供用户选择（存放在 `templates/claude-md-snippets/`）：
+
+| 模板 | 文件 | 适用场景 |
+|------|------|---------|
+| Go 后端 | `go-backend.md` | Gin + GORM 分层架构 |
+| Java 后端 | `java-backend.md` | Spring Boot 分层架构 |
+| 前端 React | `frontend-react.md` | React/Next.js + TypeScript |
+| 通用 | `generic.md` | 空白模板，手动填写 |
+
+## 附录：_storage.md
+
+# 公共逻辑参考 - 存储与配置
+
+> 此文档定义 settings 文件写入、存储路径、缓存同步、需求编号、元信息等共用规则。
+>
+> 同伴文档：`_branch.md`（见附录：_branch.md）（分支策略）、`_issue.md`（见附录：_issue.md）（Issue 关联）、`_template.md`（见附录：_template.md）（模板与状态确认）、`_granularity.md`（见附录：_granularity.md）（需求粒度）、`_claude-md.md`（见附录：_claude-md.md）（架构检查）。
+
+## settings 文件写入规范
+
+插件配置分两个文件存储，按是否含密钥区分：
+
+| 字段 | 文件 | 纳入 git | 说明 |
+|------|------|----------|------|
+| `requirementProject` | `settings.json` | ✅ | 团队共享配置 |
+| `requirementRole` | `settings.json` | ✅ | 团队共享配置 |
+| `branchStrategy`（不含 token） | `settings.json` | ✅ | 团队共享配置 |
+| `giteaToken` | `settings.local.json` | ❌ | 个人密钥，禁止提交 |
+
+**写入规则（强制）**：
+
+1. **禁止独立配置文件**：禁止创建 `.claude/devflow.json`、`branchStrategy.json` 等独立文件，独立文件不会被 Claude Code 识别
+2. **合并写入**：先读取已有文件内容，合并需要更新的字段后写回，**不得覆盖已有字段**
+3. **目录检查**：`.claude/` 目录不存在时先创建
+4. **读取合并顺序**：命令读配置时先读 `settings.json`，再用 `settings.local.json` 覆盖同名字段（`giteaToken` 以 local 为准）
+5. **无写入权限的回退**：当 Write/Edit 工具被拒绝时，**不得**改写到其他文件，而应直接输出可复制执行的 shell 命令：
+
+   ```bash
+   # 写入 settings.json（团队配置）
+   python3 -c "import json,os; p='.claude/settings.json'; os.makedirs('.claude',exist_ok=True); d=json.load(open(p)) if os.path.exists(p) else {}; d['requirementProject']='my-project'; d['requirementRole']='primary'; json.dump(d,open(p,'w'),indent=2,ensure_ascii=False)"
+   # 写入 settings.local.json（本地密钥）
+   python3 -c "import json,os; p='.claude/settings.local.json'; os.makedirs('.claude',exist_ok=True); d=json.load(open(p)) if os.path.exists(p) else {}; d['giteaToken']='YOUR_TOKEN'; json.dump(d,open(p,'w'),indent=2,ensure_ascii=False)"
+   ```
+
+```python
+# 写入团队配置（settings.json）
+import json, os
+
+path = ".claude/settings.json"
+os.makedirs(".claude", exist_ok=True)
+existing = json.load(open(path)) if os.path.exists(path) else {}
+existing["requirementProject"] = "..."  # 只更新需要的字段
+with open(path, "w") as f:
+    json.dump(existing, f, indent=2, ensure_ascii=False)
+
+# 写入本地密钥（settings.local.json）
+path = ".claude/settings.local.json"
+existing = json.load(open(path)) if os.path.exists(path) else {}
+existing["giteaToken"] = "YOUR_TOKEN"
+with open(path, "w") as f:
+    json.dump(existing, f, indent=2, ensure_ascii=False)
+```
+
+### 读取惯例（兼容旧项目）
+
+命令读取 `requirementProject` / `requirementRole` / `branchStrategy` 时，统一按以下顺序合并：
+
+```
+config = merge(settings.json, settings.local.json)
+# settings.local.json 中的同名字段覆盖 settings.json
+```
+
+**兼容旧项目**：旧项目若将所有字段写在 `settings.local.json`（未拆分），读取时仍能正常工作，无需迁移。只有在显式重新运行 `/req:init --reinit` 或 `/req:branch init` 后才会迁移到新布局。
+
+---
+
+## 存储路径解析
+
+```
+本地存储（主）: docs/requirements/
+modules/      # 模块文档
+specs/        # 规范文档（数据类型、接口契约等，跨仓库共享）
+active/       # 进行中需求
+completed/    # 已完成需求
+INDEX.md      # 索引
+
+全局缓存（副）: ~/.claude-requirements/projects/<project>/
+```
+
+**解析规则**：
+1. 先读 `.claude/settings.json` 的 `requirementProject` 和 `requirementRole`，再用 `.claude/settings.local.json` 中同名字段覆盖
+2. 有值 → 使用全局缓存路径
+3. 无值 → 使用本地 `docs/requirements/`
+
+**仓库角色**（`requirementRole` 字段）：
+
+| 角色 | 值 | 说明 |
+|------|------|------|
+| 主仓库 | `primary` | 拥有本地 `docs/requirements/`，可读写，修改后自动同步到缓存 |
+| 只读仓库 | `readonly` | 无本地存储，仅从缓存读取需求，不可创建/编辑/变更状态 |
+
+**读取策略**：
+- `primary`：优先本地 → 本地不存在时从缓存读取
+- `readonly`：直接从缓存读取
+
+## 缓存同步规则（强制自动，无需确认）
+
+**核心原则**：需求文档修改后**强制自动同步**到全局缓存，无需用户确认。
+
+| 操作 | 本地 | 缓存同步 |
+|-----|------|---------|
+| 创建需求 | 写入 active/ | **强制**复制到缓存 active/ |
+| 编辑需求 | 更新文件 | **强制**复制到缓存覆盖 |
+| 状态变更 | 更新文件 | **强制**复制到缓存覆盖 |
+| 完成归档 | 移动到 completed/ | **强制**缓存同步移动 |
+
+**强制同步机制**：
+
+通过 PostToolUse Hook **自动强制触发**，仅当命令涉及需求文档修改时触发缓存同步：
+
+触发同步的命令：
+- `/req:new` - 创建需求文档
+- `/req:new-quick` - 创建快速修复文档
+- `/req:edit` - 编辑需求文档
+- `/req:review` - 更新评审状态
+- `/req:dev` - 更新开发状态和进度
+- `/req:test` - 更新测试状态和结果
+- `/req:done` - 完成归档
+- `/req:upgrade` - 升级 QUICK 为 REQ
+- `/req:modules new` - 创建模块文档
+- `/req:prd-edit` - 编辑 PRD 文档
+- `/req:specs new` - 创建规范文档
+- `/req:specs edit` - 编辑规范文档
+
+不触发同步的命令（只读操作）：`/req`、`/req:status`、`/req:show`、`/req:specs`（列表/show）、`/req:projects`、`/req:cache`、`/req:use`、`/req:init`、`/req:migrate`、`/req:test_regression`、`/req:test_new`、`/req:prd`、`/req:changelog`、`/req:commit`、`/req:fix`、`/req:do`、`/req:review-pr`
+
+同步配置：
+- Hook 脚本：`scripts/sync-cache.sh`
+- 触发条件：**Write 或 Edit 工具**操作 `docs/requirements/` 目录下的文件后
+- 同步范围：REQ-XXX、QUICK-XXX 需求文档、模块文档（modules/）、规范文档（specs/）及 PRD.md，不含 INDEX.md、template.md
+- **执行方式**：静默自动执行，仅输出同步状态提示
+
+**重要原则**：
+1. **强制同步**：缓存同步是强制行为，不可跳过，不需要用户确认
+2. **本地优先**：所有修改需求的命令（new、edit、review、dev、test、done）都必须先更新本地 `docs/requirements/` 中的文档
+3. **本地成功后立即同步**：本地操作成功后**立即自动**同步到全局缓存
+4. **只读仓库禁止写操作**：`requirementRole=readonly` 的仓库不执行创建、编辑、状态更新、缓存同步等写操作，仅允许读取和查看
+5. **以本地为准**：同步时直接用本地版本覆盖缓存，不进行冲突检测
+
+## 需求编号生成
+
+扫描 active/ 和 completed/ 目录，找最大编号 +1，格式 `REQ-XXX`
+
+## 元信息字段
+
+| 字段 | 说明 |
+|------|------|
+| 编号 | REQ-XXX |
+| 类型 | 后端/前端/全栈 |
+| 状态 | 当前状态 |
+| 模块 | 所属模块 |
+| 关联需求 | 前后端对应需求 |
+| branch | 开发分支名（/req:dev 首次进入时生成） |
+| issue | 关联的 Git 平台 issue 编号（如 `#123`），无关联为 `-`。`/req:new --from-issue` 自动填充，`/req:done` 读取后可选关闭 |
