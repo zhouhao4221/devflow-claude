@@ -147,14 +147,14 @@ a. all         - 更新全部模板
 
 **注意**：PRD 模板更新时保留原始模板变量（`{{PROJECT_NAME}}`、`{{DATE}}`），不做变量替换。已有的 `PRD.md` 是项目文档，不会被覆盖。PRD 模板更新到 `prd-template.md`，仅影响后续新建项目时使用。
 
-### 6. 同步到全局缓存
+### 6. 同步到主仓需求目录
 
-更新后自动同步模板到全局缓存：
+更新后自动同步模板到主仓需求目录：
 
 ```bash
 PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
 if [ -n "$PROJECT" ]; then
-    CACHE_ROOT=~/.claude-requirements/projects/$PROJECT
+    CACHE_ROOT=<requirementSource.path>/<requirementsDir>
     mkdir -p $CACHE_ROOT/templates
     cp $LOCAL_ROOT/templates/*.md $CACHE_ROOT/templates/ 2>/dev/null
 fi

@@ -1,5 +1,5 @@
 # Prompt 文件期望结构
-<!-- schema-version: 1.0 -->
+<!-- schema-version: 1.1 -->
 
 > 插件命令运行时从项目 `docs/prompt/` 读取架构知识。
 > 本文件定义各命令依赖的章节，供 `/req:update` 在插件更新后检查项目是否同步覆盖。
@@ -50,3 +50,31 @@
 | 运行命令 / run / exec | 执行测试的命令 |
 | 文件位置 / 目录 / path | 测试文件存放路径 |
 | 框架 / framework / library | 使用的测试框架 |
+
+---
+
+## Prompt 库（统一 5 节骨架）
+
+以下文件由 `/req:init` 从 `templates/prompt-snippets/` 生成，遵循固定 5 节结构（什么时候用 / 必备输入 / 触发方式 / 优质输出标准 / 常见失败模式）。**均为可选文件**：存在则对应命令注入，缺失时命令降级为通用行为（不报错，仅 `/req:update` 校验时提示推荐补齐）。
+
+> 校验规则：文件存在时检查 5 节是否齐全（语义匹配标题即可）；缺节为**警告**，不阻塞。文件整体缺失为**推荐**项，不报错。
+
+| 文件 | 内容 | 消费命令 |
+|------|------|---------|
+| `code-generation.md` | 代码生成规范 | `/req:dev` |
+| `refactoring.md` | 重构规范（行为不变） | `/req:do` |
+| `test-generation.md` | 测试用例生成规范 | `/req:test_new` |
+| `error-diagnosis.md` | 错误根因分析规范 | `/req:fix` |
+| `pr-review.md` | PR 评审关注点 | `/req:review-pr` |
+| `requirement-structuring.md` | 模糊需求结构化规范 | `/req:new`、`/req:edit` |
+| `prompt-craft.md` | Prompt 文件自身的格式规范（不被命令读取，供团队维护参考） | — |
+
+**5 节关键词**（每节语义命中标题或正文即视为存在）：
+
+| 节 | 关键词 |
+|----|--------|
+| 什么时候用 | 什么时候 / 适用 / 场景 / when |
+| 必备输入 | 必备 / 输入 / 准备 / input |
+| 触发方式 | 触发 / 使用 / trigger |
+| 优质输出标准 | 输出 / 标准 / output |
+| 常见失败模式 | 失败 / 问题 / 误区 / failure |

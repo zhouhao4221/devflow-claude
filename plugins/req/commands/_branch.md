@@ -6,7 +6,7 @@
 
 ## 分支策略配置
 
-分支策略存储在 `.claude/settings.json` 的 `branchStrategy` 字段中，通过 `/req:branch init` 初始化。`giteaToken` 敏感字段单独存入 `.claude/settings.local.json`（不纳入 git）。
+分支策略存储在 `.devflow/settings.json` 的 `branchStrategy` 字段中，通过 `/req:branch init` 初始化。`giteaToken` 敏感字段单独存入 `.devflow/settings.local.json`（不纳入 git）。
 
 ### 配置结构
 
@@ -48,7 +48,7 @@
 
 ### 读取规则
 
-1. 先读 `.claude/settings.json` 的 `branchStrategy`，再用 `.claude/settings.local.json` 中同名字段覆盖（`giteaToken` 以 local 为准）
+1. 先读 `.devflow/settings.json` 的 `branchStrategy`，再用 `.devflow/settings.local.json` 中同名字段覆盖（`giteaToken` 以 local 为准）
 2. **有配置** → 使用配置值
 3. **无配置** → 使用默认行为（`feat/`、`fix/` 前缀，自动检测主分支）
 

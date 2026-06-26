@@ -28,8 +28,7 @@ description: 需求工作流管理 - 列出所有需求及其状态
 | `init` | 初始化项目 | `/req:init my-project` |
 | `use` | 切换项目 | `/req:use my-project` |
 | `projects` | 列出所有项目 | `/req:projects` |
-| `migrate` | 迁移本地需求到全局缓存 | `/req:migrate my-project` |
-| `cache` | 缓存管理 | `/req:cache clear my-project` |
+| `migrate` | 迁移本地需求到主仓需求目录 | `/req:migrate my-project` |
 | `modules` | 列出所有模块 | `/req:modules` |
 | `branch` | 分支管理 | `/req:branch init` |
 | `commit` | 规范提交 | `/req:commit` |
@@ -41,7 +40,7 @@ description: 需求工作流管理 - 列出所有需求及其状态
 
 ### 路径优先级
 
-1. **全局缓存**（推荐）：`~/.claude-requirements/projects/<project-name>/`
+1. **主仓需求目录**（推荐）：`<requirementSource.path>/<requirementsDir>/`
 2. **本地目录**（回退）：`docs/requirements/`
 
 ### 解析流程
@@ -49,7 +48,7 @@ description: 需求工作流管理 - 列出所有需求及其状态
 ```
 1. 检查 .claude/settings.local.json 中的 requirementProject
 2. 如果设置了 requirementProject:
-   → 使用 ~/.claude-requirements/projects/<requirementProject>/
+   → 使用 <requirementSource.path>/<requirementsDir>/
 3. 如果未设置:
    → 回退到本地 docs/requirements/
 ```
@@ -73,7 +72,7 @@ template.md    # 需求模板
 
 ### 0. 解析需求路径
 
-读取 `.claude/settings.local.json` 的 `requirementProject`：有绑定时使用 `~/.claude-requirements/projects/<project>/active/`，否则使用 `docs/requirements/active/`。
+读取 `.claude/settings.local.json` 的 `requirementProject`：有绑定时使用 `<requirementSource.path>/<requirementsDir>/active/`，否则使用 `docs/requirements/active/`。
 
 ### 1. 扫描需求目录
 
@@ -163,7 +162,6 @@ template.md    # 需求模板
 - use <project-name> → /req:use <project-name>
 - projects → /req:projects
 - migrate <project-name> → /req:migrate <project-name>
-- cache <action> → /req:cache <action>
 - modules → /req:modules
 ```
 

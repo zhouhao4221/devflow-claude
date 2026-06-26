@@ -170,7 +170,7 @@ AI 智能分析完成
 ### 9. 保存并同步缓存
 
 - 写入本地文件 `docs/requirements/PRD.md`
-- **同步到全局缓存**（通过 PostToolUse Hook 自动触发）
+- **同步到主仓需求目录**（通过 PostToolUse Hook 自动触发）
 
 ### 10. 输出结果
 

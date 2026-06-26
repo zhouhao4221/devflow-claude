@@ -84,6 +84,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 ### 2. 分析代码，生成方案
 
 > 读取项目 CLAUDE.md 的「项目架构」章节，了解分层结构和目录布局。
+> 第 1 步意图为「重构 / 优化」时，Read `docs/prompt/refactoring.md`，存在则按其约束（行为不变、契约不变、范围聚焦）生成方案；缺失静默跳过。
 
 AI 搜索代码库，定位相关文件：
 

@@ -32,7 +32,7 @@ model: claude-haiku-4-5-20251001
 
 ```
 <需求根目录>/specs/        # 本地（primary）
-~/.claude-requirements/projects/<project>/specs/   # 缓存（readonly 读此处）
+<requirementSource.path>/<requirementsDir>/specs/   # 缓存（readonly 读此处）
 ```
 
 - **primary**：读写本地 `docs/requirements/specs/`

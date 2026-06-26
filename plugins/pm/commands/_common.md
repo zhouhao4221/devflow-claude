@@ -7,7 +7,7 @@
 pm 插件是 req 插件产出数据的**只读消费者**：
 - 读取 PRD、需求文档、模块文档、INDEX.md
 - 读取 Git 提交记录、分支、Tag
-- **不修改**任何需求文档，不触发缓存同步
+- **不修改**任何需求文档（无缓存层，readonly 经 requirementSource 直读主仓）
 - 支持 `primary` 和 `readonly` 仓库角色
 
 ## 需求数据路径解析
@@ -18,10 +18,10 @@ PROJECT = read_settings("requirementProject")  # .claude/settings.local.json
 ROLE = read_settings("requirementRole")
 
 if ROLE == "readonly":
-    ROOT = f"~/.claude-requirements/projects/{PROJECT}"
+    ROOT = f"<requirementSource.path>/<requirementsDir>"
 elif ROLE == "primary":
     ROOT = "docs/requirements"
-    CACHE_ROOT = f"~/.claude-requirements/projects/{PROJECT}" if PROJECT else None
+    CACHE_ROOT = f"<requirementSource.path>/<requirementsDir>" if PROJECT else None
 else:
     ROOT = "docs/requirements"
     CACHE_ROOT = None
@@ -35,8 +35,8 @@ INDEX = f"{ROOT}/INDEX.md"
 ```
 
 **读取策略**：
-- `primary`：优先本地 → 本地不存在时从缓存读取
-- `readonly`：直接从缓存读取
+- `primary`：优先本地 → 本地不存在时经 requirementSource.path 直读
+- `readonly`：直接经 requirementSource.path 直读
 
 ## 数据采集层
 

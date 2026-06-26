@@ -79,7 +79,7 @@ model: claude-haiku-4-5-20251001
 
 ### 5. 关联已完成需求
 
-按 `requirementRole` 确定需求目录（readonly → 全局缓存；primary → 本地，不存在时回退缓存）。从 commit messages 中提取 `REQ-XXX` / `QUICK-XXX` 编号，读取对应需求文档的标题和类型。同时扫描 active/ 目录（需求可能尚未完成但已有 commit）。
+按 `requirementRole` 确定需求目录（readonly → 主仓需求目录；primary → 本地，不存在时回退缓存）。从 commit messages 中提取 `REQ-XXX` / `QUICK-XXX` 编号，读取对应需求文档的标题和类型。同时扫描 active/ 目录（需求可能尚未完成但已有 commit）。
 
 ### 6. 检查目标文件
 

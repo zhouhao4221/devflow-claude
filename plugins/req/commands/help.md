@@ -46,7 +46,7 @@ model: claude-haiku-4-5-20251001
 需求工作流插件 - 使用教程
 
 章节：
- 1. 安装与初始化（含架构描述、分支策略、Gitea Token 配置、reinit、缓存重建）
+ 1. 安装与初始化（含架构描述、分支策略、Gitea Token 配置、reinit）
  2. 创建需求
  3. 评审流程
  4. 开发阶段（含分支管理、PR 创建）
@@ -68,7 +68,7 @@ model: claude-haiku-4-5-20251001
 Requirements Workflow Plugin — Tutorial
 
 Sections:
- 1. Installation & initialization (architecture, branch strategy, Gitea token, reinit, cache rebuild)
+ 1. Installation & initialization (architecture, branch strategy, Gitea token, reinit)
  2. Creating requirements
  3. Review flow
  4. Development (branch management, PR creation)

@@ -30,7 +30,7 @@ model: claude-haiku-4-5-20251001
 ### 1. 解析存储路径（按角色）
 
 读取 `.claude/settings.local.json` 的 `requirementProject` 和 `requirementRole`，按角色确定 PRD 路径：
-- `readonly`：`~/.claude-requirements/projects/$PROJECT/PRD.md`
+- `readonly`：`<requirementSource.path>/<requirementsDir>/PRD.md`
 - `primary`：`docs/requirements/PRD.md`，本地不存在时回退到缓存
 - 未绑定：`docs/requirements/PRD.md`
 

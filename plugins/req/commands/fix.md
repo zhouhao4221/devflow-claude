@@ -45,6 +45,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, m
 ### 1. AI 辅助分析 bug
 
 > 读取项目 CLAUDE.md 的「项目架构」章节，了解分层结构和目录布局。
+> Read `docs/prompt/error-diagnosis.md`，存在则按其规范（必备输入、根因判定标准、常见失败模式）约束定位；缺失静默跳过。
 > **此阶段在当前分支上进行，不创建新分支。**
 
 根据用户描述的问题，AI 进行定位分析：

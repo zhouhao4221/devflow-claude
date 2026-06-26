@@ -51,6 +51,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 
 按优先级：项目 CLAUDE.md 开发规范 → 测试规范 → 需求文档功能清单和业务规则。
 
+另 Read `docs/prompt/pr-review.md`，存在则将其审查维度（必备输入、优质输出标准、常见失败模式）并入第 4 步审查关注点；缺失静默跳过。
+
 ### 3. 对比需求文档与实际实现
 
 检查维度：
@@ -66,7 +68,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 | 业务规则 (第三章) | 关键规则是否在代码中体现（如校验逻辑） |
 | 关联需求 | 文档「关联」字段引用 |
 
-> primary 读 `docs/requirements/active/`，readonly 读 `~/.claude-requirements/projects/<project>/active/`。未找到需求文档时跳过此步。
+> primary 读 `docs/requirements/active/`，readonly 读 `<requirementSource.path>/<requirementsDir>/active/`。未找到需求文档时跳过此步。
 
 ### 4. AI 逐文件审查
 

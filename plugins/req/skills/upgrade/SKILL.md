@@ -19,7 +19,7 @@ description: 升级需求 - 将快速修复升级为正式需求
 
 ### 0. 解析存储路径
 
-从 `settings.local.json` 读取 `requirementProject`，确定本地路径（`docs/requirements/active|completed`）和全局缓存路径。
+从 `settings.local.json` 读取 `requirementProject`，确定本地路径（`docs/requirements/active|completed`）和主仓需求目录路径。
 
 ### 1. 定位源文件
 

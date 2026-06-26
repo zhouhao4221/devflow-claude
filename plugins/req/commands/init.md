@@ -1,14 +1,14 @@
 ---
-description: 初始化需求项目 - 创建本地存储和全局缓存
+description: 初始化需求项目 - 创建本地存储和主仓需求目录
 argument-hint: "<project-name>"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 ---
 
 # 初始化需求项目
 
-初始化需求项目，创建本地存储目录和全局缓存，并绑定当前仓库。
+初始化需求项目，创建本地存储目录和主仓需求目录，并绑定当前仓库。
 
-> 模板源文件：`plugins/req/templates/`，写入规范：[`_storage.md`](./_storage.md#settings-文件写入规范)，索引格式：[`index-template.md`](../templates/index-template.md)，架构片段：[`claude-md-snippets/`](../templates/claude-md-snippets/)，release 模板：[`release-prompt-template.md`](../templates/release-prompt-template.md)
+> 模板源文件：`plugins/req/templates/`，写入规范：[`_storage.md`](./_storage.md#settings-文件写入规范)，索引格式：[`index-template.md`](../templates/index-template.md)，架构片段：[`claude-md-snippets/`](../templates/claude-md-snippets/)，release 模板：[`release-prompt-template.md`](../templates/release-prompt-template.md)，Prompt 库骨架：[`prompt-snippets/`](../templates/prompt-snippets/)
 
 ## 命令格式
 
@@ -18,7 +18,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 
 - `project-name`: 项目名称（kebab-case）
 - `--reinit`: 补充缺失内容，不覆盖已有文件
-- `--readonly`: 只读仓库角色，不创建本地需求目录和全局缓存
+- `--readonly`: 只读仓库角色，不创建本地需求目录和主仓需求目录
 
 ---
 
@@ -26,7 +26,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 
 ### 1. 参数解析
 
-仓库角色优先级：`--readonly` 参数 → `.claude/settings.local.json` 中已有 `readonly` → 默认 `primary`。
+仓库角色优先级：`--readonly` 参数 → `.devflow/settings.json` 中已有 `readonly` → 默认 `primary`。
 
 ### 2. 创建目录结构
 
@@ -47,31 +47,31 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 
 `docs/requirements/modules/quick-fix.md` 不存在时，生成含概述、核心功能、业务规则、相关需求、变更记录的模块文档。
 
-### 6. 创建全局缓存（仅 primary）
+### 6. 绑定当前仓库
 
-`~/.claude-requirements/projects/<project-name>/` 下创建与本地同构的缓存目录，同步模板、PRD、快速修复模块。
+> 写入规范见 [_storage.md](./_storage.md#settings-文件写入规范)。无主仓需求目录：需求文档只存在于 primary 仓库的 `requirementsDir`。
 
-### 7. 更新全局索引（仅 primary）
+在 `.devflow/settings.json` 写入 `requirementProject`、`requirementRole`、`requirementsDir`（合并写入，不覆盖 `branchStrategy` 等既有字段）。
 
-更新 `~/.claude-requirements/index.json`，记录项目名、创建时间、主仓库路径、关联仓库列表。
+- **primary**：`requirementRole: "primary"`，需求存本仓 `requirementsDir`，写入即生效、无同步、无缓存
+- **readonly**：`/req:init --readonly` 仅建本地模板目录、不建需求存储；随后用 `/req:use <primary-repo-path>` 绑定主项目（写 `requirementSource` 到 `.devflow/settings.local.json`）
 
-### 8. 绑定当前仓库
-
-在 `.claude/settings.local.json` 写入 `requirementProject` 和 `requirementRole`，不覆盖已有字段（如 `branchStrategy`）。
-
-### 9. 生成架构文件
+### 7. 生成架构文件
 
 `docs/prompt/architecture.md` 已存在则跳过。否则扫描项目结构检测技术栈（go.mod → Go · pom.xml/build.gradle → Java · package.json 按依赖判断前后端 · requirements.txt/pyproject.toml → Python · Cargo.toml → Rust · 否则通用），同时扫描目录分层、测试文件位置、代码风格，生成架构文件草稿，用户确认后写入。在 CLAUDE.md 末尾追加仅一行指针引用。
 
-### 10. 创建 Prompt 库骨架（仅当文件不存在）
+### 8. 创建 Prompt 库骨架（仅当目标文件不存在）
 
-在 `docs/prompt/` 下创建 7 个通用 Prompt 骨架 + `prompt-craft.md`（格式说明）。每个文件使用 5 节骨架（适用场景、必备输入、触发方式、输出标准、失败模式），内容留空供用户填写。
+从 `templates/prompt-snippets/` **复制**到 `docs/prompt/`（逐文件检查，已存在则跳过，`--reinit` 保护已有）：
+`code-generation.md`、`refactoring.md`、`test-generation.md`、`testing.md`、`error-diagnosis.md`、`pr-review.md`、`requirement-structuring.md`、`prompt-craft.md`。
 
-### 11. 生成 release.md
+> 用复制而非现场生成，确保各项目骨架结构一致（统一 5 节：什么时候用 / 必备输入 / 触发方式 / 优质输出标准 / 常见失败模式）。骨架节内容为占位注释，供用户按项目填充；消费命令（`/req:dev`、`/req:do`、`/req:fix`、`/req:review-pr` 等）在运行时按需 Read 对应文件，缺失即降级为通用行为。
+
+### 9. 生成 release.md
 
 `docs/prompt/release.md` 已存在则跳过。不存在时扫描项目（版本号文件、test/build/lint 命令、CI 配置、构建产物目录），生成预填充草稿，用户确认后写入。
 
-### 12. Skills 初始化
+### 10. Skills 初始化
 
 创建 `.claude/skills/` 目录，根据项目类型引导创建 Skill：
 - **后端**：引导创建 `migration.md`（声明 migration SQL 目录）
@@ -84,7 +84,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 
 成功时输出：目录结构树、已生成文件列表、下一步操作提示（检查架构文件 → 发版配置 → PRD → 分支策略 → 创建需求）。
 
-`--reinit` 标注「已存在」和「新增/补充」的区别。`--readonly` 说明从全局缓存只读。
+`--reinit` 标注「已存在」和「新增/补充」的区别。`--readonly` 说明从主仓需求目录只读。
 
 ---
 

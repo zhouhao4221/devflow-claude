@@ -1,12 +1,11 @@
 {
   "name": "req",
-  "version": "3.23.0",
-  "description": "需求全流程工作流管理 - 从需求分析到测试的完整生命周期管理，支持多技术栈和分支策略配置",
+  "version": "4.0.0",
+  "description": "需求全流程管理：分析→评审→开发→测试→归档；配置 .devflow、无全局缓存（readonly 直读主仓）",
   "author": {
     "name": "Haiqing"
   },
   "license": "Apache-2.0",
-
   "commands": "./commands/",
   "skills": "./skills/"
 }

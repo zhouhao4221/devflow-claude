@@ -27,7 +27,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 - 指定编号 → 使用该需求
 - 未指定 → 查找活跃需求（按修改时间排序）
-- 本地不存在时从缓存读取
+- 本地不存在时经 requirementSource.path 直读
 
 ### 2. 读取模板
 
@@ -160,7 +160,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 - 更新「变更记录」章节
 - 写入本地文件
-- **同步到全局缓存**
+- **同步到主仓需求目录**
 
 ### 10. 输出结果
 

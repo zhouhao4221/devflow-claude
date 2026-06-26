@@ -1,11 +1,11 @@
 ---
 name: projects
-description: 列出所有需求项目 - 查看全局缓存中的所有项目
+description: 列出所有需求项目 - 查看主仓需求目录中的所有项目
 ---
 
 # 列出所有需求项目
 
-显示全局缓存中所有项目的概览。
+显示主仓需求目录中所有项目的概览。
 
 ## 命令格式
 
@@ -17,9 +17,9 @@ description: 列出所有需求项目 - 查看全局缓存中的所有项目
 
 ## 执行流程
 
-### 1. 检查全局缓存
+### 1. 检查主仓需求目录
 
-检查 `~/.claude-requirements/projects/` 是否存在且非空。
+检查 `<requirementSource.path>/<requirementsDir>/` 是否存在且非空。
 
 **如果缓存不存在或为空**：
 ```
@@ -30,7 +30,7 @@ description: 列出所有需求项目 - 查看全局缓存中的所有项目
 
 ### 2. 读取全局索引
 
-读取 `~/.claude-requirements/index.json` 获取各项目的元信息和关联仓库列表。
+读取 `（无中心索引，已废弃）` 获取各项目的元信息和关联仓库列表。
 
 ### 3. 扫描每个项目
 
@@ -57,7 +57,7 @@ description: 列出所有需求项目 - 查看全局缓存中的所有项目
 
 = 当前仓库绑定的项目
 
-缓存路径: ~/.claude-requirements/
+缓存路径: <requirementSource.path>/<requirementsDir>/
 
 可用命令:
    - /req:use <project>   切换到指定项目
@@ -81,7 +81,7 @@ description: 列出所有需求项目 - 查看全局缓存中的所有项目
 my-saas-product (当前项目)
 
    创建时间: 2026-01-01
-   路径: ~/.claude-requirements/projects/my-saas-product/
+   路径: <requirementSource.path>/<requirementsDir>/
 
    需求统计:
       - 开发中: 1
@@ -97,7 +97,7 @@ my-saas-product (当前项目)
 internal-tools
 
    创建时间: 2026-01-05
-   路径: ~/.claude-requirements/projects/internal-tools/
+   路径: <requirementSource.path>/<requirementsDir>/
 
    需求统计:
       - 开发中: 1

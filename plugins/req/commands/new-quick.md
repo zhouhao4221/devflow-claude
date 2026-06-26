@@ -32,7 +32,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(gh:*, curl:*)
 
 ### 0. 解析存储路径
 
-本地主存储为 `docs/requirements/active/` 和 `docs/requirements/completed/`，确保目录存在。读取 `settings.local.json` 的 `requirementProject`；有绑定则同时准备缓存路径 `~/.claude-requirements/projects/$PROJECT/`。
+本地主存储为 `docs/requirements/active/` 和 `docs/requirements/completed/`，确保目录存在。读取 `settings.local.json` 的 `requirementProject`；有绑定则同时准备缓存路径 `<requirementSource.path>/<requirementsDir>/`。
 
 ### 1. 生成需求编号
 
@@ -96,7 +96,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(gh:*, curl:*)
 - `issue` 字段：从 issue 导入时填 `#N`，否则填 `-`
 - 生命周期勾选「草稿」
 
-**步骤 4.2：同步到全局缓存**
+**步骤 4.2：同步到主仓需求目录**
 
 若已绑定项目，将新建文档同步复制到 `$CACHE_ACTIVE/`。
 

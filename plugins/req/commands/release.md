@@ -61,7 +61,7 @@ model: claude-haiku-4-5-20251001
 读取 `.claude/settings.local.json` 中的 `requirementRole`：
 
 - **readonly**：
-  - 从全局缓存 `~/.claude-requirements/projects/<requirementProject>/` 读取需求文档
+  - 从主仓需求目录 `<requirementSource.path>/<requirementsDir>/` 读取需求文档
   - **禁止修改任何 `docs/requirements/` 下的文件**（包括状态更新、关联信息追加等）
   - SQL 合并（`<MIGRATIONS_DIR>/released/`）和 changelog（`docs/changelogs/`）的写入**不受此限**——这些是版本产物，不是需求文档；目录不存在时自动创建
   - 其余步骤（git commit、PR、tag）照常执行
@@ -148,7 +148,7 @@ model: claude-haiku-4-5-20251001
 
 扫描 `$FROM_REF..$TO_REF` 范围内（不含 merge commit）的 commit subject + body，提取所有 `REQ-XXX` / `QUICK-XXX` 编号（去重）。读取每个需求文档，提取标题/类型/状态/关联 SQL 文件数。
 - **primary**：从 `docs/requirements/` 读取
-- **readonly**：从 `~/.claude-requirements/projects/<requirementProject>/` 读取；不存在则跳过该需求，继续纯 commit changelog 流程
+- **readonly**：从 `<requirementSource.path>/<requirementsDir>/` 读取；不存在则跳过该需求，继续纯 commit changelog 流程
 
 ### 步骤 4：扫描 migration SQL
 

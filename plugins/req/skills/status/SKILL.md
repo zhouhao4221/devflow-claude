@@ -28,7 +28,7 @@ description: 查看需求状态 - 详细状态和进度
 ### 1. 解析存储路径（按角色）
 
 读取 `.claude/settings.local.json` 的 `requirementProject` 和 `requirementRole`，按角色确定路径：
-- `readonly`：根目录为 `~/.claude-requirements/projects/$PROJECT`
+- `readonly`：根目录为 `<requirementSource.path>/<requirementsDir>`
 - `primary`：本地根目录为 `docs/requirements`，缓存为备用
 - 未绑定：仅使用 `docs/requirements`
 

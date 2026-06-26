@@ -84,19 +84,19 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 | 入口 | `/req:new` | `/req:new-quick` |
 | 模板 | `requirement-template.md`（一~十一章） | `quick-template.md`（问题/方案/验证/记录） |
 | 开发门槛 | `/req:dev` 拒绝未评审的 REQ | 草稿即可开发 |
-| 编号 | `REQ-XXX` | `QUICK-XXX`（本地+缓存取较大值+1） |
+| 编号 | `REQ-XXX` | `QUICK-XXX`（扫描本地需求目录取最大值+1） |
 
 状态流转由命令驱动：`/req:review pass/reject` · `/req:dev`（自动） · `/req:test`（自动）· `/req:done`（必须 y/n 确认）。`/req:upgrade <QUICK-XXX>` 将未完成的 QUICK 升级为 REQ（4 阶段扩 6 阶段）。无文档的轻量任务走 `/req:fix`（修 bug，含根因分析）和 `/req:do`（优化/重构/升级，AI 选流程）。
 
-### 存储与缓存
+### 存储（无全局缓存）
 
-双存储：主存储 `docs/requirements/`（纳入 git，仅 primary 仓库）+ 全局缓存 `~/.claude-requirements/projects/<name>/`（跨仓库共享）。
+需求文档**唯一事实源**是 primary 仓库的 `requirementsDir`（默认 `docs/requirements/`，纳入 git）。**无全局缓存**：readonly 仓库经 `.devflow/settings.local.json` 的 `requirementSource.path` **直读**主仓需求目录，不复制、不同步。
 
 `docs/requirements/` 子目录：`active/`（进行中）· `completed/`（归档）· `modules/`（模块文档）· `specs/`（规范文档，跨仓库共享）· `templates/`（4 个模板）· `PRD.md` + `INDEX.md`。
 
-**同步**：PostToolUse Hook 在 Write/Edit 后调 `sync-cache.sh`（5s），**单向、本地覆盖缓存、无冲突检测**。范围：`REQ-*`/`QUICK-*`、`modules/`、`specs/`、`PRD.md`；`INDEX.md`/`*template.md` 不同步。命令内**不应**再写显式 cp，依赖 Hook。
+**无同步**：需求只有一份，写入即生效，无 PostToolUse 同步 Hook、无 cp。（v2.x 的 `~/.claude-requirements/` 全局缓存 + `sync-cache.sh` 已于 v3 移除——breaking change，旧项目需跑 `migrate-config.sh` + readonly 重新 `/req:use` 绑定。）
 
-**仓库角色**（`requirementRole`）：`primary` 读写本地+自动同步缓存；`readonly` 无本地存储、仅读缓存、`sync-cache.sh` 检测到即跳过、`/req:dev` 跳过所有文档写入。新增写操作命令必须考虑 readonly 跳过逻辑。不受角色限制的命令：`fix`/`do`/`issue`/`branch`。
+**仓库角色**（`requirementRole`）：`primary` 读写本仓 `requirementsDir`；`readonly` 无本地需求目录、经 `requirementSource.path` 直读主仓、`/req:dev` 跳过所有文档写入。新增写操作命令必须考虑 readonly 跳过逻辑。不受角色限制的命令：`fix`/`do`/`issue`/`branch`。
 
 ### Hooks（`plugins/req/hooks/hooks.json`）
 
@@ -104,7 +104,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 |------|------|---------|------|
 | SessionStart | session-context.sh | 10s | 注入需求上下文；未初始化/未配分支策略时输出引导 |
 | PreToolUse(Bash) | confirm-before-commit.sh | 120s | 默认放行；仅当 `.claude/.req-confirm-commit` 存在时拦截 git commit / mv·rm 需求文件 |
-| PostToolUse(Write/Edit) | validate-requirement.sh + sync-cache.sh | 各 5s | 校验文档章节 + 强制同步缓存 |
+| PostToolUse(Write/Edit) | validate-requirement.sh | 5s | 校验文档章节 |
 
 **两个 marker（勿混淆）**：
 - `.claude/.req-confirm-commit`：**确认开关**（常驻）。存在 = 启用提交拦截；默认不存在 = 全部直通。用户说「开启提交确认」→ Claude `touch`，「关闭」→ `rm`。
@@ -122,16 +122,18 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 ## 项目级配置约定
 
-`.claude/settings.json`（团队共享、入 git，放非密钥）+ `.claude/settings.local.json`（不入 git，放密钥）。读取时 local 覆盖同名。
+`.devflow/settings.json`（团队共享、入 git，放非密钥）+ `.devflow/settings.local.json`（不入 git，放密钥/本机路径）。读取时 local 覆盖同名。**Claude Code 自身的 hooks/permissions 仍在 `.claude/settings.json`，两者互不迁移**；项目级窄知识 skill 仍在 `.claude/skills/`。
 
 | 字段 | 文件 | 控制 | 消费者 |
 |------|------|------|--------|
-| `requirementProject` | settings | 绑定的缓存项目名 | req、pm |
+| `requirementProject` | settings | 项目名（标签/显示用） | req、pm |
 | `requirementRole` | settings | `primary`/`readonly` | req、pm |
+| `requirementsDir` | settings | 需求目录，默认 `docs/requirements`，可改 | req、pm |
 | `branchStrategy`（对象，不含 token） | settings | `repoType`/`giteaUrl`/`mainBranch`/`developBranch`/`*Prefix`/`branchFrom`/`mergeTarget`/`mergeMethod`/`reviewers` 等 | req、uat |
 | `giteaToken` | settings.local | Gitea API token | req、uat |
+| `requirementSource`（`{path,project?}`） | settings.local | **readonly 专用**：指向 primary 仓库根的本机绝对路径，据此直读主仓 | req、pm |
 
-跨插件共享：pm 复用 `requirementProject`/`requirementRole`；uat 复用 `branchStrategy`/`giteaToken`。
+跨插件共享：pm 复用 `requirementProject`/`requirementRole`/`requirementsDir`；uat 复用 `branchStrategy`/`giteaToken`。
 
 ---
 
@@ -144,11 +146,12 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 | `CLAUDE.md` | AI 行为指令（通用规则、引用指针） | 每次会话自动加载 |
 | `docs/prompt/architecture.md` | 项目架构知识（分层、规范、技术栈） | `/req:dev`、`/req:test` 显式 Read |
 | `docs/prompt/release.md` | 项目发版规则 | `/req:release` 步骤 0 Read |
+| `docs/prompt/` Prompt 库（`code-generation`/`refactoring`/`test-generation`/`testing`/`error-diagnosis`/`pr-review`/`requirement-structuring`） | 各方面项目特有规范，统一 5 节骨架 | 对应命令按需 Read（`/req:dev`/`do`/`test*`/`fix`/`review-pr`/`new`·`edit`），缺失降级，非阻塞 |
 | `docs/requirements/specs/` | 公共知识层（枚举、规则、契约摘要） | 命令按仓库角色注入 |
 | `settings.local.json` | 结构化配置 | 命令读取字段 |
 | `.claude/skills/<concern>.md` | 窄知识具体约定（如路径变量） | 命令扫描全量注入 |
 
-- `/req:init` 扫描项目结构生成 `docs/prompt/architecture.md`；CLAUDE.md 只留引用指针，不内嵌架构内容。
+- `/req:init` 扫描项目结构生成 `docs/prompt/architecture.md`；CLAUDE.md 只留引用指针，不内嵌架构内容。Prompt 库其余 7 文件从 `templates/prompt-snippets/` 复制空骨架（仅当不存在），供下游按项目填充；骨架格式见 `prompt-craft.md`。
 - 项目级 skill 文件名反映关注点（`migration.md` ✅，`config.md` ❌）；`docs/prompt/` 文件按需 Read，缺失时打印创建提示（非阻塞）。
 - 现有示例：`.claude/skills/migration.md` 声明 `MIGRATIONS_DIR`，供 `/req:dev` 写入、`/req:release` 扫描合并。Changelog 目录固定 `docs/changelogs/`，不参与配置。
 - **Prompt 结构验证**：`plugins/req/schemas/prompt-schema.md` 定义各命令期望的 prompt 文件结构；`/req:update` 拉新版本后对照检查，缺必需章节报错、缺推荐章节警告。

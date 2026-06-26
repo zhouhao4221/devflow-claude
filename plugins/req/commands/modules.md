@@ -44,7 +44,7 @@ INDEX.md          # 需求索引（自动生成）
 
 ### 1. 扫描模块目录
 
-优先使用 `docs/requirements/modules/`；若已绑定项目则同时扫描 `~/.claude-requirements/projects/$PROJECT/modules/`。
+优先使用 `docs/requirements/modules/`；若已绑定项目则同时扫描 `<requirementSource.path>/<requirementsDir>/modules/`。
 
 ### 2. 解析模块文档
 

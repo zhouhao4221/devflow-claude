@@ -26,6 +26,10 @@ Read `docs/prompt/architecture.md`，从「测试规范」章节获取测试目�
 - 文件存在 → 读取，静默注入
 - 文件不存在 → 回退从 CLAUDE.md 读取（兼容旧项目）
 
+补充注入（存在则读，缺失静默跳过）：
+- 运行 / 回归测试（`/req:test`、`/req:test_regression`）→ Read `docs/prompt/testing.md`（运行命令、文件位置、环境依赖）
+- 创建新用例（`/req:test_new`）→ Read `docs/prompt/test-generation.md`（用例编写规范、覆盖要求）
+
 从项目 CLAUDE.md 的「测试规范」章节获取（architecture.md 不存在时的兜底）：
 
 | 配置项 | 用途 | 示例 |

@@ -97,7 +97,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 2. 填充元信息（编号、类型、模块、状态=草稿、日期）
 3. 若从 issue 导入 → 元信息 `issue` 字段填 `#N`；否则填 `-`
 4. 写入 `docs/requirements/active/REQ-XXX-标题.md`
-5. 同步到全局缓存（如已绑定项目）
+5. 同步到主仓需求目录（如已绑定项目）
 
 **格式约束（强制）：**
 - 章节标题、编号、层级必须与模板完全一致

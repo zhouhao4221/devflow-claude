@@ -17,3 +17,6 @@ Thumbs.db
 # Temp files
 *.tmp
 *.bak
+
+# DevFlow 本机配置（含密钥/本机路径）
+.devflow/settings.local.json

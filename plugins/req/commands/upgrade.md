@@ -21,7 +21,7 @@ model: claude-haiku-4-5-20251001
 
 ### 0. 解析存储路径
 
-从 `settings.local.json` 读取 `requirementProject`，确定本地路径（`docs/requirements/active|completed`）和全局缓存路径。
+从 `settings.local.json` 读取 `requirementProject`，确定本地路径（`docs/requirements/active|completed`）和主仓需求目录路径。
 
 ### 1. 定位源文件
 

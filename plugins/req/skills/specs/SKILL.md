@@ -30,7 +30,7 @@ description: 规范文档管理 - 项目级公共知识层，集中沉淀散落�
 
 ```
 <需求根目录>/specs/        # 本地（primary）
-~/.claude-requirements/projects/<project>/specs/   # 缓存（readonly 读此处）
+<requirementSource.path>/<requirementsDir>/specs/   # 缓存（readonly 读此处）
 ```
 
 - **primary**：读写本地 `docs/requirements/specs/`

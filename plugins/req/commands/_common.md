@@ -6,7 +6,7 @@
 
 | 主题文件 | 内容 |
 |---------|------|
-| [`_storage.md`](./_storage.md) | settings.local.json 写入规范 / 存储路径解析 / 缓存同步规则 / 需求编号生成 / 元信息字段 |
+| [`_storage.md`](./_storage.md) | settings 写入规范 / 存储路径解析 / 写入规则（无缓存）/ 需求编号生成 / 元信息字段 |
 | [`_template.md`](./_template.md) | 状态更新确认机制 / 确认操作规范 / 状态流转 / Memory 隔离规则 / 模板格式约束 |
 | [`_branch.md`](./_branch.md) | 分支策略配置（`branchStrategy` 结构、三种预设、各命令消费） |
 | [`_issue.md`](./_issue.md) | Issue 拉取规范 / OWNER/REPO 解析 / Issue 与分支提交关联 / Issue 编号读取优先级 / 关闭策略 |
@@ -21,7 +21,6 @@
 |-------|-------|
 | `#settingslocaljson-写入规范` | `_storage.md#settingslocaljson-写入规范` |
 | `#存储路径解析` | `_storage.md#存储路径解析` |
-| `#缓存同步规则强制自动无需确认` | `_storage.md#缓存同步规则强制自动无需确认` |
 | `#issue-拉取规范` | `_issue.md#issue-拉取规范` |
 | `#issue-与分支提交的关联` | `_issue.md#issue-与分支提交的关联` |
 | `#issue-编号的读取优先级` | `_issue.md#issue-编号的读取优先级` |
