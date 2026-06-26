@@ -34,6 +34,8 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 5
 - **`commands/<name>.md`**：权威完整版。frontmatter 含 `description`/`argument-hint`/`allowed-tools`/`model`，可引用同目录共享子文件（`_storage.md`、`_gitea_cli.md`、`release-rationale.md` 等）。
 - **`skills/<name>/SKILL.md`**：由 `scripts/gen-skills.py` 从同名 command 自动派生，供不支持 slash 的 Claude 客户端使用。**禁止手改**——改动应在 command 进行后重新生成。派生规则：frontmatter 降级为仅 `name` + `description`（无 `model`/`allowed-tools`/`argument-hint`，故继承会话模型）；command 引用的共享子文件（含其传递依赖）内联为文末「附录」，使 skill 自包含、无悬空链接。
 
+**并非每个命令都派生镜像**：镜像仅服务于「非 slash 客户端用自然语言唤起能力」，纯管道/查询/参考命令在该场景几乎不会被自然语言触发，却各带一份 `description` 参与会话级激活匹配（token 成本 + 误激活风险）。`gen-skills.py` 的 `SKIP_MIRROR` 跳过这些命令（当前 12 个：`migrate`/`update`/`update-template`/`specs`/`modules`/`release-rationale`/`commit`/`split`/`show`/`status`/`help`/`projects`），生成时删除残留镜像、`--check` 时对残留报错。slash 客户端仍可直接调用对应 command，能力不受影响。新增命令默认派生镜像，仅纯管道命令需加入 `SKIP_MIRROR`。
+
 命令 frontmatter：
 
 ```yaml
@@ -64,7 +66,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 | 插件 | helper skill |
 |------|-------------|
-| req | `requirement-analyzer`（new/edit）· `prd-analyzer`（prd-edit）· `dev-guide`（dev，读 architecture.md 分层引导）· `test-guide`（test*）· `quick-fix-guide`（new-quick）· `issue-guide`（issue）· `changelog-generator`（changelog）· `version-bumper`（release，按 semver 推导各插件版本）· `code-impact-analyzer`（需求变更/影响评估）· `natural-language-dispatcher`（自然语言意图→命令映射）· `release-rationale`（release 设计原理速查） |
+| req | `requirement-analyzer`（new/edit）· `prd-analyzer`（prd-edit）· `dev-guide`（dev，读 architecture.md 分层引导）· `test-guide`（test*）· `quick-fix-guide`（new-quick）· `issue-guide`（issue）· `changelog-generator`（changelog）· `version-bumper`（release，按 semver 推导各插件版本）· `code-impact-analyzer`（需求变更/影响评估）· `natural-language-dispatcher`（自然语言意图→命令映射） |
 | pm | `report-generator`（各生成类命令，整合数据为面向受众的文档，禁用 emoji 便于导出） |
 | diag | `stack-analyzer`（仅 diagnose 期间，多语言堆栈解析为结构化 YAML） |
 | uat | `uat-executor`（仅 run 期间，意图驱动执行界面操作） |

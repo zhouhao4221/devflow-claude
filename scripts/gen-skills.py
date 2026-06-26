@@ -7,8 +7,10 @@ skill（plugins/<p>/skills/<name>/SKILL.md），保证两份永不漂移、且 s
 
 规则：① frontmatter 仅留 name+description；② command 引用的共享子文件
 （_*.md / *-rationale.md，含传递依赖）去重内联为「附录」；③ 正文链接降级为
-纯文本；④ helper skill（无同名 command）不处理。确定性：所有去重均按出现
-顺序，避免 set 迭代顺序导致的不幂等。
+纯文本；④ helper skill（无同名 command）不处理；⑤ SKIP_MIRROR 中的管道命令
+不派生镜像（无自然语言入口价值，仅增加会话激活噪音），已有的残留镜像在生成
+时删除、在 --check 时报错。确定性：所有去重均按出现顺序，避免 set 迭代顺序
+导致的不幂等。
 
 用法：gen-skills.py [--check] [--plugin P] [--command C]
 """
@@ -18,6 +20,14 @@ import re
 import sys
 
 PLUGINS = ["req", "api", "pm", "diag", "uat"]
+# 纯管道/查询/参考命令：不派生镜像 skill。镜像仅服务于「不支持 slash 的客户端
+# 用自然语言唤起能力」，下列命令在那种场景几乎不会被自然语言触发，却每个都带一份
+# description 参与会话级激活匹配（token 成本 + 误激活风险）。slash 客户端仍可直接
+# 调用对应 command，能力不受影响。按裸命令名跨插件统一跳过。
+SKIP_MIRROR = {
+    "migrate", "update", "update-template", "specs", "modules",
+    "release-rationale", "commit", "split", "show", "status", "help", "projects",
+}
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SUBFILE_RE = re.compile(
     r"\[([^\]]*)\]\((?:\./)?((?:_[A-Za-z0-9_-]+|[A-Za-z0-9-]+-rationale)\.md)(#[^)]*)?\)"
@@ -97,8 +107,38 @@ def iter_commands(plugins, only_command):
             name = fn[:-3]
             if only_command and name != only_command:
                 continue
+            if name in SKIP_MIRROR:
+                continue
             yield p, name, os.path.join(cdir, fn), cdir, \
                 os.path.join(ROOT, "plugins", p, "skills", name, "SKILL.md")
+
+
+def cleanup_skipped(plugins, check):
+    """删除 SKIP_MIRROR 命令的残留镜像 skill（仅当存在同名 command 时）。
+
+    check=True 只收集不删除，供 --check 报告残留。返回 (removed, stale)。
+    """
+    removed, stale = [], []
+    for p in plugins:
+        cdir = os.path.join(ROOT, "plugins", p, "commands")
+        sdir = os.path.join(ROOT, "plugins", p, "skills")
+        if not os.path.isdir(cdir):
+            continue
+        for name in sorted(SKIP_MIRROR):
+            cmd = os.path.join(cdir, name + ".md")
+            skill = os.path.join(sdir, name, "SKILL.md")
+            if not (os.path.isfile(cmd) and os.path.isfile(skill)):
+                continue
+            if check:
+                stale.append(f"{p}/{name}")
+            else:
+                os.remove(skill)
+                try:
+                    os.rmdir(os.path.dirname(skill))
+                except OSError:
+                    pass
+                removed.append(f"{p}/{name}")
+    return removed, stale
 
 
 def main():
@@ -125,14 +165,24 @@ def main():
             kb = round(len(new.encode("utf-8")) / 1024, 1)
             written.append(f"{p}/{name} ({kb}KB){'  WARN>30KB' if kb > 30 else ''}")
     if a.check:
-        if drifted:
-            print(f"[X] {len(drifted)} 个 skill 不一致: " + ", ".join(drifted))
+        _, stale = cleanup_skipped(plugins, True)
+        if drifted or stale:
+            msgs = []
+            if drifted:
+                msgs.append(f"{len(drifted)} 个 skill 不一致: " + ", ".join(drifted))
+            if stale:
+                msgs.append(f"{len(stale)} 个跳过命令仍残留镜像: " + ", ".join(stale))
+            print("[X] " + "；".join(msgs))
             return 1
-        print(f"[OK] 全部 {unchanged} 个 skill 与 command 一致")
+        print(f"[OK] 全部 {unchanged} 个 skill 与 command 一致，无残留镜像")
         return 0
+    removed, _ = cleanup_skipped(plugins, False)
     for w in written:
         print(f"  + {w}")
-    print(f"\n生成 {len(written)} 个，未变 {unchanged} 个。helper 未触碰。")
+    for r in removed:
+        print(f"  - {r}（跳过镜像，已删除）")
+    print(f"\n生成 {len(written)} 个，未变 {unchanged} 个，删除 {len(removed)} 个跳过镜像。"
+          f"helper 未触碰。")
     return 0
 
 
