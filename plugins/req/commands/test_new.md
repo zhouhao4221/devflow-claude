@@ -10,7 +10,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 
 为新开发的功能创建自动化测试用例，包括 UT、API 测试和 E2E 测试。
 
-> 存储和缓存同步见 [`_storage.md`](./_storage.md)
+> 存储和缓存同步见 [`_storage.md`](../shared/_storage.md)
 
 ## 命令格式
 
@@ -63,7 +63,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 输出到 `docs/test-cases/REQ-XXX-testcases.md`，更新需求文档第六章追加引用。
 
 ### 8. 汇总 & 运行验证
-生成文件汇总表；运行新创建的测试委派 `test-runner` subagent（prompt 给：工作目录、testing.md 的运行命令 + 新建测试文件过滤、返回格式），主会话按其失败清单修正用例后再回跑；规则见 [`_delegate.md`](./_delegate.md)。
+生成文件汇总表；运行新创建的测试委派 `test-runner` subagent（prompt 给：工作目录、testing.md 的运行命令 + 新建测试文件过滤、返回格式），主会话按其失败清单修正用例后再回跑；规则见 [`_delegate.md`](../shared/_delegate.md)。
 
 ### 9. 更新需求文档
 在需求文档追加测试覆盖章节（类型、文件、用例数、覆盖率、创建时间）。

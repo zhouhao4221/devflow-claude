@@ -12,7 +12,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), 
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
 > 不触发缓存同步（无需求文档）。
 >
-> **CLI 优先级**：GitHub 用 `gh`；Gitea 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`，可用即走 `tea`，否则回退本文 curl 示例。
+> **CLI 优先级**：GitHub 用 `gh`；Gitea 按 [`_gitea_cli.md`](../shared/_gitea_cli.md) 检测 `tea`，可用即走 `tea`，否则回退本文 curl 示例。
 
 ## 命令格式
 
@@ -34,9 +34,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), 
 
 ### 0. （可选）从 issue 读取描述
 
-若命令带 `--from-issue=#N`，按 [_issue.md 的 Issue 拉取规范](./_issue.md#issue-拉取规范) 拉取 issue，把 issue 标题 + 正文拼成用户描述传入步骤 1。
+若命令带 `--from-issue=#N`，按 [_issue.md 的 Issue 拉取规范](../shared/_issue.md#issue-拉取规范) 拉取 issue，把 issue 标题 + 正文拼成用户描述传入步骤 1。
 
-本命令不创建需求文档，issue 编号通过**分支名 `-iN` 后缀**持久化（步骤 3 创建分支时追加），供 `/req:commit`、步骤 5 关闭 issue 等后续操作识别。参见 [_issue.md 的 Issue 与分支关联](./_issue.md#issue-与分支提交的关联)。
+本命令不创建需求文档，issue 编号通过**分支名 `-iN` 后缀**持久化（步骤 3 创建分支时追加），供 `/req:commit`、步骤 5 关闭 issue 等后续操作识别。参见 [_issue.md 的 Issue 与分支关联](../shared/_issue.md#issue-与分支提交的关联)。
 
 ### 1. AI 分析意图
 
@@ -86,7 +86,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), 
 > 读取项目 CLAUDE.md 的「项目架构」章节，了解分层结构和目录布局。
 > 第 1 步意图为「重构 / 优化」时，Read `docs/prompt/refactoring.md`，存在则按其约束（行为不变、契约不变、范围聚焦）生成方案；缺失静默跳过。
 
-定位相关文件委派 `code-scout` subagent（prompt 给：第 1 步识别的意图与目标、关键词/符号名、架构分层目录摘要），主会话只精读其返回的高/中相关片段后生成方案；用户已指明文件或范围 ≤ 3 个文件时直接 Read。规则见 [`_delegate.md`](./_delegate.md)。
+定位相关文件委派 `code-scout` subagent（prompt 给：第 1 步识别的意图与目标、关键词/符号名、架构分层目录摘要），主会话只精读其返回的高/中相关片段后生成方案；用户已指明文件或范围 ≤ 3 个文件时直接 Read。规则见 [`_delegate.md`](../shared/_delegate.md)。
 
 ```
 代码分析：
@@ -127,10 +127,10 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), 
 1. 读取 `branchStrategy`（未配置则使用默认前缀）
 2. 分支前缀由步骤 1 的类型判断决定（见类型判断依据表的「分支前缀」列）
 3. AI 根据 issue 标题生成英文 slug
-4. 分支名末尾追加 `-i<N>`（参见 [_issue.md 的 Issue 与分支关联](./_issue.md#issue-与分支提交的关联)）
+4. 分支名末尾追加 `-i<N>`（参见 [_issue.md 的 Issue 与分支关联](../shared/_issue.md#issue-与分支提交的关联)）
 5. 示例：`fix/optimize-order-query-i42`、`feat/add-search-feature-i12`
 
-AI 按确认的方案修改代码。修改完成后，若项目 `docs/prompt/testing.md`（或架构章节）定义了测试命令且存在与改动相关的测试，派 `test-runner` subagent 回归（规则见 [`_delegate.md`](./_delegate.md)）；失败先修再进入步骤 4。无相关测试则跳过。
+AI 按确认的方案修改代码。修改完成后，若项目 `docs/prompt/testing.md`（或架构章节）定义了测试命令且存在与改动相关的测试，派 `test-runner` subagent 回归（规则见 [`_delegate.md`](../shared/_delegate.md)）；失败先修再进入步骤 4。无相关测试则跳过。
 
 ### 4. 完成提示
 

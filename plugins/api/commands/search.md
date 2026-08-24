@@ -28,7 +28,7 @@ model: claude-haiku-4-5-20251001
 
 ### 前置检查
 
-参考 `_common.md` 的「命令执行前置检查」。
+参考 [`_common.md`](../shared/_common.md) 的「命令执行前置检查」。
 
 ### 搜索流程
 

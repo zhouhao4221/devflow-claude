@@ -42,7 +42,7 @@ model: claude-haiku-4-5-20251001
 
 ### 1. 解析需求数据路径
 
-参考 `_common.md` 的路径解析规则。
+参考 [`_common.md`](../shared/_common.md) 的路径解析规则。
 
 ### 2. 采集数据
 

@@ -9,7 +9,7 @@ model: claude-haiku-4-5-20251001
 
 管理项目的 Git 分支策略，与需求流程（dev/commit/done）联动。
 
-> 不受仓库角色限制，readonly 可执行。不触发缓存同步。写入规范见 [`_storage.md`](./_storage.md#settings-文件写入规范)。
+> 不受仓库角色限制，readonly 可执行。不触发缓存同步。写入规范见 [`_storage.md`](../shared/_storage.md#settings-文件写入规范)。
 
 ## 命令格式
 

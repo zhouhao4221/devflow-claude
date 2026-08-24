@@ -12,7 +12,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, m
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
 > 不触发缓存同步（无需求文档）。
 >
-> **CLI 优先级**：GitHub 用 `gh`；Gitea 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`，可用即走 `tea`，否则回退本文 curl 示例。
+> **CLI 优先级**：GitHub 用 `gh`；Gitea 按 [`_gitea_cli.md`](../shared/_gitea_cli.md) 检测 `tea`，可用即走 `tea`，否则回退本文 curl 示例。
 
 ## 命令格式
 
@@ -36,9 +36,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, m
 
 ### 0. （可选）从 issue 读取问题描述
 
-若命令带 `--from-issue=#N`，按 [_issue.md 的 Issue 拉取规范](./_issue.md#issue-拉取规范) 拉取 issue，把 issue 标题 + 正文拼成用户问题描述传入步骤 1。
+若命令带 `--from-issue=#N`，按 [_issue.md 的 Issue 拉取规范](../shared/_issue.md#issue-拉取规范) 拉取 issue，把 issue 标题 + 正文拼成用户问题描述传入步骤 1。
 
-本命令不创建需求文档，issue 编号通过**分支名 `-iN` 后缀**持久化（步骤 2.3 创建分支时追加），供 `/req:commit`、步骤 5 关闭 issue 等后续操作识别。参见 [_issue.md 的 Issue 与分支关联](./_issue.md#issue-与分支提交的关联)。
+本命令不创建需求文档，issue 编号通过**分支名 `-iN` 后缀**持久化（步骤 2.3 创建分支时追加），供 `/req:commit`、步骤 5 关闭 issue 等后续操作识别。参见 [_issue.md 的 Issue 与分支关联](../shared/_issue.md#issue-与分支提交的关联)。
 
 用户同时提供了描述和 `--from-issue` 时，以用户描述为主，issue 内容作为补充上下文。
 
@@ -64,7 +64,7 @@ Bug 分析：登录超时后 token 未清除
 
 #### 1.2 定位相关文件
 
-委派 `code-scout` subagent 搜索代码库（prompt 给：1.1 的现象与影响范围、报错信息/符号名、CLAUDE.md 架构章节的分层目录摘要），主会话拿到清单后只精读高/中相关的关键行段，用于 1.4 根因分析；规则见 [`_delegate.md`](./_delegate.md)。用户已指明具体文件时直接 Read，不委派。展示格式：
+委派 `code-scout` subagent 搜索代码库（prompt 给：1.1 的现象与影响范围、报错信息/符号名、CLAUDE.md 架构章节的分层目录摘要），主会话拿到清单后只精读高/中相关的关键行段，用于 1.4 根因分析；规则见 [`_delegate.md`](../shared/_delegate.md)。用户已指明具体文件时直接 Read，不委派。展示格式：
 
 ```
 相关文件定位：
@@ -162,7 +162,7 @@ AI 综合代码搜索结果和关联需求上下文，给出根因判断：
 
 AI 根据问题描述生成英文 slug（lowercase kebab-case，最多 5 词）。
 
-**有 `--from-issue=#N`**：分支名末尾追加 `-i<N>`（参见 [_issue.md 的 Issue 与分支关联](./_issue.md#issue-与分支提交的关联)）。
+**有 `--from-issue=#N`**：分支名末尾追加 `-i<N>`（参见 [_issue.md 的 Issue 与分支关联](../shared/_issue.md#issue-与分支提交的关联)）。
 
 ```
 创建修复分支：fix/login-token-not-cleared-i42
@@ -184,7 +184,7 @@ fetch `branchFrom`，从远端创建并切换到新分支（有 issue 时分支�
 
 AI 按确认的方案修改代码。
 
-修改完成后，若项目 `docs/prompt/testing.md`（或架构章节）定义了测试命令且存在与改动相关的测试，派 `test-runner` subagent 回归（规则见 [`_delegate.md`](./_delegate.md)）；失败先修再进入步骤 4。无相关测试则跳过，不新建测试。
+修改完成后，若项目 `docs/prompt/testing.md`（或架构章节）定义了测试命令且存在与改动相关的测试，派 `test-runner` subagent 回归（规则见 [`_delegate.md`](../shared/_delegate.md)）；失败先修再进入步骤 4。无相关测试则跳过，不新建测试。
 
 ---
 

@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 
 初始化需求项目，创建本地存储目录和主仓需求目录，并绑定当前仓库。
 
-> 模板源文件：`plugins/req/templates/`，写入规范：[`_storage.md`](./_storage.md#settings-文件写入规范)，索引格式：[`index-template.md`](../templates/index-template.md)，架构片段：[`claude-md-snippets/`](../templates/claude-md-snippets/)，release 模板：[`release-prompt-template.md`](../templates/release-prompt-template.md)，Prompt 库骨架：[`prompt-snippets/`](../templates/prompt-snippets/)
+> 模板源文件：`plugins/req/templates/`，写入规范：[`_storage.md`](../shared/_storage.md#settings-文件写入规范)，索引格式：[`index-template.md`](../templates/index-template.md)，架构片段：[`claude-md-snippets/`](../templates/claude-md-snippets/)，release 模板：[`release-prompt-template.md`](../templates/release-prompt-template.md)，Prompt 库骨架：[`prompt-snippets/`](../templates/prompt-snippets/)
 
 ## 命令格式
 
@@ -49,7 +49,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 
 ### 6. 绑定当前仓库
 
-> 写入规范见 [_storage.md](./_storage.md#settings-文件写入规范)。无主仓需求目录：需求文档只存在于 primary 仓库的 `requirementsDir`。
+> 写入规范见 [_storage.md](../shared/_storage.md#settings-文件写入规范)。无主仓需求目录：需求文档只存在于 primary 仓库的 `requirementsDir`。
 
 在 `.devflow/settings.json` 写入 `requirementProject`、`requirementRole`、`requirementsDir`（合并写入，不覆盖 `branchStrategy` 等既有字段）。
 

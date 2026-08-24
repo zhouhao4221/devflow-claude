@@ -29,7 +29,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(python3:*)
 
 ### 前置检查
 
-1. 参考 `_common.md` 的「命令执行前置检查」
+1. 参考 [`_common.md`](../shared/_common.md) 的「命令执行前置检查」
 2. 执行请求库自动检测（参考 `_common.md`「请求库自动检测」）
 3. 读取 `codegen.outputDir` 和 `codegen.typeDir`
 

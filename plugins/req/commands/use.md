@@ -37,7 +37,7 @@ model: claude-haiku-4-5-20251001
 
 ### 3. 写入绑定
 
-> 写入规范见 [_storage.md](./_storage.md#settings-文件写入规范)。
+> 写入规范见 [_storage.md](../shared/_storage.md#settings-文件写入规范)。
 
 - `.devflow/settings.json`（合并写入，不覆盖既有 `branchStrategy` 等）：
   ```json

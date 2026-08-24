@@ -27,7 +27,7 @@ allowed-tools: Read, Glob, Grep, Bash(python3:*)
 
 ### 前置检查
 
-参考 `_common.md` 的「命令执行前置检查」。
+参考 [`_common.md`](../shared/_common.md) 的「命令执行前置检查」。
 
 ### 映射流程
 

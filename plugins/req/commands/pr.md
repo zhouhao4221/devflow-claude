@@ -11,7 +11,7 @@ allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 > **Audience:** Engineer
 > 不受仓库角色限制，readonly 也可执行。不触发缓存同步。
 >
-> **CLI 优先级**：GitHub 走 `gh pr create`；Gitea 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测，可用 `tea` 时走 `tea pulls create --base <target> --head <branch> --title ... --description ...`，否则回退本文 curl 示例。
+> **CLI 优先级**：GitHub 走 `gh pr create`；Gitea 按 [`_gitea_cli.md`](../shared/_gitea_cli.md) 检测，可用 `tea` 时走 `tea pulls create --base <target> --head <branch> --title ... --description ...`，否则回退本文 curl 示例。
 
 ## 命令格式
 
