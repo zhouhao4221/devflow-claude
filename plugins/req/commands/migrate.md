@@ -29,8 +29,6 @@ model: claude-haiku-4-5-20251001
 
 ### 2A. 配置迁移（检测到 `.claude/` 旧 DevFlow 配置）
 
-> 等价于运行 [`scripts/migrate-config.sh`](../scripts/migrate-config.sh)。
-
 - 把 `.claude/settings.json(.local)` 中的 DevFlow 字段搬到 `.devflow/`：
   - `requirementProject` / `requirementRole` / `requirementsDir` / `branchStrategy` -> `.devflow/settings.json`
   - `giteaToken` -> `.devflow/settings.local.json`

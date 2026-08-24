@@ -127,7 +127,7 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 更新各命令的引用从 `[_common.md]` 改成具体的 `[_issue.md]` 等。模型 Read 时只拉相关主题（~3-6KB），不再每次拉 22KB。
 
-**共享文件之间禁止用 Markdown 链接互引**：`gen-skills.py` 按链接做传递闭包内联，任何一个 `_*.md` 链到其它几个，就会把整组 ~33KB 全部塞进每个 skill（2026-08 之前所有 skill 都因此超 30KB）。互相提及时写纯文本文件名（`` `_branch.md` ``），只有真实依赖（如 `_issue.md` → `_gitea_cli.md` 的 tea 检测）才用链接。
+**共享文件之间禁止用 Markdown 链接互引**：任何一个 `_*.md` 链到其它几个，模型顺着链接展开就会把整组 ~33KB 全部读进上下文，按主题拆分的收益直接归零（2026-08 前由此派生的 skill 镜像也都因此超 30KB）。互相提及时写纯文本文件名（`` `_branch.md` ``），只有真实依赖（如 `_issue.md` → `_gitea_cli.md` 的 tea 检测）才用链接。
 
 ### 4.3 显式降级到 Haiku
 
@@ -184,7 +184,7 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 
 **何时用**：命令中某一步会往主会话灌入大量原始输出（跑测试、大 PR diff、批量 grep），或可按独立单元拆分并行（逐文件审查）。
 
-**做法**：命令文档指示把该步骤派给插件自带的 agent（`plugins/req/agents/`），主会话只接收结构化结论；frontmatter `allowed-tools` 加 `Agent`。规则与可用 agent 见 `plugins/req/commands/_delegate.md`。
+**做法**：命令文档指示把该步骤派给插件自带的 agent（`plugins/req/agents/`），主会话只接收结构化结论；frontmatter `allowed-tools` 加 `Agent`。规则与可用 agent 见 `plugins/req/shared/_delegate.md`。
 
 **收益**：两层。① 机械步骤跑在 haiku 上（`test-runner`）；② **上下文隔离**——原始输出留在 subagent，主会话之后每一轮都不再为它付费，这一层通常比单价差更大。
 
@@ -228,7 +228,7 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 wc -c plugins/*/commands/*.md | sort -nr | head -10
 
 # 共享文件按大小排序
-wc -c plugins/*/commands/_*.md | sort -nr
+wc -c plugins/*/shared/*.md | sort -nr
 ```
 
 ---

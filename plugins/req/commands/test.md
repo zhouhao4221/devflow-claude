@@ -10,7 +10,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 
 针对指定需求执行综合测试：运行已有测试 → 引导创建新测试 → 交互验证测试要点。
 
-> 存储和缓存同步见 [`_storage.md`](./_storage.md)
+> 存储和缓存同步见 [`_storage.md`](../shared/_storage.md)
 
 ## 命令格式
 
@@ -46,7 +46,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 
 ## 回归阶段的执行方式
 
-阶段一~三的「回归运行已有测试」一律委派给 `test-runner` subagent 执行，主会话只接收摘要，测试日志不进入主会话；规则见 [`_delegate.md`](./_delegate.md)。
+阶段一~三的「回归运行已有测试」一律委派给 `test-runner` subagent 执行，主会话只接收摘要，测试日志不进入主会话；规则见 [`_delegate.md`](../shared/_delegate.md)。
 
 - 环境检查/启动（阶段二、三）仍由主会话完成，subagent 只跑测试命令
 - prompt 自包含：工作目录、testing.md 中的运行命令（已拼好 `--failed`/模块过滤）、本阶段要跑的测试文件清单、`--failed` 模式下的上次失败清单

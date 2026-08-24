@@ -10,7 +10,7 @@ allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, python3:*, jq:
 
 > 不受仓库角色限制，readonly 也可执行。不触发缓存同步。
 >
-> **CLI 优先级**：GitHub 走 `gh`；Gitea 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`，可用即走 `tea`，否则回退 curl。`tea` 不支持的操作（评论列表、标签增删等）始终走 curl。
+> **CLI 优先级**：GitHub 走 `gh`；Gitea 按 [`_gitea_cli.md`](../shared/_gitea_cli.md) 检测 `tea`，可用即走 `tea`，否则回退 curl。`tea` 不支持的操作（评论列表、标签增删等）始终走 curl。
 
 ---
 
@@ -41,7 +41,7 @@ issue 编号支持 `#42` 和 `42` 两种写法。所有子命令都先执行前�
 | `github` | `gh` CLI 已安装 | 提示安装 gh 后终止 |
 | `other` / 未配置 | 无 | 写操作输出手动提示；list/show 报错 |
 
-OWNER/REPO 从 `git remote get-url origin` 解析，支持 SSH 和 HTTPS 格式，见 [_issue.md](./_issue.md#ownerrepo-解析)。
+OWNER/REPO 从 `git remote get-url origin` 解析，支持 SSH 和 HTTPS 格式，见 [_issue.md](../shared/_issue.md#ownerrepo-解析)。
 
 ---
 

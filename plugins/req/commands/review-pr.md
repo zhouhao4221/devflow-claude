@@ -10,7 +10,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), 
 
 > 不受仓库角色限制，readonly 可执行。不触发缓存同步。
 >
-> CLI 优先级：GitHub → `gh pr`/`gh api`；Gitea → 按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`。tea 未覆盖的接口走 curl。
+> CLI 优先级：GitHub → `gh pr`/`gh api`；Gitea → 按 [`_gitea_cli.md`](../shared/_gitea_cli.md) 检测 `tea`。tea 未覆盖的接口走 curl。
 
 ## 命令格式
 
@@ -74,7 +74,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), 
 
 审查维度：正确性、安全性、错误处理、命名规范、代码风格、需求匹配、测试覆盖。
 
-**执行方式按 PR 规模选择**（规则见 [`_delegate.md`](./_delegate.md)）：
+**执行方式按 PR 规模选择**（规则见 [`_delegate.md`](../shared/_delegate.md)）：
 
 | PR 规模 | 方式 |
 |---------|------|

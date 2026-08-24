@@ -35,7 +35,7 @@ model: claude-sonnet-5
 
 ```python
 from_date, to_date = parse_date_range(args.from, args.to, default_range="all")
-# 解析需求数据路径（参考 _common.md）
+# 解析需求数据路径（参考 ../shared/_common.md）
 ```
 
 ### 2. 采集数据

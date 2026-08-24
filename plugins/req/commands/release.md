@@ -11,9 +11,9 @@ model: claude-haiku-4-5-20251001
 
 > **Audience:** Engineer
 > readonly 仓库可用。不触发缓存同步。
-> CLI 优先：GitHub → `gh`；Gitea → 检测 `tea`，不支持的接口回退 curl。详见 [`_gitea_cli.md`](./_gitea_cli.md)。
-> 设计原理和边界情况详见 [`release-rationale.md`](./release-rationale.md)。
-> **发布前置（REQ-003）**：先运行 `python3 scripts/gen-skills.py --check` 校验 skill 与 command 一致；若报漂移，运行 `python3 scripts/gen-skills.py` 重新派生并纳入本次发布。skill 由 command 单源派生，禁止手改。
+> CLI 优先：GitHub → `gh`；Gitea → 检测 `tea`，不支持的接口回退 curl。详见 [`_gitea_cli.md`](../shared/_gitea_cli.md)。
+> 设计原理和边界情况详见 [`release-rationale.md`](../shared/release-rationale.md)。
+> **发布前置**：先运行 `python3 scripts/check-layout.py --check` 校验插件布局（`skills/` 无命令镜像、`commands/` 无非命令文件、相对链接全部可达）；报错则运行 `python3 scripts/check-layout.py` 清理可清理的部分，其余手工修完再纳入本次发布。
 
 ## 参数
 
@@ -279,7 +279,7 @@ PR: <PR URL>（等待合并到 <main_branch>）
 
 ## 边界情况
 
-完整速查见 [rationale §12](./release-rationale.md)：
+完整速查见 [rationale §12](../shared/release-rationale.md)：
 
 | 场景 | 处理 |
 |------|------|

@@ -26,7 +26,7 @@ allowed-tools: Read, Write, Edit, Glob, Bash(python3:*, curl:*)
 
 ### 前置检查
 
-参考 `_common.md` 的「命令执行前置检查」。
+参考 [`_common.md`](../shared/_common.md) 的「命令执行前置检查」。
 
 ### 解析流程
 

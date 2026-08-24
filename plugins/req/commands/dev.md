@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), Agent
 启动或继续需求开发，先生成实现方案，确认后逐步实现。
 
 > **Audience:** Engineer
-> 存储路径规则见 [_storage.md](./_storage.md)
+> 存储路径规则见 [_storage.md](../shared/_storage.md)
 
 ## 命令格式
 
@@ -60,7 +60,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), Agent
 ### 2.5 分支管理
 
 > 仅 `primary` 仓库执行，`readonly` 仓库跳过此步骤。
-> 分支策略配置见 [_branch.md](./_branch.md)。
+> 分支策略配置见 [_branch.md](../shared/_branch.md)。
 
 #### 工作区检查
 
@@ -115,7 +115,7 @@ else:
 2. 拼接分支名（使用策略配置的前缀）：
    - REQ-XXX → `<FEATURE_PREFIX>REQ-XXX-<slug>`（默认 `feat/REQ-XXX-<slug>`）
    - QUICK-XXX → `<FIX_PREFIX>QUICK-XXX-<slug>`（默认 `fix/QUICK-XXX-<slug>`）
-3. 若需求文档元信息 `issue` 字段非 `-` 且非空（如 `#12`），在分支名末尾追加 `-i<N>`（如 `-i12`），参见 [_issue.md 的 Issue 与分支关联](./_issue.md#issue-与分支提交的关联)
+3. 若需求文档元信息 `issue` 字段非 `-` 且非空（如 `#12`），在分支名末尾追加 `-i<N>`（如 `-i12`），参见 [_issue.md 的 Issue 与分支关联](../shared/_issue.md#issue-与分支提交的关联)
 4. 展示分支名供用户确认（可修改）：
    ```
    将创建开发分支：feat/REQ-001-user-points-i12
@@ -132,11 +132,11 @@ else:
 ### 4. 生成实现方案（Plan Mode）
 
 > **前置**：读取项目 CLAUDE.md 的「项目架构」章节，获取分层架构、目录结构、开发规范。
-> 缺少时发出警告（见 [_claude-md.md](./_claude-md.md)）。
+> 缺少时发出警告（见 [_claude-md.md](../shared/_claude-md.md)）。
 
 进入 Plan Mode，基于需求文档和 CLAUDE.md 架构信息生成实现方案，填充「十一、实现方案」章节：
 
-> **定位现有代码先委派**：方案需要参照的既有实现（相似模块、要改动的调用方、现有数据模型/接口）先派 `code-scout` subagent 定位（prompt 给：功能清单关键词、接口路径/实体名、architecture.md 的分层目录摘要），主会话只按其返回的 `file:line` 精读高/中相关片段，不自己全库 grep。候选路径已明确且 ≤ 3 个文件时可直接 Read。规则见 [`_delegate.md`](./_delegate.md)。
+> **定位现有代码先委派**：方案需要参照的既有实现（相似模块、要改动的调用方、现有数据模型/接口）先派 `code-scout` subagent 定位（prompt 给：功能清单关键词、接口路径/实体名、architecture.md 的分层目录摘要），主会话只按其返回的 `file:line` 精读高/中相关片段，不自己全库 grep。候选路径已明确且 ≤ 3 个文件时可直接 Read。规则见 [`_delegate.md`](../shared/_delegate.md)。
 
 - **11.1 数据模型**：新增/修改的表、字段说明、实体关系
 - **11.2 API 设计**：基于第五章接口需求 + 项目代码 + CLAUDE.md API 风格，生成具体接口方案（路径、方法、请求/响应字段、错误码）
