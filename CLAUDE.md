@@ -12,20 +12,20 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 5
 
 1. **命令/技能文件是「给 Claude 的指令文档」，不是可执行代码。** `commands/<name>.md` 与 `skills/<name>/SKILL.md` 是自然语言指令，运行时由 Claude 解读执行。**改流程 = 改 `.md`**，通常无需动脚本。
 2. **脚本（`scripts/`）只做确定性的副作用**：缓存同步、文档校验、状态字段写入、Hook 拦截、外部数据解析（如 Swagger）。不承载业务判断。
-3. **共享逻辑抽到 `commands/_*.md`**（下划线前缀），命令用 Markdown 链接引用，避免重复、控制 token。新命令链接到具体专题文件（`_storage.md`/`_branch.md`/`_issue.md`/`_gitea_cli.md`/`_granularity.md`/`_template.md`），不要链 `_common.md`（它只是索引）。
+3. **共享逻辑抽到 `commands/_*.md`**（下划线前缀），命令用 Markdown 链接引用，避免重复、控制 token。新命令链接到具体专题文件（`_storage.md`/`_branch.md`/`_issue.md`/`_gitea_cli.md`/`_granularity.md`/`_template.md`/`_delegate.md`），不要链 `_common.md`（它只是索引）。
 4. **只写 Claude 推不出来的内容**：平台差异约束、非显而易见的业务规则、输出格式。不写 curl/gh/tea 完整命令、Python 实现、URL 模板。判断标准：能从 API 文档或常识推断 → 不写；不能（如「Gitea labels 必须走独立端点」）→ 写。
 
 ## 插件全景
 
 | 插件 | 版本 | 职责 | 目录构成 |
 |------|------|------|---------|
-| **req** | 3.23.0 | 需求全流程：分析→评审→开发→测试→归档 + 分支/PR/issue/版本 | commands skills hooks scripts templates schemas |
+| **req** | 4.0.0 | 需求全流程：分析→评审→开发→测试→归档 + 分支/PR/issue/版本 | commands skills agents hooks scripts templates schemas |
 | **pm** | 0.5.0 | 项目管理助手：周报/月报/统计/风险/方案（只读消费 req 数据） | commands skills scripts |
 | **api** | 0.4.0 | 前端 API 对接：Swagger 解析、字段映射、TS 代码生成 | commands skills scripts docs tests |
 | **diag** | 0.2.0 | 生产诊断（**全程只读**）：SSH 拉日志→解析堆栈→关联代码→修复建议 | commands skills hooks scripts templates tests |
 | **uat** | 1.3.0 | UI 验收测试：AI 按流程文档逐场景执行界面操作（前身 `qa`） | commands skills templates |
 
-整体版本 `marketplace.json` = 2.36.0。**事实源是各 `plugin.json` + `marketplace.json`，不是 README**——README/tutorial 的版本号已过时，且只覆盖 req/pm/api，未收录 diag/uat（已知文档债务，非功能不成熟；diag 由 REQ-001、uat 由 REQ-002 完整交付）。
+整体版本 `marketplace.json` = 2.37.0。**事实源是各 `plugin.json` + `marketplace.json`，不是 README**——README/tutorial 的版本号已过时，且只覆盖 req/pm/api，未收录 diag/uat（已知文档债务，非功能不成熟；diag 由 REQ-001、uat 由 REQ-002 完整交付）。
 
 ## 命令与技能结构
 
@@ -47,16 +47,19 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 ---
 ```
 
-**模型分级**（实际只有两档；README 的 Haiku/Sonnet/Opus 三档表已过时）：
+**模型分级**（三档；README 的三档表分配已过时，以本节为准）：
 
 | 策略 | 适用 | 做法 |
 |------|------|------|
 | 显式 haiku | 纯查询/展示/格式化输出/配置/规则明确的状态流转 | `model: claude-haiku-4-5-20251001` |
-| 不指定 | 分析代码/生成方案/多轮需求讨论/AI 审查/架构理解 | 省略 `model` |
+| 显式 sonnet | 数据聚合 + 成文类（pm 周报/月报/里程碑/统计/进度/简介/风险扫描）、有界的单元审查 | `model: claude-sonnet-5` |
+| 不指定 | 分析代码/生成方案/多轮需求讨论/架构理解/自由问答 | 省略 `model` |
 
-> 避免显式 sonnet：其 1M context 变体会触发 extra-usage 付费墙；Haiku 200K 对机械命令足够，复杂命令交给会话模型。
+> sonnet 一律写 `claude-sonnet-5`（原生 1M 上下文、超 200K 不加价、Pro/Max 不计 extra usage，2026-08 核实）；旧的 `sonnet[1m]`/Sonnet 4.6 付费墙顾虑已不适用。`pm:plan`/`pm:ask` 需要真实推理，保持省略。
 > 模型分级**仅对 `commands/*.md` 命令调用生效**；以技能形态调用时无 `model` 字段，一律继承会话模型。
 > 边界例外：`done`/`review`/`upgrade`/`release` 虽含写操作，但流程被模板和显式参数高度约束，仍用 haiku。
+
+**子任务委派**（命令内粒度，与整条命令的模型分级正交）：命令中「吞吐大、推理浅」的步骤派给插件自带 subagent（`plugins/req/agents/`：`test-runner` haiku 跑测试 · `code-scout` haiku 定位代码 · `file-reviewer` sonnet 逐文件审查大 PR），主会话只接收结论，原始输出不进主上下文。规则见 `commands/_delegate.md`。派生 subagent 的命令 `allowed-tools` 必须列 `Agent`（`allowed-tools` 是白名单限制，不是免确认）。不要为了省 token 把整条 `dev`/`fix` 拆成「会话模型出方案 → 其它模型执行」。
 
 **allowed-tools**：只读命令不声明 Write/Edit/Bash。**Token 节约**：单文件 < 30 KB；> 50 KB 拆主文件 + rationale；详见 [`docs/design/token-optimization.md`](./docs/design/token-optimization.md)。
 
@@ -175,11 +178,11 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 ## 维护规则与易错点
 
 1. 只改 `commands/<name>.md`（及其 `_*.md` 子文件），**绝不手改 `skills/*/SKILL.md`**；改完运行 `python3 scripts/gen-skills.py` 重新派生，发布前用 `--check` 校验一致性。helper skill（无同名 command）是手写的，生成器不碰。
-2. 共享规则改 `_*.md`，勿在每个命令重复。
+2. 共享规则改 `_*.md`，勿在每个命令重复。**共享文件之间不要用 Markdown 链接互引**（生成器按链接传递内联，会把整组塞进每个 skill），互相提及写纯文本文件名，仅真实依赖用链接。
 3. 缓存同步由 Hook 强制单向（本地→缓存覆盖），命令内不写显式 cp。
 4. `requirementRole=readonly` 是贯穿多命令的分支点，新增写命令必须处理跳过。
 5. 两个 marker：`.req-confirm-commit`=开关常驻，`.req-auto`=临时豁免有 TTL。
 6. Gitea 一律「tea 优先、curl 回退」，禁止自动 `tea login add`。
-7. 模型分级只有 haiku / 省略两档，按推理强度选；技能形态无 model 字段。
+7. 模型分级 haiku / sonnet(`claude-sonnet-5`) / 省略三档，按推理强度选；技能形态无 model 字段。命令内高吞吐步骤走 subagent 委派（`_delegate.md`），不为此改整条命令的 model。
 8. diag 的 6 个风控 Hook 是设计核心，改 hooks 必须同步注册。
 9. `/req:release` 用 `version-bumper` 按 semver 推导各插件版本；发布事实源是 plugin.json，README 版本号需手动同步（当前已滞后）。

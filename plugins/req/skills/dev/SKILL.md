@@ -135,6 +135,8 @@ else:
 
 进入 Plan Mode，基于需求文档和 CLAUDE.md 架构信息生成实现方案，填充「十一、实现方案」章节：
 
+> **定位现有代码先委派**：方案需要参照的既有实现（相似模块、要改动的调用方、现有数据模型/接口）先派 `code-scout` subagent 定位（prompt 给：功能清单关键词、接口路径/实体名、architecture.md 的分层目录摘要），主会话只按其返回的 `file:line` 精读高/中相关片段，不自己全库 grep。候选路径已明确且 ≤ 3 个文件时可直接 Read。规则见 `_delegate.md`（见附录：_delegate.md）。
+
 - **11.1 数据模型**：新增/修改的表、字段说明、实体关系
 - **11.2 API 设计**：基于第五章接口需求 + 项目代码 + CLAUDE.md API 风格，生成具体接口方案（路径、方法、请求/响应字段、错误码）
 - **11.3 文件改动清单**：按 CLAUDE.md 分层架构表的顺序列出需要新增/修改的文件
@@ -239,7 +241,7 @@ $ARGUMENTS
 
 > 此文档定义 settings 文件写入、存储路径、缓存同步、需求编号、元信息等共用规则。
 >
-> 同伴文档：`_branch.md`（见附录：_branch.md）（分支策略）、`_issue.md`（见附录：_issue.md）（Issue 关联）、`_template.md`（见附录：_template.md）（模板与状态确认）、`_granularity.md`（见附录：_granularity.md）（需求粒度）、`_claude-md.md`（见附录：_claude-md.md）（架构检查）。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_branch.md`（分支策略）、`_issue.md`（Issue 关联）、`_template.md`（模板与状态确认）、`_granularity.md`（需求粒度）、`_claude-md.md`（架构检查）。
 
 ## settings 文件写入规范
 
@@ -366,7 +368,7 @@ INDEX.md      # 索引
 
 > 此文档定义分支策略配置（`branchStrategy`）的结构、预设和读取规则。
 >
-> 同伴文档：`_storage.md`（见附录：_storage.md）、`_issue.md`（见附录：_issue.md）、`_template.md`（见附录：_template.md）、`_granularity.md`（见附录：_granularity.md）、`_claude-md.md`（见附录：_claude-md.md）。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_storage.md`、`_issue.md`、`_template.md`、`_granularity.md`、`_claude-md.md`。
 
 ## 分支策略配置
 
@@ -432,7 +434,7 @@ INDEX.md      # 索引
 
 > 此文档定义 `--from-issue` 拉取规范、OWNER/REPO 解析、Issue 与分支/提交的关联规则、Issue 编号读取优先级、关闭策略。
 >
-> 同伴文档：`_storage.md`（见附录：_storage.md）、`_branch.md`（见附录：_branch.md）、`_template.md`（见附录：_template.md）、`_granularity.md`（见附录：_granularity.md）、`_claude-md.md`（见附录：_claude-md.md）、`_gitea_cli.md`（见附录：_gitea_cli.md）。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_storage.md`、`_branch.md`、`_template.md`、`_granularity.md`、`_claude-md.md`、`_gitea_cli.md`。
 >
 > **CLI 优先级**：所有 Gitea 调用先按 `_gitea_cli.md`（见附录：_gitea_cli.md） 检测 `tea`，可用即走 `tea`；本文中的 `curl` 示例视为 `USE_TEA=0` 时的回退路径。
 
@@ -541,7 +543,7 @@ Git 平台（GitHub / Gitea）会自动将该 commit 关联到 issue，并在合
 
 > 此文档定义命令对项目 CLAUDE.md「项目架构」章节的依赖检查规则。
 >
-> 同伴文档：`_storage.md`（见附录：_storage.md）、`_branch.md`（见附录：_branch.md）、`_issue.md`（见附录：_issue.md）、`_template.md`（见附录：_template.md）、`_granularity.md`（见附录：_granularity.md）。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_storage.md`、`_branch.md`、`_issue.md`、`_template.md`、`_granularity.md`。
 
 ## CLAUDE.md 架构检查
 
@@ -601,202 +603,46 @@ else:
 | 前端 React | `frontend-react.md` | React/Next.js + TypeScript |
 | 通用 | `generic.md` | 空白模板，手动填写 |
 
-## 附录：_template.md
+## 附录：_delegate.md
 
-# 公共逻辑参考 - 模板格式与状态确认
+# 子任务委派（subagent）规范
 
-> 此文档定义状态更新确认机制、确认操作规范、状态流转、Memory 隔离规则、模板格式约束等共用规则。
->
-> 同伴文档：`_storage.md`（见附录：_storage.md）（存储与配置）、`_branch.md`（见附录：_branch.md）、`_issue.md`（见附录：_issue.md）、`_granularity.md`（见附录：_granularity.md）、`_claude-md.md`（见附录：_claude-md.md）。
+> 目的：把「吞吐大、推理浅」的步骤交给独立 subagent 执行，主会话只接收结论。收益有两层：便宜模型单价低；更重要的是**上下文隔离**——测试日志、文件全文、大段 diff 留在 subagent 内，不进入主会话，后续每一轮都不再为它们付费。
 
-## 状态更新确认机制
+## 何时委派
 
-不同命令对状态更新的确认要求：
+满足任一即委派；否则直接在主会话做（委派本身有开销：写任务说明 + 结果回传）：
 
-| 命令 | 状态变更 | 确认机制 |
-|-----|---------|---------|
-| `/req:review pass/reject` | 待评审 → 评审通过/驳回 | 显式参数即为确认 |
-| `/req:dev` | 评审通过 → 开发中 | 首次进入时自动更新 |
-| `/req:test` | 开发中 → 测试中 | 测试完成后自动更新 |
-| `/req:done` | 测试中 → 已完成 | **必须明确确认（y/n）** |
+| 条件 | 典型步骤 |
+|------|---------|
+| 步骤会往主会话灌入大量原始输出（估计 > 1 万 token） | 跑测试、拉大 diff、批量 grep |
+| 步骤可按单元切分且各单元相互独立 | 逐文件审查、多模块搜索 |
+| 步骤不依赖主会话已积累的上下文 | 一条命令 + 判定规则即可完成 |
 
-## 确认操作规范
+**不委派**：需要主会话已有上下文才能判断的推理（方案设计、跨文件改动、与用户交互的闸门）。
 
-默认**不弹任何原生确认对话框**——命令已通过多轮讨论 / 显式参数 / y/n 完成意图确认，Claude Code 本身也足够稳定，无需再叠加一层打断。用户可按需通过自然语言开启 Bash 侧拦截，**无需手动编辑任何配置文件**。
+## 可用 agent（随插件分发，位于 `plugins/req/agents/`）
 
-### 开启/关闭拦截（记忆 + marker 文件）
+| agent | 模型 | 用途 | 返回 |
+|-------|------|------|------|
+| `test-runner` | haiku | 执行给定测试命令 | 计数 + 失败用例（file:line、断言、精简堆栈） |
+| `file-reviewer` | sonnet | 审查单个文件的 diff | 阻塞/建议/信息分级清单 + 跨文件疑点 |
+| `code-scout` | haiku | 按关键词定位相关代码（实现处/调用链/同类参照） | 文件清单（路径、相关度、关键行、原因），不含文件内容 |
 
-开关由项目内 `.claude/.req-confirm-commit` 标记文件承载。Claude 根据用户自然语言意图维护该文件并在 memory 中落 feedback：
+命令的 frontmatter `allowed-tools` **必须包含 `Agent`**（`allowed-tools` 是白名单限制，缺失则无法派生）。
 
-| 用户说 | Claude 动作 |
-|-------|-------------|
-| "以后 git commit 前帮我确认" / "开启提交确认" / "commit 前弹一下" | `mkdir -p .claude && touch .claude/.req-confirm-commit`，保存/更新 feedback memory 记录偏好 |
-| "不用确认了" / "关闭提交确认" / "别再弹框了" | `rm -f .claude/.req-confirm-commit`，更新 memory |
+## 委派时必须做到
 
-标记文件已加入 `.gitignore`（每台机器独立）。Claude 在新会话首次感知到偏好与 marker 状态不一致时，可按 memory 中的 feedback 自动补 `touch`，用户无需重复交代。
+1. **任务说明自包含**：subagent 没有主会话历史。工作目录、命令、判定规则、项目规范中相关的几条（不是整份文件）都要写进 prompt。
+2. **只要结论，不要原文**：agent 定义已规定返回格式；prompt 中再明确「不要回传完整日志/文件内容」。
+3. **独立单元并行**：同一批 subagent 在一次调用里一起发出，结果由主会话汇总、去重、合并跨单元问题。
+4. **subagent 只读**：agent 定义不含 Write/Edit；需要改代码的结论由主会话执行。
+5. **失败要透传**：subagent 报 ERROR/超时时把原因带回，主会话决定重试或降级为内联执行，不静默吞掉。
 
-### Hook 原生确认（仅在 marker 存在时生效）
+## 与仓库角色 / 调用形态的关系
 
-| 操作 | Hook 脚本 | 触发条件 |
-|------|----------|---------|
-| git commit | confirm-before-commit.sh | Bash 命令包含 git commit |
-| 移动需求文件 | confirm-before-commit.sh | Bash 命令包含 mv ... REQ-/QUICK- |
-| 删除需求文件 | confirm-before-commit.sh | Bash 命令包含 rm ... REQ-/QUICK- |
-
-> `--auto` 模式标记（`.claude/.req-auto`）仍由 `/req:fix --auto` 等流程负责建立/清理；在 marker 启用拦截时它负责让 Hook 放行自动化流水线。
-
-### 执行规则
-
-1. **展示预览后直接执行** — 不输出"回车继续"等文本确认提示
-2. **默认直通** — 任何 Write/Edit/Bash 都不走 Hook 原生对话框
-3. **需要用户输入的场景仍需等待** — 选择章节编号、选择目标需求、描述修改意图等由命令层负责
-4. **`/req:done` 等显式 y/n 场景** — 由命令层提示，不依赖 Hook
-
-## 状态流转
-
-```
-草稿 → 待评审 → ✅ 评审通过 → 开发中 → 测试中 → 已完成
-```
-
-## Memory 隔离规则（强制）
-
-涉及模板的命令和 skill **禁止受 auto-memory 影响**。模板化输出必须完全由模板结构和用户当前输入决定，不得因 memory 中的偏好、历史记录或反馈而改变文档结构、章节内容或格式。
-
-**适用范围**：
-- 命令：`/req:new`、`/req:new-quick`、`/req:edit`、`/req:upgrade`、`/req:prd-edit`
-- skill：`requirement-analyzer`、`prd-analyzer`
-
-**具体禁止行为**：
-1. 不得根据 memory 中的偏好跳过或合并模板章节
-2. 不得根据 memory 中的历史需求自动填充当前需求内容
-3. 不得根据 memory 中的反馈调整模板格式（如章节顺序、表格列数）
-4. 不得读取 `~/.claude/projects/*/memory/` 目录下的文件来辅助文档生成
-
-**允许的行为**：memory 可影响**交互风格**（如提问的详略程度），但不得影响**文档产出物**。
-
----
-
-## 模板格式约束（强制）
-
-创建和编辑需求文档时，**必须严格遵循模板格式**：
-
-### 模板读取优先级
-
-| 需求类型 | 优先读取 | 回退读取 |
-|---------|---------|---------|
-| REQ-XXX | `docs/requirements/templates/requirement-template.md` | `<plugin-path>/templates/requirement-template.md` |
-| QUICK-XXX | `docs/requirements/templates/quick-template.md` | `<plugin-path>/templates/quick-template.md` |
-| PRD | `docs/requirements/templates/prd-template.md` | `<plugin-path>/templates/prd-template.md` |
-
-**模板不存在时终止**：两个路径都不存在时，**必须终止操作**，提示用户执行 `/req:update-template` 恢复模板。不得在无模板的情况下创建或编辑文档。
-
-### 格式规则
-
-1. **章节结构不可变**：不得新增、删除、合并或重命名模板中的章节
-2. **层级标题不可变**：章节标题、编号（一、二、三...）必须与模板完全一致
-3. **表格格式不可变**：表格的列名、列数必须与模板一致
-4. **保留空章节**：未涉及的章节保留模板占位文本，不得删除
-5. **仅填充内容**：在模板对应章节的占位文本处填充实际内容
-
-### 适用命令
-
-- `/req:new` - 创建时严格按模板生成
-- `/req:new-quick` - 创建时严格按快速模板生成
-- `/req:edit` - 编辑时保持模板结构不变
-- `/req:upgrade` - 转换时按目标模板结构生成
-
-### 验证机制
-
-`scripts/validate-requirement.sh` 在 Write/Edit 后自动验证：
-- REQ-XXX：检查所有章节（元信息、生命周期、一~十）
-- QUICK-XXX：检查简化模板的所有章节（元信息、生命周期、问题描述、实现方案、验证方式、开发记录）
-
-## 附录：_granularity.md
-
-# 公共逻辑参考 - 需求粒度
-
-> 此文档定义需求粒度规则、REQ 与 QUICK 的选择、前后端拆分规则。
->
-> 同伴文档：`_storage.md`（见附录：_storage.md）、`_branch.md`（见附录：_branch.md）、`_issue.md`（见附录：_issue.md）、`_template.md`（见附录：_template.md）、`_claude-md.md`（见附录：_claude-md.md）。
-
-## 需求粒度规则
-
-### 基本原则
-
-一个 REQ **对应一个可独立交付的业务功能**，不按技术层拆分，不按开发步骤拆分。
-
-判断标准：**这个需求完成后，用户能感知到一个完整的功能变化吗？** 如果能，粒度合适；如果不能，说明拆得太细。
-
-### 粒度参考
-
-| 粒度 | 是否合适 | 说明 |
-|------|---------|------|
-| 「用户积分系统」含积分规则+积分查询+积分兑换+积分排行 | 太大 | 拆为多个 REQ |
-| 「用户积分-积分规则管理」含 CRUD + 规则校验 | 合适 | 一个完整功能 |
-| 「用户积分-积分规则-新增接口」仅一个 API | 太小 | 合并到功能级 REQ |
-| 「用户积分-新增 model 层」按技术层拆分 | 错误 | 按功能拆，不按层拆 |
-
-### 拆分建议
-
-**应该拆分的情况：**
-- 功能可独立上线、独立使用（如：积分规则管理 vs 积分兑换）
-- 不同功能由不同人负责
-- 功能之间无强时序依赖（可并行开发）
-- 单个需求涉及文件超过 15 个
-
-**不应该拆分的情况：**
-- CRUD 属于同一业务实体（增删改查放一个 REQ）
-- 功能之间强耦合，必须同时上线
-- 拆开后单个 REQ 无法独立验证
-
-### 已有需求的功能扩展
-
-当 REQ 已存在，需要新增功能点时，按以下规则判断是修改原 REQ 还是新建：
-
-**核心问题：去掉这个功能点，原需求还能独立交付吗？**
-- **能** → 新建 REQ，通过关联字段链接
-- **不能** → 修改原 REQ（`/req:edit`），在功能清单中补充
-
-| 场景 | 建议 | 原因 |
-|------|------|------|
-| 新功能是原需求的自然延伸，缺少则不完整 | 修改原 REQ | 属于同一个可交付单元 |
-| 新功能可独立上线，不依赖原 REQ | 新建 REQ | 独立交付，独立测试 |
-| 原 REQ 已 `已完成` | 必须新建 REQ | 已归档需求不应回退状态 |
-| 原 REQ 在 `开发中`/`测试中`，新功能会影响已写代码 | 新建 REQ | 避免范围蔓延，保持进度可控 |
-
-**修改原 REQ 时**：使用 `/req:edit`，在变更记录章节说明新增内容。
-**新建 REQ 时**：使用 `/req:new`，在关联信息中填写原 REQ 编号。
-
-### 前后端拆分
-
-前后端按类型字段区分，不按 REQ 编号拆分同一端的功能：
-
-```
-正确：
-  REQ-001 用户积分规则管理-后端    （含 CRUD 全部接口）
-  REQ-002 用户积分规则管理-前端    （含 CRUD 全部页面）
-
-错误：
-  REQ-001 用户积分规则-新增接口
-  REQ-002 用户积分规则-查询接口
-  REQ-003 用户积分规则-修改接口
-```
-
-### REQ 与 QUICK 的选择
-
-| 场景 | 使用 | 理由 |
-|------|------|------|
-| 新业务功能（CRUD、新页面） | REQ | 需完整设计和评审 |
-| 已有功能的小调整（加字段、改逻辑） | QUICK | 改动范围小、风险低 |
-| Bug 修复 | QUICK | 除非修复涉及重构 |
-| 重构/优化（不改变功能） | QUICK 或 REQ | 按改动范围判断，超过 5 个文件用 REQ |
-
-### 创建时的 AI 辅助判断
-
-`/req:new` 创建需求时，AI 应根据以上规则辅助判断粒度是否合适：
-- 标题过于宽泛（如「XX系统」「XX模块」） → 建议拆分，列出子功能
-- 标题过于具体（如「新增XX接口」「修改XX字段」） → 建议合并或改用 QUICK
-- 不确定时询问用户业务目标，再给出建议
+- 与 `requirementRole` 无关：委派不涉及需求文档写入。
+- skill 形态同样适用：Agent 工具随会话可用；agent 定义随 req 插件安装。
 
 ## 附录：_gitea_cli.md
 
@@ -804,7 +650,7 @@ else:
 
 > 此文档定义在 `repoType=gitea` 场景下，何时使用 [`tea`](https://gitea.com/gitea/tea) CLI、何时回退到 `curl + REST API`。GitHub 侧统一使用 `gh`，不在此讨论。
 >
-> 同伴文档：`_issue.md`（见附录：_issue.md）、`_branch.md`（见附录：_branch.md）。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_issue.md`、`_branch.md`。
 
 ## 总体原则
 

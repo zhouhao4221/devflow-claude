@@ -2,7 +2,7 @@
 
 > 此文档定义状态更新确认机制、确认操作规范、状态流转、Memory 隔离规则、模板格式约束等共用规则。
 >
-> 同伴文档：[`_storage.md`](./_storage.md)（存储与配置）、[`_branch.md`](./_branch.md)、[`_issue.md`](./_issue.md)、[`_granularity.md`](./_granularity.md)、[`_claude-md.md`](./_claude-md.md)。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_storage.md`（存储与配置）、`_branch.md`、`_issue.md`、`_granularity.md`、`_claude-md.md`。
 
 ## 状态更新确认机制
 

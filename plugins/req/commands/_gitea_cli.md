@@ -2,7 +2,7 @@
 
 > 此文档定义在 `repoType=gitea` 场景下，何时使用 [`tea`](https://gitea.com/gitea/tea) CLI、何时回退到 `curl + REST API`。GitHub 侧统一使用 `gh`，不在此讨论。
 >
-> 同伴文档：[`_issue.md`](./_issue.md)、[`_branch.md`](./_branch.md)。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_issue.md`、`_branch.md`。
 
 ## 总体原则
 

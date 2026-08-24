@@ -1,7 +1,7 @@
 ---
 description: PR 审查与合并 - AI 代码审查、提交评论、合并 PR
 argument-hint: "[review|merge|fetch-comments] [PR-ID] [--auto]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent
 ---
 
 # PR 审查与合并
@@ -73,6 +73,15 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 ### 4. AI 逐文件审查
 
 审查维度：正确性、安全性、错误处理、命名规范、代码风格、需求匹配、测试覆盖。
+
+**执行方式按 PR 规模选择**（规则见 [`_delegate.md`](./_delegate.md)）：
+
+| PR 规模 | 方式 |
+|---------|------|
+| diff ≤ 10 个文件且 ≤ 800 行 | 主会话内联审查 |
+| 超过任一阈值 | 按文件并行委派 `file-reviewer` subagent，主会话只做汇总 |
+
+委派时每个 subagent 的 prompt 自包含：该文件的 diff 片段、审查维度、第 2 步读到的项目规范中与该文件相关的条目、第 3 步中与该文件相关的功能点/业务规则。测试文件与被测源文件作为一组派给同一个 subagent。主会话收到各文件清单后去重、核对「待汇总核对」项（如接口改了但调用方未改），再进入第 5 步。
 
 ### 5. 输出审查报告
 

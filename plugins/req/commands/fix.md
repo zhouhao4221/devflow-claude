@@ -1,7 +1,7 @@
 ---
 description: 轻量修复 - 无文档的 bug 修复流程，AI 辅助定位问题
 argument-hint: "<问题描述> [--from-issue=#编号] [--auto]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, mkdir:*, touch:*, rm:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, mkdir:*, touch:*, rm:*), Agent
 ---
 
 # 轻量修复
@@ -64,7 +64,7 @@ Bug 分析：登录超时后 token 未清除
 
 #### 1.2 定位相关文件
 
-AI 搜索代码库，定位可能相关的文件：
+委派 `code-scout` subagent 搜索代码库（prompt 给：1.1 的现象与影响范围、报错信息/符号名、CLAUDE.md 架构章节的分层目录摘要），主会话拿到清单后只精读高/中相关的关键行段，用于 1.4 根因分析；规则见 [`_delegate.md`](./_delegate.md)。用户已指明具体文件时直接 Read，不委派。展示格式：
 
 ```
 相关文件定位：
@@ -183,6 +183,8 @@ fetch `branchFrom`，从远端创建并切换到新分支（有 issue 时分支�
 ### 3. 执行修复
 
 AI 按确认的方案修改代码。
+
+修改完成后，若项目 `docs/prompt/testing.md`（或架构章节）定义了测试命令且存在与改动相关的测试，派 `test-runner` subagent 回归（规则见 [`_delegate.md`](./_delegate.md)）；失败先修再进入步骤 4。无相关测试则跳过，不新建测试。
 
 ---
 

@@ -1,7 +1,7 @@
 ---
 description: 创建测试 - 为新功能编写自动化测试用例或手动测试用例文档
 argument-hint: "[REQ-XXX] [--type=UT|API|E2E|manual]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
 
 > **重要**：测试文件位置、运行命令、代码示例均从项目 CLAUDE.md 的「测试规范」章节读取，不内置任何项目细节。
@@ -63,7 +63,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 输出到 `docs/test-cases/REQ-XXX-testcases.md`，更新需求文档第六章追加引用。
 
 ### 8. 汇总 & 运行验证
-生成文件汇总表，运行新创建的测试验证通过率。
+生成文件汇总表；运行新创建的测试委派 `test-runner` subagent（prompt 给：工作目录、testing.md 的运行命令 + 新建测试文件过滤、返回格式），主会话按其失败清单修正用例后再回跑；规则见 [`_delegate.md`](./_delegate.md)。
 
 ### 9. 更新需求文档
 在需求文档追加测试覆盖章节（类型、文件、用例数、覆盖率、创建时间）。

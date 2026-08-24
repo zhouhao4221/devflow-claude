@@ -2,7 +2,7 @@
 
 > 此文档定义需求粒度规则、REQ 与 QUICK 的选择、前后端拆分规则。
 >
-> 同伴文档：[`_storage.md`](./_storage.md)、[`_branch.md`](./_branch.md)、[`_issue.md`](./_issue.md)、[`_template.md`](./_template.md)、[`_claude-md.md`](./_claude-md.md)。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_storage.md`、`_branch.md`、`_issue.md`、`_template.md`、`_claude-md.md`。
 
 ## 需求粒度规则
 

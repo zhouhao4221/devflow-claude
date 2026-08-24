@@ -1,7 +1,7 @@
 ---
 description: 智能开发 - AI 分析意图，自动选择流程，生成方案并执行
 argument-hint: "<描述> [--from-issue=#编号]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent
 ---
 
 # 智能开发
@@ -86,7 +86,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
 > 读取项目 CLAUDE.md 的「项目架构」章节，了解分层结构和目录布局。
 > 第 1 步意图为「重构 / 优化」时，Read `docs/prompt/refactoring.md`，存在则按其约束（行为不变、契约不变、范围聚焦）生成方案；缺失静默跳过。
 
-AI 搜索代码库，定位相关文件：
+定位相关文件委派 `code-scout` subagent（prompt 给：第 1 步识别的意图与目标、关键词/符号名、架构分层目录摘要），主会话只精读其返回的高/中相关片段后生成方案；用户已指明文件或范围 ≤ 3 个文件时直接 Read。规则见 [`_delegate.md`](./_delegate.md)。
 
 ```
 代码分析：
@@ -130,7 +130,7 @@ AI 搜索代码库，定位相关文件：
 4. 分支名末尾追加 `-i<N>`（参见 [_issue.md 的 Issue 与分支关联](./_issue.md#issue-与分支提交的关联)）
 5. 示例：`fix/optimize-order-query-i42`、`feat/add-search-feature-i12`
 
-AI 按确认的方案修改代码。
+AI 按确认的方案修改代码。修改完成后，若项目 `docs/prompt/testing.md`（或架构章节）定义了测试命令且存在与改动相关的测试，派 `test-runner` subagent 回归（规则见 [`_delegate.md`](./_delegate.md)）；失败先修再进入步骤 4。无相关测试则跳过。
 
 ### 4. 完成提示
 
