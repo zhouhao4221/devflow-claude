@@ -108,7 +108,7 @@ print(f'{n} tokens')
 2. 配套文件 `<command>-rationale.md` 收：设计原理、行为矩阵详解、完整边界情况大表
 3. 主文件用 `详见 rationale §X` 引用，不重复内容
 
-**案例**：`plugins/req/commands/release.md` 从 63 KB → 43.8 KB（-30%），新增 13.7 KB rationale 文档（按需读）。常见路径每次省 ~6K tokens。
+**案例**：`plugins/req/commands/release.md` 从 63 KB 拆到 15 KB 主文件 + 14 KB `release-rationale.md`（按需读）。常见路径每次省 ~12K tokens。
 
 ### 4.2 共享文件按主题拆
 
@@ -127,15 +127,19 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 更新各命令的引用从 `[_common.md]` 改成具体的 `[_issue.md]` 等。模型 Read 时只拉相关主题（~3-6KB），不再每次拉 22KB。
 
+**共享文件之间禁止用 Markdown 链接互引**：`gen-skills.py` 按链接做传递闭包内联，任何一个 `_*.md` 链到其它几个，就会把整组 ~33KB 全部塞进每个 skill（2026-08 之前所有 skill 都因此超 30KB）。互相提及时写纯文本文件名（`` `_branch.md` ``），只有真实依赖（如 `_issue.md` → `_gitea_cli.md` 的 tea 检测）才用链接。
+
 ### 4.3 显式降级到 Haiku
 
 **何时用**：纯读取、列表展示、机械操作、帮助信息类命令。
 
 **做法**：在 frontmatter 加 `model: claude-haiku-4-5-20251001`。Haiku 比 Sonnet 便宜 ~10x、快 ~3x。
 
-**已应用**：18 个命令（`/req`、`/req:status`、`/req:show`、`/req:prd`、`/req:projects`、`/req:cache`、`/req:use`、`/req:done`、`/req:update-template`、`/req:changelog`、`/req:help`、`/api:help`、`/pm:help`、`/pm:pm`、`/pm:standup`、`/pm:export`、`/api:api`、`/api:search`）。
+**已应用**：33 个命令，以 `grep -l "^model:" plugins/*/commands/*.md` 为准，不在此维护清单。
 
 **禁忌**：需要复杂推理、代码生成、深度分析的命令（如 `/req:dev`、`/req:do`）不要降级。
+
+**中间档 Sonnet**：数据聚合 + 成文类命令（`/pm:weekly`、`monthly`、`milestone`、`stats`、`progress`、`brief`、`risk`）用 `model: claude-sonnet-5`——比会话模型（Fable/Opus）便宜 2~3 倍，写报告绰绰有余。Sonnet 5 原生 1M 上下文且超 200K 不加价、订阅制不计 extra usage（2026-08 核实），旧的「sonnet[1m] 付费墙」顾虑已不存在。`/pm:plan`、`/pm:ask` 需要真实推理，保持省略。
 
 ### 4.4 收紧 `allowed-tools` 白名单
 
@@ -176,6 +180,20 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 
 ---
 
+### 4.8 高吞吐步骤委派给 subagent
+
+**何时用**：命令中某一步会往主会话灌入大量原始输出（跑测试、大 PR diff、批量 grep），或可按独立单元拆分并行（逐文件审查）。
+
+**做法**：命令文档指示把该步骤派给插件自带的 agent（`plugins/req/agents/`），主会话只接收结构化结论；frontmatter `allowed-tools` 加 `Agent`。规则与可用 agent 见 `plugins/req/commands/_delegate.md`。
+
+**收益**：两层。① 机械步骤跑在 haiku 上（`test-runner`）；② **上下文隔离**——原始输出留在 subagent，主会话之后每一轮都不再为它付费，这一层通常比单价差更大。
+
+**禁忌**：小任务不委派（任务说明 + 回传本身有开销，经验阈值 > 1 万 token 才划算）；不要把需要主会话上下文的推理（方案设计、跨文件改动）拆出去——planner/executor 割裂后返工更贵。整条命令的 `model` 仍按 §4.3 只分 haiku / 省略两档。
+
+**已应用**：`/req:test` 阶段一~三回归运行（`test-runner`，haiku）· `/req:dev` §4 / `/req:fix` §1.2 / `/req:do` §2 代码定位（`code-scout`，haiku，主会话只精读返回的 file:line）· `/req:review-pr` 大 PR 逐文件审查（`file-reviewer`，sonnet，上下文隔离 + 并行 + 单价）。
+
+---
+
 ## 5. 案例：`release.md` 拆分前后
 
 | 维度 | 拆分前 | 拆分后 |
@@ -196,7 +214,8 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 - [ ] 命令文件大小 < 30 KB？超过先想是否能拆 rationale
 - [ ] frontmatter `description` ≤ 50 字符？
 - [ ] frontmatter `allowed-tools` 是否最小集？
-- [ ] 是否纯读取/列表？是 → 加 `model: claude-haiku-4-5-20251001`
+- [ ] 是否纯读取/列表？是 → 加 `model: claude-haiku-4-5-20251001`；是数据聚合成文？→ `model: claude-sonnet-5`
+- [ ] 有没有会灌入大量原始输出的步骤（跑测试、大 diff）？有 → 委派 subagent（§4.8），`allowed-tools` 加 `Agent`
 - [ ] 引用 `_common.md` 的具体章节？引用越具体越省（模型可能只 Read 一次而非反复）
 - [ ] 长伪代码（> 50 行）能否下沉到脚本？
 - [ ] 输出模板是否过度展开？只列结构和关键字段，不写所有可能的分支

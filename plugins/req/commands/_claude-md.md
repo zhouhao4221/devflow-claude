@@ -2,7 +2,7 @@
 
 > 此文档定义命令对项目 CLAUDE.md「项目架构」章节的依赖检查规则。
 >
-> 同伴文档：[`_storage.md`](./_storage.md)、[`_branch.md`](./_branch.md)、[`_issue.md`](./_issue.md)、[`_template.md`](./_template.md)、[`_granularity.md`](./_granularity.md)。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_storage.md`、`_branch.md`、`_issue.md`、`_template.md`、`_granularity.md`。
 
 ## CLAUDE.md 架构检查
 

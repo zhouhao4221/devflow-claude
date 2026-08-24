@@ -2,7 +2,7 @@
 
 > 此文档定义 `--from-issue` 拉取规范、OWNER/REPO 解析、Issue 与分支/提交的关联规则、Issue 编号读取优先级、关闭策略。
 >
-> 同伴文档：[`_storage.md`](./_storage.md)、[`_branch.md`](./_branch.md)、[`_template.md`](./_template.md)、[`_granularity.md`](./_granularity.md)、[`_claude-md.md`](./_claude-md.md)、[`_gitea_cli.md`](./_gitea_cli.md)。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_storage.md`、`_branch.md`、`_template.md`、`_granularity.md`、`_claude-md.md`、`_gitea_cli.md`。
 >
 > **CLI 优先级**：所有 Gitea 调用先按 [`_gitea_cli.md`](./_gitea_cli.md) 检测 `tea`，可用即走 `tea`；本文中的 `curl` 示例视为 `USE_TEA=0` 时的回退路径。
 

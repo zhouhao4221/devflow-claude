@@ -2,7 +2,7 @@
 
 > 此文档定义分支策略配置（`branchStrategy`）的结构、预设和读取规则。
 >
-> 同伴文档：[`_storage.md`](./_storage.md)、[`_issue.md`](./_issue.md)、[`_template.md`](./_template.md)、[`_granularity.md`](./_granularity.md)、[`_claude-md.md`](./_claude-md.md)。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_storage.md`、`_issue.md`、`_template.md`、`_granularity.md`、`_claude-md.md`。
 
 ## 分支策略配置
 

@@ -1,7 +1,7 @@
 ---
 description: 需求开发 - 启动或继续开发
 argument-hint: "[REQ-XXX]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), Agent
 ---
 
 # 需求开发
@@ -135,6 +135,8 @@ else:
 > 缺少时发出警告（见 [_claude-md.md](./_claude-md.md)）。
 
 进入 Plan Mode，基于需求文档和 CLAUDE.md 架构信息生成实现方案，填充「十一、实现方案」章节：
+
+> **定位现有代码先委派**：方案需要参照的既有实现（相似模块、要改动的调用方、现有数据模型/接口）先派 `code-scout` subagent 定位（prompt 给：功能清单关键词、接口路径/实体名、architecture.md 的分层目录摘要），主会话只按其返回的 `file:line` 精读高/中相关片段，不自己全库 grep。候选路径已明确且 ≤ 3 个文件时可直接 Read。规则见 [`_delegate.md`](./_delegate.md)。
 
 - **11.1 数据模型**：新增/修改的表、字段说明、实体关系
 - **11.2 API 设计**：基于第五章接口需求 + 项目代码 + CLAUDE.md API 风格，生成具体接口方案（路径、方法、请求/响应字段、错误码）

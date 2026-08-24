@@ -2,7 +2,7 @@
 
 > 此文档定义 settings 文件写入、存储路径、缓存同步、需求编号、元信息等共用规则。
 >
-> 同伴文档：[`_branch.md`](./_branch.md)（分支策略）、[`_issue.md`](./_issue.md)（Issue 关联）、[`_template.md`](./_template.md)（模板与状态确认）、[`_granularity.md`](./_granularity.md)（需求粒度）、[`_claude-md.md`](./_claude-md.md)（架构检查）。
+> 同伴文档（同目录，按需 Read；此处不用链接，避免生成器传递内联）：`_branch.md`（分支策略）、`_issue.md`（Issue 关联）、`_template.md`（模板与状态确认）、`_granularity.md`（需求粒度）、`_claude-md.md`（架构检查）。
 
 ## settings 文件写入规范
 

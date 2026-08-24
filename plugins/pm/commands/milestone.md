@@ -2,6 +2,7 @@
 description: 里程碑总结 - 版本发布总结报告
 argument-hint: "<版本号>"
 allowed-tools: Read, Glob, Grep, Bash(git log:*, git tag:*, git diff:*)
+model: claude-sonnet-5
 ---
 
 # 里程碑总结
