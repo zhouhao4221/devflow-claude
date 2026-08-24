@@ -19,13 +19,13 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 5
 
 | 插件 | 版本 | 职责 | 目录构成 |
 |------|------|------|---------|
-| **req** | 4.0.0 | 需求全流程：分析→评审→开发→测试→归档 + 分支/PR/issue/版本 | commands skills agents hooks scripts templates schemas |
-| **pm** | 0.5.0 | 项目管理助手：周报/月报/统计/风险/方案（只读消费 req 数据） | commands skills scripts |
+| **req** | 4.1.0 | 需求全流程：分析→评审→开发→测试→归档 + 分支/PR/issue/版本 | commands skills agents hooks scripts templates schemas |
+| **pm** | 0.6.0 | 项目管理助手：周报/月报/统计/风险/方案（只读消费 req 数据） | commands skills scripts |
 | **api** | 0.4.0 | 前端 API 对接：Swagger 解析、字段映射、TS 代码生成 | commands skills scripts docs tests |
 | **diag** | 0.2.0 | 生产诊断（**全程只读**）：SSH 拉日志→解析堆栈→关联代码→修复建议 | commands skills hooks scripts templates tests |
 | **uat** | 1.3.0 | UI 验收测试：AI 按流程文档逐场景执行界面操作（前身 `qa`） | commands skills templates |
 
-整体版本 `marketplace.json` = 2.37.0。**事实源是各 `plugin.json` + `marketplace.json`，不是 README**——README/tutorial 的版本号已过时，且只覆盖 req/pm/api，未收录 diag/uat（已知文档债务，非功能不成熟；diag 由 REQ-001、uat 由 REQ-002 完整交付）。
+整体版本 `marketplace.json` = 2.38.0。**事实源是各 `plugin.json` + `marketplace.json`，不是 README**——README/tutorial 的版本号已过时，且只覆盖 req/pm/api，未收录 diag/uat（已知文档债务，非功能不成熟；diag 由 REQ-001、uat 由 REQ-002 完整交付）。
 
 ## 命令与技能结构
 
