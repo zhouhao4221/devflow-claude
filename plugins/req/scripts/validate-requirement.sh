@@ -3,7 +3,8 @@
 # 验证需求文档格式和完整性
 # 由 PostToolUse Hook 触发（Write/Edit 工具操作后）
 #
-# 仅对 docs/requirements/ 目录下的需求文档（REQ-XXX、QUICK-XXX）进行验证
+# 仅对需求目录下的需求文档（REQ-XXX、QUICK-XXX）进行验证
+# 需求目录取 .devflow 配置的 requirementsDir，省略时默认 docs/requirements
 # 根据需求类型检查对应模板的所有必须章节
 
 # 从 stdin JSON 中提取文件路径（PostToolUse hook 通过 stdin 传入工具信息）
@@ -15,10 +16,32 @@ if [ -z "$FILE_PATH" ] || [ ! -f "$FILE_PATH" ]; then
     exit 0
 fi
 
-# 仅处理 docs/requirements/ 目录下的文件
-if [[ ! "$FILE_PATH" =~ docs/requirements/ ]]; then
-    exit 0
+# 仅处理需求目录下的文件（requirementsDir 可配置，不能写死 docs/requirements）
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
+REQ_DIR="docs/requirements"
+if command -v python3 >/dev/null 2>&1; then
+    CONFIGURED=$(python3 - "$REPO_ROOT" <<'PY' 2>/dev/null || true
+import json, os, sys
+
+cfg = {}
+for name in ('settings.json', 'settings.local.json'):
+    try:
+        with open(os.path.join(sys.argv[1], '.devflow', name), encoding='utf-8') as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            cfg.update(data)
+    except Exception:
+        pass
+print((cfg.get('requirementsDir') or '').strip().strip('/'))
+PY
+)
+    [ -n "$CONFIGURED" ] && REQ_DIR="$CONFIGURED"
 fi
+
+case "$FILE_PATH" in
+    "$REQ_DIR"/*|*"/$REQ_DIR"/*) ;;
+    *) exit 0 ;;
+esac
 
 FILENAME=$(basename "$FILE_PATH")
 
@@ -52,7 +75,7 @@ if [[ "$FILENAME" =~ ^REQ-[0-9]+ ]]; then
 
     if [ -n "$MISSING" ]; then
         echo -e "缺少章节:$MISSING"
-        echo "请严格按照模板格式补全所有章节（参考 docs/requirements/templates/requirement-template.md）"
+        echo "请严格按照模板格式补全所有章节（参考 $REQ_DIR/templates/requirement-template.md）"
     fi
 fi
 

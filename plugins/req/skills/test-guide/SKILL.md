@@ -46,8 +46,10 @@ Read `docs/prompt/architecture.md`，从「测试规范」章节获取测试目�
 
 读取 CLAUDE.md 后，检查项目是否存在领域规约：
 
-- **primary 仓库**：扫描 `docs/requirements/specs/` 目录，读取所有 `.md` 文件
-- **readonly 仓库**：读取 `~/.claude-requirements/projects/<requirementProject>/specs/`（`requirementProject` 取自 `.claude/settings.local.json`）
+需求目录取 `.devflow/settings.json` 的 `requirementsDir`（省略时默认 `docs/requirements`）：
+
+- **primary 仓库**：扫描本仓 `<requirementsDir>/specs/` 目录，读取所有 `.md` 文件
+- **readonly 仓库**：经 `.devflow/settings.local.json` 的 `requirementSource.path` 直读主仓 `<主仓 requirementsDir>/specs/`（无全局缓存）
 
 目录存在且有文件 → 全部读取，作为测试约束注入上下文，不打印提示。  
 目录不存在或为空 → 静默跳过。
