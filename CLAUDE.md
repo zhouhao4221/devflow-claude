@@ -11,8 +11,8 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 5
 ## 核心心智模型（最重要）
 
 1. **命令/技能文件是「给 Claude 的指令文档」，不是可执行代码。** `commands/<name>.md` 与 `skills/<name>/SKILL.md` 是自然语言指令，运行时由 Claude 解读执行。**改流程 = 改 `.md`**，通常无需动脚本。
-2. **脚本（`scripts/`）只做确定性的副作用**：缓存同步、文档校验、状态字段写入、Hook 拦截、外部数据解析（如 Swagger）。不承载业务判断。
-3. **共享逻辑抽到 `plugins/<p>/shared/`**，命令用 `../shared/x.md` 链接引用，避免重复、控制 token。**不能放 `commands/` 下**——那里每个 `.md` 都会被注册成斜杠命令，变出 `/req:_storage` 这种伪命令。新命令链接到具体专题文件（`_storage.md`/`_branch.md`/`_issue.md`/`_gitea_cli.md`/`_granularity.md`/`_template.md`/`_delegate.md`），不要链 `_common.md`（它只是索引）。
+2. **脚本（`scripts/`）只做确定性的副作用**：文档校验、状态字段写入、Hook 拦截、布局守卫、外部数据解析（如 Swagger）。不承载业务判断。
+3. **共享逻辑抽到 `plugins/<p>/shared/`**，命令用 `../shared/x.md` 链接引用，避免重复、控制 token；**不能放 `commands/` 下**（原因见「命令与技能结构」）。新命令链接到具体专题文件（`_storage`/`_branch`/`_issue`/`_gitea_cli`/`_granularity`/`_template`/`_delegate`/`_claude-md`），不要链 `_common.md`（它只是索引）。
 4. **只写 Claude 推不出来的内容**：平台差异约束、非显而易见的业务规则、输出格式。不写 curl/gh/tea 完整命令、Python 实现、URL 模板。判断标准：能从 API 文档或常识推断 → 不写；不能（如「Gitea labels 必须走独立端点」）→ 写。
 
 ## 插件全景
@@ -29,14 +29,15 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 5
 
 ## 命令与技能结构
 
-**command 是能力的唯一入口；`skills/` 下只放 helper skill**（REQ-003 的「命令→技能镜像」派生机制已于 2026-08 废止，见下）：
+**command 是能力的唯一入口；`skills/` 下只放 helper skill**（REQ-003 的「命令→技能镜像」派生机制已于 2026-08 废止）：
 
 - **`commands/<name>.md`**：唯一权威源，且 `commands/` 下**只能**放这类文件（必须有 frontmatter + `description`）。可引用 `../shared/` 里的共享子文件（`_storage.md`、`_gitea_cli.md`、`release-rationale.md` 等）。
 - **`skills/<name>/SKILL.md`**：仅限**与任何命令都不同名**的 helper skill（见下节），全部手写。
 
-**绝不为命令建同名 skill 镜像。** Claude Code 2.x 把插件 skill 也暴露成 `/<plugin>:<skill>`，与同名 command 落在同一个斜杠菜单里、`description` 还一模一样，用户看到的就是每条命令重复两遍（`claude plugin details req` 的组件清单里 `do, do`、`pr, pr` 成对出现），多出来的那份 description 还白占 always-on token。原 `scripts/gen-skills.py` 曾按 `SKIP_MIRROR` 名单派生 51 个镜像（req 23 · pm 12 · api 6 · uat 6 · diag 4），已整体删除；改由 `scripts/check-layout.py` 守卫。
+**两类东西都会污染斜杠菜单，一律禁止**——Claude Code 把 `skills/` 下每个子目录、`commands/` 下每个 `.md` 都注册成菜单项：
 
-**`commands/` 下也只能放真命令。** 同理，Claude Code 把 `commands/` 里的每个 `.md` 都注册成斜杠命令——`_storage.md` 这类共享参考文档放在那里会变出 `/req:_storage` 等 12 个伪命令。它们统一放 `plugins/<p>/shared/`（req 10 个 · pm 1 个 · api 1 个）。
+- **命令同名 skill 镜像**：与 command 落在同一菜单、`description` 一模一样，每条命令重复两遍（`claude plugin details req` 里出现 `do, do`、`pr, pr`），多出的那份 description 还白占 always-on token。原 `scripts/gen-skills.py` 按 `SKIP_MIRROR` 名单派生的 51 个镜像（req 23 · pm 12 · api 6 · uat 6 · diag 4）已整体删除。
+- **共享参考文档放 `commands/`**：`_storage.md` 之类会变出 `/req:_storage` 等 12 个伪命令。统一放 `plugins/<p>/shared/`（req 10 · pm 1 · api 1）。
 
 `scripts/check-layout.py` 一次性守住三条：`skills/` 无命令镜像、`commands/` 无非命令文件、所有相对链接可达。`--check` 报错退 1（发布前置），不带参数则自动清理可清理的部分。
 
@@ -59,7 +60,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 | 显式 sonnet | 数据聚合 + 成文类（pm 周报/月报/里程碑/统计/进度/简介/风险扫描）、有界的单元审查 | `model: claude-sonnet-5` |
 | 不指定 | 分析代码/生成方案/多轮需求讨论/架构理解/自由问答 | 省略 `model` |
 
-> sonnet 一律写 `claude-sonnet-5`（原生 1M 上下文、超 200K 不加价、Pro/Max 不计 extra usage，2026-08 核实）；旧的 `sonnet[1m]`/Sonnet 4.6 付费墙顾虑已不适用。`pm:plan`/`pm:ask` 需要真实推理，保持省略。
+> sonnet 一律写 `claude-sonnet-5`（原生 1M 上下文、超 200K 不加价、Pro/Max 不计 extra usage，2026-08 核实）。`pm:plan`/`pm:ask` 需要真实推理，保持省略。
 > 模型分级**仅对 `commands/*.md` 命令调用生效**；helper skill 无 `model` 字段，运行在触发它的会话/命令模型下。
 > 边界例外：`done`/`review`/`upgrade`/`release` 虽含写操作，但流程被模板和显式参数高度约束，仍用 haiku。
 
@@ -157,7 +158,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 | `docs/prompt/release.md` | 项目发版规则 | `/req:release` 步骤 0 Read |
 | `docs/prompt/` Prompt 库（`code-generation`/`refactoring`/`test-generation`/`testing`/`error-diagnosis`/`pr-review`/`requirement-structuring`） | 各方面项目特有规范，统一 5 节骨架 | 对应命令按需 Read（`/req:dev`/`do`/`test*`/`fix`/`review-pr`/`new`·`edit`），缺失降级，非阻塞 |
 | `docs/requirements/specs/` | 公共知识层（枚举、规则、契约摘要） | 命令按仓库角色注入 |
-| `settings.local.json` | 结构化配置 | 命令读取字段 |
+| `.devflow/settings.json(.local)` | 结构化配置 | 命令读取字段（local 覆盖同名） |
 | `.claude/skills/<concern>.md` | 窄知识具体约定（如路径变量） | 命令扫描全量注入 |
 
 - `/req:init` 扫描项目结构生成 `docs/prompt/architecture.md`；CLAUDE.md 只留引用指针，不内嵌架构内容。Prompt 库其余 7 文件从 `templates/prompt-snippets/` 复制空骨架（仅当不存在），供下游按项目填充；骨架格式见 `prompt-craft.md`。
@@ -169,24 +170,24 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 ## 其他插件要点
 
-**pm** — req 数据的**只读消费者**（不触发缓存同步），从 PRD/需求文档/Git 记录生成内容。无 req 数据时仍可用（仅 Git 指标）。命令：`/pm` · `weekly` · `monthly` · `milestone` · `stats` · `progress` · `plan` · `risk` · `standup` · `ask` · `brief` · `export`。输出到 `docs/reports/`。
+**pm** — req 数据的**只读消费者**，从 PRD/需求文档/Git 记录生成内容。无 req 数据时仍可用（仅 Git 指标）。命令：`/pm` · `weekly` · `monthly` · `milestone` · `stats` · `progress` · `plan` · `risk` · `standup` · `ask` · `brief` · `export` · `help`（13 条）。输出到 `docs/reports/`。
 
-**api** — 前端 API 对接。配置 `.api-config.json`（项目根，入 git）；Swagger **不缓存**，每次实时解析（`scripts/swagger-parser.py`，无第三方依赖）。产物：TS 类型→`{typeDir}`、请求函数→`{outputDir}`；gen 做字段 diff + 引用文件影响分析后才写入。命令：`/api:import` · `search` · `map` · `gen` · `config` · `help`。
+**api** — 前端 API 对接。配置 `.api-config.json`（项目根，入 git）；Swagger **不缓存**，每次实时解析（`scripts/swagger-parser.py`，无第三方依赖）。产物：TS 类型→`{typeDir}`、请求函数→`{outputDir}`；gen 做字段 diff + 引用文件影响分析后才写入。命令：`/api`（入口）· `import` · `search` · `map` · `gen` · `config` · `help`（7 条）。
 
-**diag** — 生产诊断，**全程只读**，与 [claude-safe-ops](https://github.com/zhouhao4221/claude-safe-ops) 互补。边界：SSH 只读命令 ✅ · DB SELECT ✅ · 远端 `/tmp/claude-diag-*` append ⚠️ · 写操作/Edit/Write ❌。**6 个风控 Hook 全 deny**：敏感输入拦截 · Hook 完整性自检（防风控链被禁用）· SSH 主机白名单 · 命令动词白名单 · 写操作+本地提权阻断 · JSONL 审计（30 天）。**改动 hooks/ 须同步 hooks.json 注册，否则被 validate-hooks 拦截。** 命令：`/diag:init` · `diagnose` · `audit`。存储 `~/.claude-diag/`。依赖：`python3` · `jq` · `yq`/`pyyaml` · `ssh`。
+**diag** — 生产诊断，**全程只读**，与 [claude-safe-ops](https://github.com/zhouhao4221/claude-safe-ops) 互补。边界：SSH 只读命令 ✅ · DB SELECT ✅ · 远端 `/tmp/claude-diag-*` append ⚠️ · 写操作/Edit/Write ❌。**6 个风控 Hook 全 deny**：敏感输入拦截 · Hook 完整性自检（防风控链被禁用）· SSH 主机白名单 · 命令动词白名单 · 写操作+本地提权阻断 · JSONL 审计（30 天）。**改动 hooks/ 须同步 hooks.json 注册，否则被 validate-hooks 拦截。** 命令：`/diag`（入口）· `init` · `diagnose` · `audit`（4 条）。存储 `~/.claude-diag/`。依赖：`python3` · `jq` · `yq`/`pyyaml` · `ssh`。
 
-**uat** — UI 验收测试。存储：`docs/uat/flows/`（流程文档，入 git）· `docs/uat/reports/` + `screenshots/`（`.gitignore`）。`/uat:run` 激活 `uat-executor`，意图驱动、不依赖预写选择器（testid 为可选加速）。结果四态 PASS/⚠️PASS/FAIL/SKIP。命令：`/uat:init`（首次必跑，装 skill 到项目）· `new` · `run` · `report` · `bug`（FAIL→issue）。
+**uat** — UI 验收测试。存储：`docs/uat/flows/`（流程文档，入 git）· `docs/uat/reports/` + `screenshots/`（`.gitignore`）。`/uat:run` 激活 `uat-executor`，意图驱动、不依赖预写选择器（testid 为可选加速）。结果四态 PASS/⚠️PASS/FAIL/SKIP。命令：`/uat`（入口）· `init`（首次必跑，装 skill 到项目）· `new` · `run` · `report` · `bug`（FAIL→issue，6 条）。
 
 ---
 
 ## 维护规则与易错点
 
-1. 能力只改 `commands/<name>.md`（及其 `shared/_*.md` 子文件）。`commands/` 下不放非命令文件、`skills/` 下不放命令同名镜像——两者都会污染斜杠菜单。发布前跑 `python3 scripts/check-layout.py --check` 守卫；helper skill 是手写的，与命令不同名，脚本不碰。
+1. 能力只改 `commands/<name>.md`（及其 `shared/_*.md` 子文件）；发布前跑 `python3 scripts/check-layout.py --check` 守住菜单与链接。helper skill 手写，脚本不碰。
 2. 共享规则改 `_*.md`，勿在每个命令重复。**共享文件之间不要用 Markdown 链接互引**（命令会顺着链接把整组 ~33KB 全读进来），互相提及写纯文本文件名，仅真实依赖用链接。
-3. 缓存同步由 Hook 强制单向（本地→缓存覆盖），命令内不写显式 cp。
-4. `requirementRole=readonly` 是贯穿多命令的分支点，新增写命令必须处理跳过。
+3. `requirementRole=readonly` 是贯穿多命令的分支点，新增写命令必须处理跳过。
+4. **`scripts/` 下的 hook 脚本同样受配置约定管辖**：读 `.devflow/settings.json(.local)`、按 `requirementsDir` 解析路径、readonly 走 `requirementSource.path`，不得写死 `docs/requirements` 或回退 `.claude/`。改配置约定时必须连带检查 `hooks.json` 注册的每个脚本——v2.39.1 修的就是它们漏跟 v3 迁移、静默失效整整四个版本。
 5. 两个 marker：`.req-confirm-commit`=开关常驻，`.req-auto`=临时豁免有 TTL。
 6. Gitea 一律「tea 优先、curl 回退」，禁止自动 `tea login add`。
-7. 模型分级 haiku / sonnet(`claude-sonnet-5`) / 省略三档，按推理强度选；helper skill 无 model 字段。命令内高吞吐步骤走 subagent 委派（`shared/_delegate.md`），不为此改整条命令的 model。
+7. 模型分级三档（haiku / `claude-sonnet-5` / 省略）按推理强度选，helper skill 无 `model` 字段；命令内高吞吐步骤走 subagent 委派而非降整条命令的档位。详见「命令与技能结构」。
 8. diag 的 6 个风控 Hook 是设计核心，改 hooks 必须同步注册。
 9. `/req:release` 用 `version-bumper` 按 semver 推导各插件版本；发布事实源是 plugin.json，README 版本号需手动同步（当前已滞后）。
