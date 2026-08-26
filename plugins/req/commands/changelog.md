@@ -1,7 +1,7 @@
 ---
 description: 生成版本说明 - 基于 Git 记录生成 Changelog
 argument-hint: "<version> [--from=<tag|commit>] [--to=<tag|commit>]"
-allowed-tools: Read, Write, Edit, Glob, Bash(git:*)
+allowed-tools: Read, Write, Edit, Glob, Bash(git:*), Agent
 model: claude-haiku-4-5-20251001
 ---
 
@@ -56,6 +56,8 @@ model: claude-haiku-4-5-20251001
 ### 3. 读取 Git 提交记录
 
 从 `FROM_REF..TO_REF` 范围内（不含 merge commit）提取：短 hash、提交日期、提交消息。
+
+> 区间内提交**超过 50 条**时，把第 3~4 步（取记录 + 按前缀分类）委派给 `doc-writer` subagent：prompt 内联 `FROM_REF..TO_REF`、下一节的前缀分类表和分类规则、目标章节骨架，主会话只核对它返回的分类草稿，`git log` 原文不进主会话。规则见 [`_delegate.md`](../shared/_delegate.md)。
 
 ### 4. 按提交前缀分类
 

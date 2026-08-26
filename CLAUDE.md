@@ -64,7 +64,20 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 > 模型分级**仅对 `commands/*.md` 命令调用生效**；helper skill 无 `model` 字段，运行在触发它的会话/命令模型下。
 > 边界例外：`done`/`review`/`upgrade`/`release` 虽含写操作，但流程被模板和显式参数高度约束，仍用 haiku。
 
-**子任务委派**（命令内粒度，与整条命令的模型分级正交）：命令中「吞吐大、推理浅」的步骤派给插件自带 subagent（`plugins/req/agents/`：`test-runner` haiku 跑测试 · `code-scout` haiku 定位代码 · `file-reviewer` sonnet 逐文件审查大 PR），主会话只接收结论，原始输出不进主上下文。规则见 `shared/_delegate.md`。派生 subagent 的命令 `allowed-tools` 必须列 `Agent`（`allowed-tools` 是白名单限制，不是免确认）。不要为了省 token 把整条 `dev`/`fix` 拆成「会话模型出方案 → 其它模型执行」。
+**子任务委派**（命令内粒度，与整条命令的模型分级正交）：**会话模型专注判断，执行外包给 subagent**——主会话做方案设计、跨文件一致性、闸门交互、验收复核，其余派给 `plugins/req/agents/` 的 6 个 agent，原始输出不进主上下文。
+
+| 只读型 | 用途 | | 可写型 | 用途 |
+|--------|------|---|--------|------|
+| `code-scout` haiku | 定位代码 | | `impl-worker` sonnet | 按实施单改一个独立单元 |
+| `test-runner` haiku | 跑测试 | | `doc-writer` haiku | 按素材+骨架成文/回填章节 |
+| `file-reviewer` sonnet | 审一个源文件的 diff | | | |
+| `diff-digest` haiku | 压缩大 diff，可逐文件落盘 | | | |
+
+规则见 `shared/_delegate.md`。派生 subagent 的命令 `allowed-tools` 必须列 `Agent`（`allowed-tools` 是白名单限制，不是免确认）。
+
+**委派写操作有准入门槛**（`impl-worker`，见 `_delegate.md` 的「委派实施」）：方案已确认到文件级 + 单元互不依赖 + 契约已定死 + 有验收命令，四条全满足才派；新建抽象、跨层契约变更、方案仍在演化的首版实现一律主会话自己写。验收复核的是 `git diff` 实际内容，不是 subagent 的自述。**降档不是委派的理由**——委派是为了上下文隔离（避免开发中途触发压缩、让已确认方案被摘要化），不是为了把推理换成便宜模型。
+
+**两条已知失败模式**（dogfooding 实测踩过，6 个 `file-reviewer` 里 5 个中招）：① prompt 只给素材的磁盘路径而不内联正文 → subagent 把轮次耗在自己找文件上；② 一个 subagent 塞多个文件 → 撞 `maxTurns` 交出半成品。切分要细、素材要内联。
 
 **allowed-tools**：只读命令不声明 Write/Edit/Bash。**Token 节约**：单文件 < 30 KB；> 50 KB 拆主文件 + rationale；详见 [`docs/design/token-optimization.md`](./docs/design/token-optimization.md)。
 
@@ -188,6 +201,6 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 4. **`scripts/` 下的 hook 脚本同样受配置约定管辖**：读 `.devflow/settings.json(.local)`、按 `requirementsDir` 解析路径、readonly 走 `requirementSource.path`，不得写死 `docs/requirements` 或回退 `.claude/`。改配置约定时必须连带检查 `hooks.json` 注册的每个脚本——v2.39.1 修的就是它们漏跟 v3 迁移、静默失效整整四个版本。
 5. 两个 marker：`.req-confirm-commit`=开关常驻，`.req-auto`=临时豁免有 TTL。
 6. Gitea 一律「tea 优先、curl 回退」，禁止自动 `tea login add`。
-7. 模型分级三档（haiku / `claude-sonnet-5` / 省略）按推理强度选，helper skill 无 `model` 字段；命令内高吞吐步骤走 subagent 委派而非降整条命令的档位。详见「命令与技能结构」。
+7. 模型分级三档（haiku / `claude-sonnet-5` / 省略）按推理强度选，helper skill 无 `model` 字段；命令内高吞吐步骤走 subagent 委派而非降整条命令的档位。委派规则集中在 `shared/_delegate.md`：切分要细（一个 subagent 一个源文件/一个单元）、素材正文内联进 prompt（给路径必超轮）、写操作满足准入四条才派、超轮用 SendMessage 续问而非重派。详见「命令与技能结构」。
 8. diag 的 6 个风控 Hook 是设计核心，改 hooks 必须同步注册。
 9. `/req:release` 用 `version-bumper` 按 semver 推导各插件版本；发布事实源是 plugin.json，README 版本号需手动同步（当前已滞后）。

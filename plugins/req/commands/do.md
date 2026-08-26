@@ -86,7 +86,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), 
 > 读取项目 CLAUDE.md 的「项目架构」章节，了解分层结构和目录布局。
 > 第 1 步意图为「重构 / 优化」时，Read `docs/prompt/refactoring.md`，存在则按其约束（行为不变、契约不变、范围聚焦）生成方案；缺失静默跳过。
 
-定位相关文件委派 `code-scout` subagent（prompt 给：第 1 步识别的意图与目标、关键词/符号名、架构分层目录摘要），主会话只精读其返回的高/中相关片段后生成方案；用户已指明文件或范围 ≤ 3 个文件时直接 Read。规则见 [`_delegate.md`](../shared/_delegate.md)。
+定位相关文件**默认委派** `code-scout` subagent（prompt 给：第 1 步识别的意图与目标、关键词/符号名、架构分层目录摘要），主会话只精读其返回的高/中相关片段后生成方案，不自己全库 grep。规则见 [`_delegate.md`](../shared/_delegate.md)。
+
+> 仅当**用户点名了具体文件**、或改动范围**确定**落在 ≤3 个文件内时才跳过委派直接 Read。「估计不大」不算确定——不确定就委派。跳过时说明一句理由。
 
 ```
 代码分析：
@@ -130,7 +132,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), 
 4. 分支名末尾追加 `-i<N>`（参见 [_issue.md 的 Issue 与分支关联](../shared/_issue.md#issue-与分支提交的关联)）
 5. 示例：`fix/optimize-order-query-i42`、`feat/add-search-feature-i12`
 
-AI 按确认的方案修改代码。修改完成后，若项目 `docs/prompt/testing.md`（或架构章节）定义了测试命令且存在与改动相关的测试，派 `test-runner` subagent 回归（规则见 [`_delegate.md`](../shared/_delegate.md)）；失败先修再进入步骤 4。无相关测试则跳过。
+按确认的方案修改代码。改动能切成互不依赖的单元时（同一文件只属于一个单元、契约已在方案里定死、有构建/测试命令可验收），**并行委派 `impl-worker` subagent** 逐单元实施，主会话不亲自编辑这些文件；准入四条与并行互斥规则见 [`_delegate.md`](../shared/_delegate.md) 的「委派实施」。不满足准入（新建抽象、跨层契约变更、方案仍在演化）或单元切不开时，主会话自己改。
+
+各 subagent 返回后主会话必须：复核 `git diff` 实际内容（不是复核 subagent 的自述，改动大时先派 `diff-digest` 压一遍）、逐条决策 `越界需求` / `存疑` 项、合并跨单元一致性问题。
+
+修改完成后，若项目 `docs/prompt/testing.md`（或架构章节）定义了测试命令且存在与改动相关的测试，派 `test-runner` subagent 回归；失败先修再进入步骤 4。无相关测试则跳过。
 
 ### 4. 完成提示
 

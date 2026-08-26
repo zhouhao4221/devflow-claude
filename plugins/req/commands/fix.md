@@ -64,7 +64,7 @@ Bug 分析：登录超时后 token 未清除
 
 #### 1.2 定位相关文件
 
-委派 `code-scout` subagent 搜索代码库（prompt 给：1.1 的现象与影响范围、报错信息/符号名、CLAUDE.md 架构章节的分层目录摘要），主会话拿到清单后只精读高/中相关的关键行段，用于 1.4 根因分析；规则见 [`_delegate.md`](../shared/_delegate.md)。用户已指明具体文件时直接 Read，不委派。展示格式：
+**默认委派** `code-scout` subagent 搜索代码库（prompt 给：1.1 的现象与影响范围、报错信息/符号名、CLAUDE.md 架构章节的分层目录摘要），主会话拿到清单后只精读高/中相关的关键行段，用于 1.4 根因分析；规则见 [`_delegate.md`](../shared/_delegate.md)。仅当用户点名了具体文件时才跳过委派直接 Read——「大概在哪个模块」不算点名。展示格式：
 
 ```
 相关文件定位：
@@ -183,6 +183,8 @@ fetch `branchFrom`，从远端创建并切换到新分支（有 issue 时分支�
 ### 3. 执行修复
 
 AI 按确认的方案修改代码。
+
+> bug 修复通常范围集中，**默认主会话自己改**。只有当同一处根因要在多个互不依赖的文件里重复同一类改动（如同一个错误用法散落在多个模块）时，才按 [`_delegate.md`](../shared/_delegate.md) 的「委派实施」并行派 `impl-worker`，并由主会话复核 `git diff` 实际内容后再继续。
 
 修改完成后，若项目 `docs/prompt/testing.md`（或架构章节）定义了测试命令且存在与改动相关的测试，派 `test-runner` subagent 回归（规则见 [`_delegate.md`](../shared/_delegate.md)）；失败先修再进入步骤 4。无相关测试则跳过，不新建测试。
 

@@ -1,7 +1,7 @@
 ---
 description: 创建 PR - 根据仓库类型自动创建 Pull Request
 argument-hint: "[REQ-XXX]"
-allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*)
+allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent
 ---
 
 # 创建 Pull Request
@@ -81,6 +81,8 @@ else:
 `--base` 存在时直接覆盖 `targets = [args.base]`，跳过上述推导。
 
 ### 4. 生成 PR 标题和 Body
+
+> 分支相对 `base` 的改动**超过 10 个文件或 800 行**时，先派 `diff-digest` subagent（prompt 给：工作目录、命令 `git diff <base>...HEAD`、无需落盘），Body 的「主要改动」按它返回的摘要写，diff 原文不进主会话。规则见 [`_delegate.md`](../shared/_delegate.md)。
 
 **标题**（`--title` 覆盖）：
 - REQ-XXX → `feat(REQ-XXX): <标题>`

@@ -1,7 +1,7 @@
 ---
 description: 规范提交 - 生成 Conventional Commits 格式的 Git 提交
 argument-hint: "[消息]"
-allowed-tools: Read, Glob, Grep, Bash(git:*)
+allowed-tools: Read, Glob, Grep, Bash(git:*), Agent
 model: claude-haiku-4-5-20251001
 ---
 
@@ -153,6 +153,8 @@ model: claude-haiku-4-5-20251001
 
 - 变更性质（新增功能、修复问题、重构等）
 - 变更描述（从代码差异中提炼）
+
+> 暂存改动**超过 10 个文件或 800 行**时，改派 `diff-digest` subagent 取摘要（prompt 给：工作目录、命令 `git diff --cached`、无需落盘），主会话按它返回的结构性改动清单推断类型与描述，diff 原文不进主会话。规则见 [`_delegate.md`](../shared/_delegate.md)。
 
 ### 6. 生成提交信息
 
