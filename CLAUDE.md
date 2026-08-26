@@ -204,3 +204,4 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 7. 模型分级三档（haiku / `claude-sonnet-5` / 省略）按推理强度选，helper skill 无 `model` 字段；命令内高吞吐步骤走 subagent 委派而非降整条命令的档位。委派规则集中在 `shared/_delegate.md`：切分要细（一个 subagent 一个源文件/一个单元）、素材正文内联进 prompt（给路径必超轮）、写操作满足准入四条才派、超轮用 SendMessage 续问而非重派。详见「命令与技能结构」。
 8. diag 的 6 个风控 Hook 是设计核心，改 hooks 必须同步注册。
 9. `/req:release` 用 `version-bumper` 按 semver 推导各插件版本；发布事实源是 plugin.json，README 版本号需手动同步（当前已滞后）。
+10. **改 `agents/` 或任何插件文件后，本仓库工作区的改动对运行时无效**——Claude Code 运行时加载的是 `~/.claude/plugins/cache/devflow/<plugin>/<version>/`，`/plugin` 更新则从 `~/.claude/plugins/marketplaces/devflow`（GitHub 克隆）拉。cache 按版本号分目录，**不 bump 版本号 `/plugin` 会报「already at the latest version」而不更新**。要让改动生效并可实测，必须走完：提交 → push → `/plugin` 更新 → `/reload-plugins`。在此之前跑 subagent 测的都是旧定义。
