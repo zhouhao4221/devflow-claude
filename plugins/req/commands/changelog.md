@@ -10,7 +10,7 @@ model: claude-haiku-4-5-20251001
 根据 Git 提交记录和已完成需求，生成版本升级说明文档。
 
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
-> 生成的文件保存在 `docs/changelogs/` 目录，不触发缓存同步。
+> 生成的文件保存在 `docs/changelogs/` 目录。
 
 ## 命令格式
 
@@ -81,7 +81,7 @@ model: claude-haiku-4-5-20251001
 
 ### 5. 关联已完成需求
 
-按 `requirementRole` 确定需求目录（readonly → 主仓需求目录；primary → 本地，不存在时回退缓存）。从 commit messages 中提取 `REQ-XXX` / `QUICK-XXX` 编号，读取对应需求文档的标题和类型。同时扫描 active/ 目录（需求可能尚未完成但已有 commit）。
+按 `requirementRole` 确定需求目录（readonly → 主仓需求目录；primary → 本仓 `requirementsDir`）。从 commit messages 中提取 `REQ-XXX` / `QUICK-XXX` 编号，读取对应需求文档的标题和类型。同时扫描 active/ 目录（需求可能尚未完成但已有 commit）。
 
 ### 6. 检查目标文件
 

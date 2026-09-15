@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 编辑已有需求文档，仅修改内容，不触发开发流程。
 
-> 存储路径和缓存同步规则见 [_storage.md](../shared/_storage.md)
+> 存储路径规则见 [_storage.md](../shared/_storage.md)
 
 ## 命令格式
 
@@ -36,11 +36,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 ```
 正式需求（REQ-XXX）：
   1. 本地模板：docs/requirements/templates/requirement-template.md
-  2. 插件模板：<plugin-path>/templates/requirement-template.md
+  2. 插件模板：${CLAUDE_PLUGIN_ROOT}/templates/requirement-template.md
 
 快速修复（QUICK-XXX）：
   1. 本地模板：docs/requirements/templates/quick-template.md
-  2. 插件模板：<plugin-path>/templates/quick-template.md
+  2. 插件模板：${CLAUDE_PLUGIN_ROOT}/templates/quick-template.md
 ```
 
 **两个路径都不存在时，终止操作**：
@@ -156,18 +156,16 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 建议：完成当前开发后再进行变更
 ```
 
-### 9. 保存并同步缓存
+### 9. 保存
 
 - 更新「变更记录」章节
-- 写入本地文件
-- **同步到主仓需求目录**
+- 写入需求文档（写入即生效，无同步步骤）
 
 ### 10. 输出结果
 
 ```
 ✅ 需求已更新：REQ-XXX
 路径：docs/requirements/active/REQ-XXX-标题.md
-缓存：已同步
 
 下一步：
 - /req:edit REQ-XXX - 继续编辑

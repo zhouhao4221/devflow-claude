@@ -42,42 +42,18 @@ model: claude-haiku-4-5-20251001
 
 ### 1. 定位插件根目录
 
-本命令文件位于插件的 `commands/` 目录下。通过本文件自身路径向上一级即可得到插件根目录：
+插件根目录（下文 `<插件根目录>`）即 `${CLAUDE_PLUGIN_ROOT}`，模板目录为 `${CLAUDE_PLUGIN_ROOT}/templates/`。
 
-```
-本文件路径: <插件根目录>/commands/update-template.md
-插件根目录: 本文件所在目录的父目录
-模板目录:   <插件根目录>/templates/
-```
-
-**定位方式**：读取 `.claude/settings.local.json` 中的 `extraKnownMarketplaces` 配置，或通过当前项目的 `.claude/settings.local.json` 找到插件注册信息。如果找不到，使用以下回退策略：
-
-```
-1. 读取 ~/.claude/settings.json 的 extraKnownMarketplaces 字段
-2. 找到 name 包含 "req" 的插件条目
-3. 提取 source.path 作为插件根目录
-4. 若以上均失败，提示用户手动指定插件路径
-```
-
-**重要**：必须先确认插件根目录存在 `templates/` 子目录，且目标模板文件存在，再继续后续步骤。
+**重要**：必须先确认 `templates/` 子目录存在，且目标模板文件存在，再继续后续步骤。
 
 ### 2. 前置检查
 
-```bash
-# 检查本地存储目录是否存在
-LOCAL_ROOT=docs/requirements
-if [ ! -d "$LOCAL_ROOT" ]; then
-    echo "本地需求目录不存在，请先执行 /req:init <project-name>"
-    exit 1
-fi
+按 [`_storage.md`](../shared/_storage.md)「读取惯例」合并 `.devflow/settings.json(.local)` 后：
 
-# 检查仓库角色
-ROLE=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementRole // "primary"')
-if [ "$ROLE" = "readonly" ]; then
-    echo "只读仓库不支持更新模板"
-    exit 1
-fi
-```
+- `requirementRole` 为 `readonly` → 提示「只读仓库不支持更新模板」，终止
+- 需求根目录 `requirementsDir`（缺省 `docs/requirements`）不存在 → 提示「本地需求目录不存在，请先执行 /req:init <project-name>」，终止
+
+下文的 `docs/requirements/` 均指解析后的 `requirementsDir`。
 
 ### 3. 选择模板
 
@@ -147,27 +123,13 @@ a. all         - 更新全部模板
 
 **注意**：PRD 模板更新时保留原始模板变量（`{{PROJECT_NAME}}`、`{{DATE}}`），不做变量替换。已有的 `PRD.md` 是项目文档，不会被覆盖。PRD 模板更新到 `prd-template.md`，仅影响后续新建项目时使用。
 
-### 6. 同步到主仓需求目录
-
-更新后自动同步模板到主仓需求目录：
-
-```bash
-PROJECT=$(cat .claude/settings.local.json 2>/dev/null | jq -r '.requirementProject // empty')
-if [ -n "$PROJECT" ]; then
-    CACHE_ROOT=<requirementSource.path>/<requirementsDir>
-    mkdir -p $CACHE_ROOT/templates
-    cp $LOCAL_ROOT/templates/*.md $CACHE_ROOT/templates/ 2>/dev/null
-fi
-```
-
-### 7. 输出结果
+### 6. 输出结果
 
 **单个模板更新：**
 ```
 已更新模板: requirement
   源文件: <插件根目录>/templates/requirement-template.md
   目标: docs/requirements/templates/requirement-template.md
-  缓存同步: 已完成
 
 新创建的需求将使用更新后的模板。已有需求文档不受影响。
 ```
@@ -191,7 +153,7 @@ fi
 
 | 错误场景 | 处理方式 |
 |---------|---------|
-| 插件根目录无法定位 | 提示：无法定位插件目录，请检查 `~/.claude/settings.json` 中的 `extraKnownMarketplaces` 配置 |
+| `${CLAUDE_PLUGIN_ROOT}` 为空或目录不存在 | 提示：无法定位插件目录，请用 `/plugin` 确认 req 插件已安装并执行 `/reload-plugins` |
 | 插件 templates/ 目录不存在 | 提示：插件模板目录不存在，插件安装可能不完整 |
 | 本地需求目录不存在 | 提示先执行 `/req:init` |
 | 只读仓库 | 提示只读仓库不支持更新模板 |

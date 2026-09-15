@@ -35,8 +35,8 @@ description: 开发引导助手。仅在执行 /req:dev 命令时触发。按项
 
 | 角色 | 行为 |
 |------|------|
-| `primary` | 本地读写，修改后同步缓存 |
-| `readonly` | 从缓存读取，可基于已完成需求开发，不写入 |
+| `primary` | 读写本仓 `requirementsDir`，写入即生效 |
+| `readonly` | 经 `requirementSource.path` 直读主仓需求目录，可基于已完成需求开发，不写入需求文档 |
 
 ### 5. 加载项目知识
 
@@ -100,7 +100,7 @@ description: 开发引导助手。仅在执行 /req:dev 命令时触发。按项
 
 ### 读取领域规约（Specs）
 
-primary 扫描 `docs/requirements/specs/`，readonly 读缓存中的 `specs/`。有文件则全部读取注入上下文，无则静默跳过。
+primary 扫描本仓 `<requirementsDir>/specs/`，readonly 直读主仓 `<requirementSource.path>/<主仓 requirementsDir>/specs/`。有文件则全部读取注入上下文，无则静默跳过。
 
 ### 检查已有实现方案
 

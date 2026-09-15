@@ -28,7 +28,7 @@ SOURCE_PATH=$(jq -r '
 # 1b. 查找 Claude 缓存的克隆目录（GitHub/远程源安装）
 if [ -z "$SOURCE_PATH" ]; then
     # Claude Code 将远程 marketplace 克隆到 ~/.claude/plugins/marketplaces/<name>/
-    # 从 settings 取 marketplace 名称，映射到缓存目录
+    # 从 settings 取 marketplace 名称，映射到其克隆目录
     MARKETPLACE_NAME=$(jq -r '
       .extraKnownMarketplaces | to_entries[] |
       select(.value.source.source != "directory") |

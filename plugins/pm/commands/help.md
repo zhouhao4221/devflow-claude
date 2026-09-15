@@ -20,13 +20,13 @@ model: claude-haiku-4-5-20251001
 按以下优先级：
 
 1. 命令参数 `--lang=zh|en|ko`（显式覆盖）
-2. `.claude/settings.local.json` 的 `language` 字段
+2. `.devflow/settings.local.json` 的 `language` 字段
 3. 默认 `zh`
 
 ### 2. 读取版本
 
 ```python
-version = read_plugin_json("version")  # <plugin-path>/.claude-plugin/plugin.json
+version = read_plugin_json("version")  # ${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json
 ```
 
 ### 3. 按语言输出对应帮助内容
@@ -243,7 +243,7 @@ PRD, 요구사항 문서, Git 기록에서 프로젝트 데이터를 추출하�
 
 ## 持久化语言偏好
 
-在 `.claude/settings.local.json` 中设置一次：
+在 `.devflow/settings.local.json` 中设置一次（个人偏好，不入 git）：
 
 ```json
 {

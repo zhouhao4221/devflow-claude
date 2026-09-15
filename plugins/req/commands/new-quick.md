@@ -32,13 +32,13 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(gh:*, curl:*)
 
 ### 0. 解析存储路径
 
-本地主存储为 `docs/requirements/active/` 和 `docs/requirements/completed/`，确保目录存在。读取 `settings.local.json` 的 `requirementProject`；有绑定则同时准备缓存路径 `<requirementSource.path>/<requirementsDir>/`。
+读取 `.devflow/settings.json` 的 `requirementRole` / `requirementsDir`（`.devflow/settings.local.json` 同名字段覆盖）。`readonly` 仓库不能创建需求，提示到主仓执行后终止；否则需求根目录为本仓 `requirementsDir`（缺省 `docs/requirements`），确保其 `active/`、`completed/` 存在。下文 `docs/requirements/` 均指该目录。
 
 ### 1. 生成需求编号
 
 格式：`QUICK-XXX`（三位数字，如 QUICK-001）
 
-扫描本地 active/completed 和缓存 active/completed 中所有 QUICK-XXX 文件，取两边最大编号中的较大值，加 1 生成新编号。
+扫描 `active/` 与 `completed/` 中所有 QUICK-XXX 文件，取最大编号加 1 生成新编号。
 
 ### 1.5 （可选）从 issue 导入
 
@@ -66,7 +66,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(gh:*, curl:*)
 ```
 优先级：
 1. 本地模板：docs/requirements/templates/quick-template.md
-2. 插件模板：<plugin-path>/templates/quick-template.md
+2. 插件模板：${CLAUDE_PLUGIN_ROOT}/templates/quick-template.md
 ```
 
 **两个路径都不存在时，终止操作**：
@@ -95,10 +95,6 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(gh:*, curl:*)
 - **模块字段设为「快速修复」**
 - `issue` 字段：从 issue 导入时填 `#N`，否则填 `-`
 - 生命周期勾选「草稿」
-
-**步骤 4.2：同步到主仓需求目录**
-
-若已绑定项目，将新建文档同步复制到 `$CACHE_ACTIVE/`。
 
 ### 5. 快速分析并生成方案
 
@@ -167,7 +163,7 @@ AI 分析问题/需求，生成实现方案：
 用户确认后：
 
 1. 更新状态为「方案确认」→「开发中」
-2. 更新需求文档（先本地，后缓存）
+2. 更新需求文档
 3. 使用 TodoWrite 生成开发任务
 4. 按照 dev-guide 技能引导开发
 
@@ -187,8 +183,7 @@ AI 分析问题/需求，生成实现方案：
 完成所有改动后：
 
 1. 更新状态为「已完成」
-2. 移动文档到 completed 目录
-3. 同步缓存
+2. 移动文档到 completed 目录（`git mv`）
 
 ```
 快速修复完成！

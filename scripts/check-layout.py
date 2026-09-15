@@ -11,7 +11,14 @@ Claude Code 把 `commands/` 下的**每个** `.md` 和 `skills/` 下的**每个*
      放在 `commands/` 下会变成 `/req:_storage` 这种伪命令。
      它们统一放 `plugins/<p>/shared/`，命令用 `../shared/x.md` 链接引用。
 
-顺带校验所有 Markdown 相对链接可达，避免搬迁后留下悬空引用。
+顺带校验：
+  - 所有 Markdown 相对链接可达，避免搬迁后留下悬空引用。
+  - 过时引用：v3 配置迁到 `.devflow/`、全局缓存移除之后，命令正文里残留的
+    `.claude/settings*`、`sync-cache`、`<plugin-path>` 等旧写法。这类残留已两次
+    造成静默失效（v2.39.1 的 hook、v2.42 之后的 req 命令），由脚本兜底。
+    迁移/历史说明或 Claude Code 自身配置项（hooks、enabledPlugins 等）在同行或前 3 行
+    出现即属合法提及；
+    其它确需保留的行尾加 `stale-ok` 豁免。
 
 用法：check-layout.py [--check] [--plugin P]
   默认        自动清理能自动清理的（镜像目录、skills/ 散落文件）并报告其余
@@ -26,6 +33,23 @@ import sys
 PLUGINS = ["req", "api", "pm", "diag"]
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+
+STALE_RULES = [
+    (re.compile(r"\.claude/settings"),
+     "DevFlow 配置已迁到 .devflow/settings.json(.local)"),
+    (re.compile(r"sync-cache|claude-requirements"),
+     "v2 全局缓存已于 v3 移除"),
+    (re.compile(r"CACHE_(ACTIVE|COMPLETED|ROOT)|同步缓存|缓存同步|回退.{0,4}缓存|"
+                r"[读查从到]缓存|缓存中|本地缓存|缓存 ?active|缓存为备用|缓存：已同步"),
+     "v2 缓存同步逻辑已于 v3 移除（需求只有一份，写入即生效）"),
+    (re.compile(r"<plugin-path>"),
+     "未定义的占位符，改用 ${CLAUDE_PLUGIN_ROOT}"),
+]
+# 命中行本身或前 STALE_CONTEXT 行出现即视为合法提及（迁移提示、jq 读 Claude Code 配置常跨多行）
+STALE_ALLOW = re.compile(
+    r"旧|legacy|v2|历史|不回退|stale-ok|"
+    r"extraKnownMarketplaces|enabledPlugins|permissions|hooks", re.I)
+STALE_CONTEXT = 3
 
 
 def frontmatter(path):
@@ -121,6 +145,30 @@ def check_links(plugins):
     return broken, total
 
 
+def check_stale(plugins):
+    """插件内 .md/.sh/.py 的过时引用（规则见 STALE_RULES，豁免见 STALE_ALLOW）。"""
+    hits = []
+    for p in plugins:
+        base = os.path.join(ROOT, "plugins", p)
+        for dirpath, dirnames, filenames in os.walk(base):
+            for fn in sorted(filenames):
+                if not fn.endswith((".md", ".sh", ".py")):
+                    continue
+                src = os.path.join(dirpath, fn)
+                with open(src, encoding="utf-8") as f:
+                    lines = f.read().splitlines()
+                for i, line in enumerate(lines):
+                    rules = [why for pat, why in STALE_RULES if pat.search(line)]
+                    if not rules:
+                        continue
+                    context = "\n".join(lines[max(0, i - STALE_CONTEXT):i + 1])
+                    if STALE_ALLOW.search(context):
+                        continue
+                    hits.extend(f"{os.path.relpath(src, ROOT)}:{i + 1} {why}"
+                                for why in rules)
+    return hits
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
@@ -134,6 +182,7 @@ def main():
     mirrors, strays, malformed, helpers = check_skills(plugins)
     bad_cmds, commands = check_commands(plugins)
     broken, link_total = check_links(plugins)
+    stale = check_stale(plugins)
 
     if not a.check:
         for name, path in mirrors:
@@ -159,6 +208,8 @@ def main():
         problems.append(f"{len(bad_cmds)} 个 commands/ 违规文件: " + "; ".join(bad_cmds))
     if broken:
         problems.append(f"{len(broken)} 个悬空链接: " + "; ".join(broken))
+    if stale:
+        problems.append(f"{len(stale)} 处过时引用:\n      " + "\n      ".join(stale))
 
     if problems:
         print("[X] " + "\n    ".join(problems))
@@ -167,7 +218,7 @@ def main():
         return 1
     print(f"[OK] {len(commands)} 个命令 + {len(helpers)} 个 helper skill = "
           f"{len(commands) + len(helpers)} 个菜单项，无重复；"
-          f"{link_total} 个相对链接全部可达")
+          f"{link_total} 个相对链接全部可达；无过时引用")
     return 0
 
 

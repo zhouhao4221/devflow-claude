@@ -16,7 +16,7 @@ model: claude-haiku-4-5-20251001
 按以下优先级：
 
 1. 命令参数 `--lang=zh|en|ko`（显式覆盖）
-2. `.claude/settings.local.json` 的 `language` 字段
+2. `.devflow/settings.local.json` 的 `language` 字段
 3. 默认 `zh`
 
 ### 2. 读取教程文件
@@ -25,9 +25,9 @@ model: claude-haiku-4-5-20251001
 
 | lang | 文件路径 |
 |------|---------|
-| `zh`（默认） | `<plugin-path>/docs/tutorial.zh.md` |
-| `en` | `<plugin-path>/docs/tutorial.en.md` |
-| `ko` | `<plugin-path>/docs/tutorial.ko.md` |
+| `zh`（默认） | `${CLAUDE_PLUGIN_ROOT}/docs/tutorial.zh.md` |
+| `en` | `${CLAUDE_PLUGIN_ROOT}/docs/tutorial.en.md` |
+| `ko` | `${CLAUDE_PLUGIN_ROOT}/docs/tutorial.ko.md` |
 
 ### 3. 决定输出范围
 
@@ -99,7 +99,7 @@ API 플러그인 - 튜토리얼
 ```
 
 示例：
-- `/api:help` → 中文章节索引（或 settings.local.json 中设定的语言）
+- `/api:help` → 中文章节索引（或 `.devflow/settings.local.json` 中设定的语言）
 - `/api:help --lang=en` → English section index
 - `/api:help 5` → 第 5 章「字段映射」
 - `/api:help 5 --lang=ko` → 섹션 5 "필드 매핑"
@@ -107,7 +107,7 @@ API 플러그인 - 튜토리얼
 
 ## 持久化语言偏好
 
-在 `.claude/settings.local.json` 中设置：
+在 `.devflow/settings.local.json` 中设置（个人偏好，不入 git）：
 
 ```json
 {

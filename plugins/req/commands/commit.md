@@ -11,7 +11,6 @@ model: claude-haiku-4-5-20251001
 
 > **Audience:** Engineer
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
-> 不触发缓存同步。
 
 ---
 
@@ -41,7 +40,7 @@ model: claude-haiku-4-5-20251001
 
 ### 1. 分支检查（在任何 git 操作之前）
 
-读取 `.claude/settings.local.json` 的 `branchStrategy`，未配置时跳过。获取当前分支名，判断是否等于 `mainBranch` 或 `developBranch`：
+读取 `.devflow/settings.json` 的 `branchStrategy`（`.devflow/settings.local.json` 同名字段覆盖），未配置时跳过。获取当前分支名，判断是否等于 `mainBranch` 或 `developBranch`：
 
 - **否（feat/*、fix/*、hotfix/* 等）** → 当前分支是安全的，直接跳到步骤 2 正常提交。
 - **是** → 当前在保护分支，**禁止提交**，执行以下操作：
@@ -145,7 +144,7 @@ model: claude-haiku-4-5-20251001
 
 ### 4. 检测当前需求
 
-优先从分支名提取 `REQ-XXX` / `QUICK-XXX` 编号；未匹配时回退扫描活跃需求（按 `requirementRole` 决定读本地还是缓存）：命中 1 个自动关联，命中多个列出让用户选，未命中则不关联。
+优先从分支名提取 `REQ-XXX` / `QUICK-XXX` 编号；未匹配时回退扫描活跃需求（readonly 读主仓需求目录，primary 读本仓 `requirementsDir`）：命中 1 个自动关联，命中多个列出让用户选，未命中则不关联。
 
 ### 5. 分析变更内容
 

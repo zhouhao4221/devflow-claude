@@ -40,7 +40,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 - **命令同名 skill 镜像**：与 command 落在同一菜单、`description` 一模一样，每条命令重复两遍（`claude plugin details req` 里出现 `do, do`、`pr, pr`），多出的那份 description 还白占 always-on token。原 `scripts/gen-skills.py` 按 `SKIP_MIRROR` 名单派生的 51 个镜像（req 23 · pm 12 · api 6 · uat 6 · diag 4）已整体删除。
 - **共享参考文档放 `commands/`**：`_storage.md` 之类会变出 `/req:_storage` 等 12 个伪命令。统一放 `plugins/<p>/shared/`（req 10 · pm 1 · api 1）。
 
-`scripts/check-layout.py` 一次性守住三条：`skills/` 无命令镜像、`commands/` 无非命令文件、所有相对链接可达。`--check` 报错退 1（发布前置），不带参数则自动清理可清理的部分。
+`scripts/check-layout.py` 一次性守住四条：`skills/` 无命令镜像、`commands/` 无非命令文件、所有相对链接可达、插件内无过时引用（`.claude/settings*` 读写 DevFlow 字段、`sync-cache` / 全局缓存、缓存同步类表述、未定义的 `<plugin-path>`；迁移说明与 Claude Code 自身配置项豁免，确需保留加 `stale-ok`）。`--check` 报错退 1（发布前置，`.github/workflows/check.yml` 在每个 PR 上连同 diag 冒烟测试自动跑），不带参数则自动清理可清理的部分。
 
 命令 frontmatter：
 
@@ -166,10 +166,10 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 ## 维护规则与易错点
 
-1. 能力只改 `commands/<name>.md`（及其 `shared/_*.md` 子文件）；发布前跑 `python3 scripts/check-layout.py --check` 守住菜单与链接。helper skill 手写，脚本不碰。
+1. 能力只改 `commands/<name>.md`（及其 `shared/_*.md` 子文件）；发布前跑 `python3 scripts/check-layout.py --check` 守住菜单、链接与过时引用（CI 也会跑）。helper skill 手写，脚本不碰。
 2. 共享规则改 `_*.md`，勿在每个命令重复。**共享文件之间不要用 Markdown 链接互引**（命令会顺着链接把整组 ~33KB 全读进来），互相提及写纯文本文件名，仅真实依赖用链接。
 3. `requirementRole=readonly` 是贯穿多命令的分支点，新增写命令必须处理跳过。
-4. **`scripts/` 下的 hook 脚本同样受配置约定管辖**：读 `.devflow/settings.json(.local)`、按 `requirementsDir` 解析路径、readonly 走 `requirementSource.path`，不得写死 `docs/requirements` 或回退 `.claude/`。改配置约定时必须连带检查 `hooks.json` 注册的每个脚本——v2.39.1 修的就是它们漏跟 v3 迁移、静默失效整整四个版本。
+4. **`scripts/` 下的 hook 脚本同样受配置约定管辖**：读 `.devflow/settings.json(.local)`、按 `requirementsDir` 解析路径、readonly 走 `requirementSource.path`，不得写死 `docs/requirements` 或回退 `.claude/`。改配置约定时必须连带检查 `hooks.json` 注册的每个脚本——v2.39.1 修的就是它们漏跟 v3 迁移、静默失效整整四个版本。**命令正文、`shared/`、helper skill 同理**：v2.42 之后又查出 req 十余条命令仍读写 `.claude/settings*`、按 v2 缓存同步执行（`branch init` 把配置写到 `.claude/`，其它命令读不到）。这类残留现由 `check-layout.py` 的过时引用检查兜底；约定再变时先改守卫规则，再让它列出遗留。
 5. 两个 marker：`.req-confirm-commit`=开关常驻，`.req-auto`=临时豁免有 TTL。
 6. Gitea 一律「tea 优先、curl 回退」，禁止自动 `tea login add`。
 7. 模型分级三档（haiku / `claude-sonnet-5` / 省略）按推理强度选，helper skill 无 `model` 字段；命令内高吞吐步骤走 subagent 委派而非降整条命令的档位。委派规则集中在 `shared/_delegate.md`：切分要细（一个 subagent 一个源文件/一个单元）、素材正文内联进 prompt（给路径必超轮）、写操作满足准入四条才派、超轮用 SendMessage 续问而非重派。详见「命令与技能结构」。

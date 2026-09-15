@@ -1,0 +1,25 @@
+name: check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  layout-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 系统 python 受 PEP 668 限制无法 pip install，用 setup-python 的解释器
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 布局、链接与过时引用
+        run: python3 scripts/check-layout.py --check
+
+      - name: diag Hook 冒烟测试
+        run: |
+          python3 -m pip install --quiet pyyaml
+          bash plugins/diag/tests/smoke.sh

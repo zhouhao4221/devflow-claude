@@ -1,111 +1,65 @@
 ---
-description: 列出所有需求项目 - 查看主仓需求目录中的所有项目
+description: 查看需求项目 - 当前仓库对应的需求项目、需求目录与统计
 allowed-tools: Read, Glob, Bash(ls:*)
 model: claude-haiku-4-5-20251001
 ---
 
-# 列出所有需求项目
+# 查看需求项目
 
-显示主仓需求目录中所有项目的概览。
+v3 起没有全局缓存和中心索引：每个 primary 仓库的 `requirementsDir` 就是一个需求项目，readonly 仓库经 `requirementSource.path` 绑定其中一个。本命令展示当前仓库对应的那个项目。
 
 ## 命令格式
 
 ```
-/req:projects
+/req:projects [--detail]
 ```
 
 ---
 
 ## 执行流程
 
-### 1. 检查主仓需求目录
+### 1. 读取配置
 
-检查 `<requirementSource.path>/<requirementsDir>/` 是否存在且非空。
+读取 `.devflow/settings.json` 的 `requirementProject` / `requirementRole` / `requirementsDir`，再用 `.devflow/settings.local.json` 覆盖同名字段（含 `requirementSource`）。
 
-**如果缓存不存在或为空**：
-```
-暂无需求项目
-
-使用 /req:init <project-name> 创建第一个项目
-```
-
-### 2. 读取全局索引
-
-读取 `（无中心索引，已废弃）` 获取各项目的元信息和关联仓库列表。
-
-### 3. 扫描每个项目
-
-对每个项目收集：
-- 活跃需求数量
-- 已完成需求数量
-- 关联的仓库列表
-- 创建时间
-
-### 4. 获取当前仓库绑定
-
-读取当前仓库的 `.claude/settings.local.json` 中的 `requirementProject`
-
-### 5. 输出项目列表
+无 `requirementProject` 时输出后结束：
 
 ```
-需求项目列表
+当前仓库未初始化需求项目
 
-| 项目 | 活跃 | 已完成 | 关联仓库 | 创建时间 |
-|------|------|--------|---------|---------|
-| my-saas-product | 3 | 12 | 2 | 2026-01-01 |
-| internal-tools | 1 | 5 | 1 | 2026-01-05 |
-| client-portal | 0 | 0 | 0 | 2026-01-08 |
-
-= 当前仓库绑定的项目
-
-缓存路径: <requirementSource.path>/<requirementsDir>/
-
-可用命令:
-   - /req:use <project>   切换到指定项目
-   - /req:init <project>  创建新项目
+  主仓库：/req:init <project-name>
+  只读仓库：/req:use <primary-repo-path>
 ```
 
----
+### 2. 确定需求根目录
 
-## 详细模式
+- `primary` / 未配置角色：本仓 `requirementsDir`（缺省 `docs/requirements`）
+- `readonly`：`<requirementSource.path>/<主仓 requirementsDir>`；目录不存在 → 提示主仓路径失效，重新 `/req:use <primary-repo-path>` 绑定，结束
+
+### 3. 统计
+
+- `active/`、`completed/` 下的需求文档数
+- `modules/*.md` 模块数
+- `--detail`：活跃需求按元信息「状态」分组计数（草稿 / 待评审 / 评审通过 / 开发中 / 测试中）
+
+### 4. 输出
 
 ```
-/req:projects --detail
+需求项目
+
+项目：my-saas-product（primary）
+需求目录：docs/requirements/
+需求：活跃 3 · 已完成 12 · 模块 4
+
+可用命令：
+  /req            列出需求
+  /req:modules    模块概览
 ```
 
-显示每个项目的详细信息：
+readonly 仓库在「需求目录」下追加一行 `主仓：<requirementSource.path>`。`--detail` 在「需求」下追加状态分布：
 
 ```
-需求项目列表
-
-
-my-saas-product (当前项目)
-
-   创建时间: 2026-01-01
-   路径: <requirementSource.path>/<requirementsDir>/
-
-   需求统计:
-      - 开发中: 1
-      - 待评审: 1
-      - 草稿: 1
-      - ✅ 已完成: 12
-
-   关联仓库:
-      - /Users/xxx/backend
-      - /Users/xxx/frontend
-
-
-internal-tools
-
-   创建时间: 2026-01-05
-   路径: <requirementSource.path>/<requirementsDir>/
-
-   需求统计:
-      - 开发中: 1
-      - ✅ 已完成: 5
-
-   关联仓库:
-      - /Users/xxx/tools
+状态分布：草稿 1 · 待评审 1 · 开发中 1
 ```
 
 ---

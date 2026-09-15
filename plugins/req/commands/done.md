@@ -9,7 +9,7 @@ model: claude-haiku-4-5-20251001
 
 标记需求为已完成，归档文档。
 
-> 存储路径和缓存同步规则见 [_storage.md](../shared/_storage.md)
+> 存储路径规则见 [_storage.md](../shared/_storage.md)
 >
 > **CLI 优先级**：GitHub 走 `gh`；Gitea 按 [`_gitea_cli.md`](../shared/_gitea_cli.md) 检测 `tea`，可用即走 `tea pulls create` / `tea issues close`，否则回退本文 curl 示例。
 
@@ -49,9 +49,9 @@ model: claude-haiku-4-5-20251001
 
 定位 `docs/requirements/PRD.md` 的「需求追踪」章节（`grep -n "需求追踪"`），更新对应需求所在行的「状态」和「完成日期」两列。PRD 不存在或无该章节时跳过。
 
-### 5. 归档文档 + 同步缓存
+### 5. 归档文档
 
-将需求文档从 `active/` 移动到 `completed/`（使用 `git mv` 保留历史）。缓存同步由 PostToolUse Hook 自动处理，无需命令内显式调用。
+将需求文档从 `active/` 移动到 `completed/`（使用 `git mv` 保留历史）。
 
 ### 6. 输出确认
 
