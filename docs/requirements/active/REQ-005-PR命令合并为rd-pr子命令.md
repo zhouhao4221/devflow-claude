@@ -174,21 +174,21 @@ PR 的生命周期被拆在两条命令里：`/rd:pr` 只负责创建；`/rd:rev
 ### 6.1 技术测试
 
 - [x] 测试点1：`check-layout.py --check` 通过，菜单项为 71，无 `review-pr` 残留；人为植入一处 `review-pr` 能被报出
-- [ ] 测试点2：`/rd:pr` 路由：`status` / `review` / `comments` / `merge` / `fetch-comments` 进入对应子命令；`REQ-XXX`、`--title`、无参数进入创建
+- [x] 测试点2：`/rd:pr` 路由：`status` / `review` / `comments` / `merge` / `fetch-comments` 进入对应子命令；`REQ-XXX`、`--title`、无参数进入创建
 - [ ] 测试点3：创建 PR 路径不读取审查 / 评论 / 合并共享文件
 - [ ] 测试点4：`review` 大 PR 仍调用原生 `/code-review`，`--level`、`--auto` 生效
 - [ ] 测试点5：自然语言调度器「审 PR / 合并 PR / 拉 PR 评论」映射到新子命令
-- [ ] 测试点6：`/rd:migrate` 2C 对 `/req:review-pr` 四种写法按映射替换
+- [x] 测试点6：`/rd:migrate` 2C 对 `/req:review-pr` 四种写法按映射替换
 - [x] 测试点7：diag 冒烟测试与 GitHub Actions CI 通过
 
 ### 6.2 验收标准
 
 > 产品/业务方验收时的确认项，描述可观测的业务结果
 
-- [ ] 验收项1：斜杠菜单输入 `/rd:pr` 只出现一条 PR 命令，不再出现 `review-pr`
+- [x] 验收项1：斜杠菜单输入 `/rd:pr` 只出现一条 PR 命令，不再出现 `review-pr`
 - [ ] 验收项2：在一个功能分支上依次执行 `/rd:pr`、`/rd:pr review`、`/rd:pr merge`，完成创建、审查、合并全流程
 - [ ] 验收项3：`/rd:pr` 创建成功后的提示与 `/rd:fix --auto` 结束提示中，下一步均为 `/rd:pr review`
-- [ ] 验收项4：README / tutorial 三语中 PR 审查与合并均写作 `/rd:pr <子命令>`
+- [x] 验收项4：README / tutorial 三语中 PR 审查与合并均写作 `/rd:pr <子命令>`
 
 ---
 

@@ -174,10 +174,10 @@ Claude Code 插件命令必须带 `/<插件名>:` 前缀，`plugin.json` 没有�
 
 - [x] 测试点1：`check-layout.py --check` 通过；人为植入一处 `/req:` 残留时能被报出
 - [x] 测试点2：diag 冒烟测试与 GitHub Actions CI 通过
-- [ ] 测试点3：安装 rd 后 `claude plugin details rd` 列出全部命令与 helper skill，无重复项
+- [x] 测试点3：安装 rd 后 `claude plugin details rd` 列出全部命令与 helper skill，无重复项
 - [ ] 测试点4：5 个 agent 以 `rd:xxx` 名称可被委派（dev / fix / review-pr 各跑一次委派路径）
 - [x] 测试点5：SessionStart、validate-requirement、confirm-before-commit 三个 hook 的输出中无 `/req:`
-- [ ] 测试点6：在含 `/req:` 引用的样例项目执行 `/rd:migrate`，逐项确认替换；拒绝项保留原文
+- [x] 测试点6：在含 `/req:` 引用的样例项目执行 `/rd:migrate`，逐项确认替换；拒绝项保留原文
 - [x] 测试点7：过渡插件 req 只注册 `/req:help` 一条命令
 
 ### 6.2 验收标准
@@ -187,7 +187,7 @@ Claude Code 插件命令必须带 `/<插件名>:` 前缀，`plugin.json` 没有�
 - [ ] 验收项1：新环境执行 `claude plugins install rd@devflow`，输入 `/rd` 能看到全部命令，`/rd:init` 初始化成功
 - [ ] 验收项2：已装 req 的环境更新 marketplace 后，`/req:help` 显示更名说明；按提示重装 rd 后，原项目 `.devflow/` 配置不做任何修改即可用 `/rd:status` 正常读取需求
 - [ ] 验收项3：开启过提交确认（存在 `.claude/.req-confirm-commit`）的项目，重装后 `git commit` 仍弹出确认
-- [ ] 验收项4：README / tutorial 三语中命令均为 `/rd:`，首次出现 rd 处注明 R&D
+- [x] 验收项4：README / tutorial 三语中命令均为 `/rd:`，首次出现 rd 处注明 R&D
 
 ---
 
