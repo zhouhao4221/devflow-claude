@@ -126,6 +126,7 @@ claude plugins install rd@devflow
 
 - `/rd:migrate` lists old prefix references left in the project's `CLAUDE.md`, `docs/prompt/`, requirement templates, and `.claude/skills/`, and replaces each one after you confirm it
 - No changes needed: `.devflow/` config, requirement docs (`REQ-XXX`), `.claude/.req-*` local switches
+- If the project-level `.claude/settings.json` has `"req@devflow": true` under `enabledPlugins`, it must become `rd@devflow` (`/rd:migrate` detects it and replaces it after you confirm — commit the change); otherwise teammates who pull the repo still enable the old plugin
 - The legacy PR review command was merged into `/rd:pr`: `review-pr review` → `/rd:pr review`, `review-pr merge` → `/rd:pr merge`, `review-pr fetch-comments` → `/rd:pr comments`, bare `review-pr` → `/rd:pr status`
 - Note: `/rd:pr` with no arguments now **creates a PR** (the legacy `review-pr` with no arguments showed PR status)
 

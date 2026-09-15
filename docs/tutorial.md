@@ -127,6 +127,7 @@ claude plugins install rd@devflow
 
 - `/rd:migrate` 会列出本项目 `CLAUDE.md`、`docs/prompt/`、需求模板、`.claude/skills/` 中残留的旧前缀引用，逐处确认后替换
 - 无需改动：`.devflow/` 配置、需求文档（`REQ-XXX`）、`.claude/.req-*` 本地开关
+- 项目级 `.claude/settings.json` 的 `enabledPlugins` 若写了 `"req@devflow": true`，需改为 `rd@devflow`（`/rd:migrate` 会检测并在确认后替换，改完请提交），否则拉代码的成员仍启用旧插件
 - 旧的 PR 审查命令已并入 `/rd:pr`：`review-pr review` → `/rd:pr review`，`review-pr merge` → `/rd:pr merge`，`review-pr fetch-comments` → `/rd:pr comments`，单独的 `review-pr` → `/rd:pr status`
 - 注意：`/rd:pr` 不带参数是**创建 PR**（旧的 `review-pr` 不带参数是查看状态）
 
