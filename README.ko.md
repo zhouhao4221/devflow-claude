@@ -6,11 +6,14 @@ AI 기반 소프트웨어 전체 생명 주기 관리 툴킷. 요구사항 분�
 
 ## 플러그인
 
-| 플러그인 | 설명 | 버전 |
-|---------|------|------|
-| **req** | 요구사항 전체 워크플로우 — 분석부터 아카이브까지 | v3.5.0 |
-| **pm** | 프로젝트 관리 도우미 — 주간/월간 리포트, 통계, 리스크 스캔, 기획안 | v0.2.0 |
-| **api** | API 연동 — Swagger 파싱, 필드 매핑, 코드 생성 | v0.3.0 |
+| 플러그인 | 설명 |
+|---------|------|
+| **req** | 요구사항 전체 워크플로우 — 분석부터 아카이브까지 |
+| **pm** | 프로젝트 관리 도우미 — 주간/월간 리포트, 통계, 리스크 스캔, 기획안 |
+| **api** | API 연동 — Swagger 파싱, 필드 매핑, 코드 생성 |
+| **diag** | 프로덕션 진단 — 읽기 전용 SSH 로그 수집, 스택 분석, 코드 연결, 수정 제안 |
+
+> 각 플러그인의 현재 버전은 `claude plugins list` 또는 저장소 내 `plugins/<플러그인>/.claude-plugin/plugin.json` 을 기준으로 합니다.
 
 ---
 
@@ -24,6 +27,7 @@ claude plugins marketplace add https://github.com/zhouhao4221/devflow-claude
 claude plugins install req@devflow    # 요구사항 관리
 claude plugins install pm@devflow     # 프로젝트 관리 도우미
 claude plugins install api@devflow    # API 연동
+claude plugins install diag@devflow   # 프로덕션 진단
 ```
 
 ```bash
@@ -37,13 +41,15 @@ claude plugins uninstall req@devflow  # 플러그인 제거
 
 ## 스마트 모델 분기
 
-모든 커맨드는 frontmatter 에 `model` 필드를 선언하며, 작업 복잡도에 따라 속도와 추론 깊이의 균형을 맞춥니다:
+커맨드는 추론 강도에 따라 세 단계로 나뉘며, frontmatter 의 `model` 필드로 선언해 응답 속도와 추론 품질의 균형을 맞춥니다:
 
-| 모델 | 용도 | 대표 커맨드 |
+| 단계 | 용도 | 대표 커맨드 |
 |------|------|-------------|
-| **Haiku** | 읽기 전용 / 리스트 / 도움말 | `/req`, `/req:status`, `/req:show`, `/pm:standup`, `/api:help` |
-| **Sonnet** | 표준 생성 / 편집 / Git 작업 | `/req:new`, `/req:edit`, `/req:commit`, `/pm:stats`, `/api:config` |
-| **Opus** | 심층 분석 / 기획안 생성 / AI 리뷰 | `/req:dev`, `/req:fix`, `/req:review-pr`, `/pm:weekly`, `/api:gen` |
+| **Haiku** | 순수 조회 / 표시 / 설정 / 규칙이 명확한 상태 전환 | `/req`, `/req:status`, `/req:show`, `/req:commit`, `/pm:standup`, `/api:help` |
+| **Sonnet** | 데이터 집계 + 문서화 | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk` |
+| **세션 모델**(미지정) | 코드 분석 / 기획안 생성 / 다회차 요구사항 논의 | `/req:new`, `/req:dev`, `/req:fix`, `/req:do`, `/req:review-pr`, `/api:gen`, `/pm:plan` |
+
+개발 계열 커맨드는 코드 위치 파악, 테스트 실행, 대형 diff 압축 등 처리량이 큰 단계를 subagent 에 위임하여 원본 출력이 메인 세션 컨텍스트에 들어가지 않도록 합니다.
 
 각 커맨드는 `allowed-tools`로 필요한 툴만 사전 승인하며, 읽기 전용 커맨드가 쓰기 툴을 호출하면 먼저 권한 확인 창이 뜹니다.
 
@@ -67,7 +73,7 @@ claude plugins uninstall req@devflow  # 플러그인 제거
 - **프론트/백엔드 협업**: 프론트 REQ 는 인터랙션을 기술하고 `dev` 단계에서 백엔드 API 와 자동 매칭
 - **PR 리뷰 & 머지**: AI 코드 리뷰, 자동 코멘트 제출, 원클릭 머지
 - **Git 이슈 통합**: `--from-issue=#N` 로 Gitea/GitHub 이슈에서 요구사항 생성, 브랜치/커밋/done 전체에서 자동 연동 및 자동 종료
-- **크로스 레포 공유**: 프론트/백엔드 다중 레포가 동일한 요구사항을 공유 (로컬 우선 + 전역 캐시)
+- **크로스 레포 공유**: 프론트/백엔드 다중 레포가 동일한 요구사항을 공유 (메인 레포가 유일한 저장소, 읽기 전용 레포는 직접 읽기, 캐시와 동기화 없음)
 - **규범 커밋**: 요구사항 번호가 자동 연결된 Conventional Commits
 - **변경 이력**: Git 기록으로부터 자동 생성
 
@@ -157,9 +163,9 @@ claude plugins uninstall req@devflow  # 플러그인 제거
 | 커맨드 | 설명 |
 |--------|------|
 | `/req:init <project-name>` | 프로젝트 초기화 |
-| `/req:use <project-name>` | 바인딩된 프로젝트 전환 |
-| `/req:projects` | 모든 프로젝트 리스트 |
-| `/req:cache <action>` | 캐시 관리 |
+| `/req:use <메인 레포 경로>` | 메인 레포를 바인딩, 현재 레포는 읽기 전용으로 설정 |
+| `/req:projects` | 현재 요구사항 프로젝트 조회 |
+| `/req:migrate` | v2 레이아웃에서 `.devflow/` 로 마이그레이션 |
 | `/req:update-template` | 플러그인 최신 템플릿 동기화 |
 
 ### 요구사항 생명 주기
@@ -180,10 +186,11 @@ claude plugins uninstall req@devflow  # 플러그인 제거
 ### 크로스 레포 공유
 
 ```
-~/backend/   (primary)  → docs/requirements/  로컬 저장소, git 관리
-~/frontend/  (readonly) → 전역 캐시에서 읽어오며, dev 단계에서 백엔드 API 자동 매칭
-~/.claude-requirements/  → 전역 캐시 (자동 동기화)
+~/backend/   (primary)  → docs/requirements/  유일한 저장소, git 관리, 쓰는 즉시 반영
+~/frontend/  (readonly) → /req:use ~/backend 바인딩 후 메인 레포 요구사항을 직접 읽음, dev 단계에서 백엔드 API 자동 매칭
 ```
+
+설정은 `.devflow/settings.json`(팀 공유, git 포함)과 `.devflow/settings.local.json`(시크릿 및 로컬 경로, git 미포함)에 있습니다. v2 에서 업그레이드한 프로젝트는 `/req:migrate` 를 실행하세요.
 
 ### AI 스킬 (자동 트리거)
 
@@ -232,6 +239,20 @@ PRD, 요구사항 문서, Git 기록에서 프로젝트 데이터를 추출하�
 | `/api:search <키워드>` | 엔드포인트 검색 |
 | `/api:gen` | TypeScript 타입 및 요청 함수 생성 |
 | `/api:map` | 필드 매핑 분석 |
+
+---
+
+## diag 플러그인 — 프로덕션 진단
+
+운영 환경 에러를 자연어로 설명하면, 플러그인이 SSH 로 로그를 읽기 전용으로 가져와 스택을 분석하고 로컬 코드와 연결해 수정 제안을 제공합니다. **전 과정 읽기 전용**: SSH 호스트 화이트리스트, 커맨드 동사 화이트리스트, 쓰기 작업 차단, 민감 입력 차단 등 리스크 관리 Hook 이 모두 강제 적용되며, 모든 SSH 커맨드는 감사 로그로 기록됩니다.
+
+| 커맨드 | 설명 |
+|------|------|
+| `/diag:init` | 서비스 목록 설정 (호스트, 로그 경로) |
+| `/diag:diagnose <에러 설명>` | 로그 수집 → 스택 분석 → 코드 연결 → 수정 제안 |
+| `/diag:audit` | 감사 기록 조회 |
+
+자세한 내용은 [plugins/diag/README.md](plugins/diag/README.md) 참고.
 
 ---
 

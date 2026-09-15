@@ -6,11 +6,14 @@ AI 驱动的软件全生命周期管理工具集，覆盖需求分析、开发�
 
 ## 插件列表
 
-| 插件 | 说明 | 版本 |
-|------|------|------|
-| **req** | 需求全流程管理 — 从需求分析到测试归档的完整生命周期 | v3.5.0 |
-| **pm** | 项目管理助手 — 周报、月报、统计、风险扫描、方案生成 | v0.2.0 |
-| **api** | API 对接工具 — Swagger 解析、字段映射、代码生成 | v0.3.0 |
+| 插件 | 说明 |
+|------|------|
+| **req** | 需求全流程管理 — 从需求分析到测试归档的完整生命周期 |
+| **pm** | 项目管理助手 — 周报、月报、统计、风险扫描、方案生成 |
+| **api** | API 对接工具 — Swagger 解析、字段映射、代码生成 |
+| **diag** | 生产诊断 — 只读 SSH 拉日志、解析堆栈、关联代码、给修复建议 |
+
+> 各插件当前版本以 `claude plugins list` 或仓库内 `plugins/<插件>/.claude-plugin/plugin.json` 为准。
 
 ---
 
@@ -24,6 +27,7 @@ claude plugins marketplace add https://github.com/zhouhao4221/devflow-claude
 claude plugins install req@devflow    # 需求管理
 claude plugins install pm@devflow     # 项目管理助手
 claude plugins install api@devflow    # API 对接工具
+claude plugins install diag@devflow   # 生产诊断
 ```
 
 ```bash
@@ -37,13 +41,15 @@ claude plugins uninstall req@devflow  # 卸载插件
 
 ## 智能模型分级
 
-所有命令通过 frontmatter 声明 `model` 字段，按复杂度自动选择模型，平衡响应速度与推理质量：
+命令按推理强度分三档，通过 frontmatter 的 `model` 字段声明，平衡响应速度与推理质量：
 
-| 模型 | 定位 | 典型命令 |
+| 档位 | 定位 | 典型命令 |
 |------|------|---------|
-| **Haiku** | 纯读取 / 列表 / 帮助 | `/req`、`/req:status`、`/req:show`、`/pm:standup`、`/api:help` |
-| **Sonnet** | 标准创建 / 编辑 / Git 操作 | `/req:new`、`/req:edit`、`/req:commit`、`/pm:stats`、`/api:config` |
-| **Opus** | 深度分析 / 方案生成 / AI 审查 | `/req:dev`、`/req:fix`、`/req:review-pr`、`/pm:weekly`、`/api:gen` |
+| **Haiku** | 纯查询 / 展示 / 配置 / 规则明确的状态流转 | `/req`、`/req:status`、`/req:show`、`/req:commit`、`/pm:standup`、`/api:help` |
+| **Sonnet** | 数据聚合 + 成文 | `/pm:weekly`、`/pm:monthly`、`/pm:stats`、`/pm:risk` |
+| **会话模型**（不指定） | 分析代码 / 生成方案 / 多轮需求讨论 | `/req:new`、`/req:dev`、`/req:fix`、`/req:do`、`/req:review-pr`、`/api:gen`、`/pm:plan` |
+
+开发类命令还会把定位代码、跑测试、压缩大 diff 等高吞吐步骤委派给 subagent，原始输出不进主会话上下文。
 
 每个命令还通过 `allowed-tools` 只预授权必需的工具；只读命令若调用写入类工具，会先弹出权限确认。
 
@@ -67,7 +73,7 @@ claude plugins uninstall req@devflow  # 卸载插件
 - **前后端协作**：前端 REQ 描述交互逻辑，dev 阶段自动匹配后端接口
 - **PR 审查与合并**：AI 代码审查、自动提交评论、一键合并
 - **Git issue 集成**：`--from-issue=#N` 直接从 Gitea/GitHub issue 创建需求，分支/commit/done 全链路自动关联和关闭 issue
-- **跨仓库共享**：前后端多仓库共享同一套需求（本地优先 + 全局缓存）
+- **跨仓库共享**：前后端多仓库共享同一套需求（主仓唯一存储，只读仓库直读，无缓存无同步）
 - **规范提交**：自动关联需求编号的 Conventional Commits
 - **版本说明**：基于 Git 记录自动生成 Changelog
 
@@ -157,9 +163,9 @@ claude plugins uninstall req@devflow  # 卸载插件
 | 命令 | 说明 |
 |------|------|
 | `/req:init <项目名>` | 初始化项目 |
-| `/req:use <项目名>` | 切换绑定项目 |
-| `/req:projects` | 列出所有项目 |
-| `/req:cache <action>` | 缓存管理 |
+| `/req:use <主仓路径>` | 绑定主仓库，当前仓库设为只读 |
+| `/req:projects` | 查看当前需求项目 |
+| `/req:migrate` | 从 v2 布局迁移到 `.devflow/` |
 | `/req:update-template` | 同步插件最新模板 |
 
 ### 需求生命周期
@@ -180,10 +186,11 @@ claude plugins uninstall req@devflow  # 卸载插件
 ### 跨仓库共享
 
 ```
-~/backend/   (primary)  → docs/requirements/  本地存储，纳入 git
-~/frontend/  (readonly) → 从全局缓存读取需求，dev 阶段自动匹配后端接口
-~/.claude-requirements/  → 全局缓存（自动同步）
+~/backend/   (primary)  → docs/requirements/  唯一存储，纳入 git，写入即生效
+~/frontend/  (readonly) → /req:use ~/backend 绑定后直读主仓需求，dev 阶段自动匹配后端接口
 ```
+
+配置在 `.devflow/settings.json`（团队共享，入 git）与 `.devflow/settings.local.json`（密钥与本机路径，不入 git）。从 v2 升级的项目执行 `/req:migrate`。
 
 ### AI 技能（自动触发）
 
@@ -232,6 +239,20 @@ claude plugins uninstall req@devflow  # 卸载插件
 | `/api:search <关键词>` | 搜索接口 |
 | `/api:gen` | 生成 TypeScript 类型和请求函数 |
 | `/api:map` | 字段映射分析 |
+
+---
+
+## diag 插件 — 生产诊断
+
+用自然语言描述线上报错，插件经 SSH 只读拉取日志、解析堆栈、关联本地代码并给出修复建议。**全程只读**：SSH 主机白名单、命令动词白名单、写操作阻断、敏感输入拦截等风控 Hook 全部强制执行，所有 SSH 命令审计落盘。
+
+| 命令 | 说明 |
+|------|------|
+| `/diag:init` | 配置服务清单（主机、日志路径） |
+| `/diag:diagnose <报错描述>` | 拉日志 → 解析堆栈 → 关联代码 → 修复建议 |
+| `/diag:audit` | 查询审计记录 |
+
+详见 [plugins/diag/README.md](plugins/diag/README.md)。
 
 ---
 

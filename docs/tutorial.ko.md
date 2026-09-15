@@ -39,10 +39,11 @@ claude plugins list
 ```
 
 수행 내용:
-- 로컬 디렉터리 `docs/requirements/` 생성 (`active/`, `completed/`, `modules/`, `templates/`)
-- 전역 캐시 `~/.claude-requirements/projects/my-saas/` 생성
+- 요구사항 디렉터리 `docs/requirements/` 생성 (`active/`, `completed/`, `modules/`, `templates/`; 디렉터리 위치는 `requirementsDir` 로 조정 가능)
 - PRD 템플릿 `docs/requirements/PRD.md` 생성
-- `.claude/settings.local.json` 에 프로젝트 이름과 역할 기록
+- `.devflow/settings.json` 에 프로젝트 이름, 역할 (`primary`), 요구사항 디렉터리 기록 (팀 공유, git 포함)
+
+요구사항 문서는 이 레포에만 한 벌 저장되며, 작성 즉시 반영되고 별도의 캐시나 동기화는 없습니다.
 
 ### 1.3 CLAUDE.md 아키텍처 설명
 
@@ -96,22 +97,20 @@ claude plugins list
 - CLAUDE.md 아키텍처 안내 재실행
 - 삭제된 `PRD.md` 또는 모듈 문서 복구
 
-### 1.6 캐시 재구축
+### 1.6 v2에서 업그레이드
 
-전역 캐시가 손상되었거나 유실된 경우, 로컬 저장소로부터 재구축:
-
-```
-/req:cache rebuild
-```
-
-기타 캐시 작업:
+v3 부터 설정이 `.claude/settings*.json` 에서 `.devflow/` 로 이전되었고, 전역 캐시 `~/.claude-requirements/` 는 제거되었습니다. 기존 프로젝트는 플러그인 업그레이드 후 다음을 실행하세요:
 
 ```
-/req:cache info          # 캐시 상태 확인
-/req:cache clear         # 현재 프로젝트 캐시 삭제
-/req:cache clear-all     # 모든 프로젝트 캐시 삭제
-/req:cache export        # 캐시 데이터 내보내기
+/req:migrate
 ```
+
+- `requirementProject` / `requirementRole` / `requirementsDir` / `branchStrategy` 는 `.devflow/settings.json` 으로, `giteaToken` 은 `.devflow/settings.local.json` 으로 이동
+- Claude Code 자체의 hooks / permissions 는 여전히 `.claude/settings.json` 에 남음
+- 읽기 전용 레포는 재바인딩 필요: `/req:use <메인 레포 경로>`
+- 메인 레포의 요구사항 문서가 온전한지 확인한 뒤, `~/.claude-requirements/projects/<프로젝트명>/` 을 수동으로 삭제해도 됩니다
+
+> 세션 시작 시 DevFlow 설정이 아직 `.claude/` 에 남아 있으면 마이그레이션 실행을 안내합니다.
 
 ### 1.7 템플릿 동기화 (선택 사항)
 
@@ -142,19 +141,15 @@ claude plugins list
 
 **Token 설정:**
 
-`.claude/settings.local.json` 의 `branchStrategy.giteaToken` 필드에 Token 작성:
+`/req:branch init` 이 이미 `repoType`, `giteaUrl` 등 전략 필드를 `.devflow/settings.json` 의 `branchStrategy` 에 기록했습니다. Token 은 프로젝트의 `.devflow/settings.local.json` **최상위**에 별도로 작성합니다 (`branchStrategy` 안이 아님):
 
 ```json
 {
-  "branchStrategy": {
-    "repoType": "gitea",
-    "giteaUrl": "https://your-gitea.com",
-    "giteaToken": "your-token-here"
-  }
+  "giteaToken": "your-token-here"
 }
 ```
 
-> **보안 안내**: `settings.local.json` 은 Git 에 커밋하면 안 됩니다. `.gitignore` 에 포함되어 있는지 확인하세요.
+> **보안 안내**: `.devflow/settings.local.json` 은 Git 에 커밋하면 안 됩니다. `.gitignore` 에 포함되어 있는지 확인하세요.
 
 **Token 검증:**
 
@@ -539,18 +534,18 @@ QUICK 진행 중 범위가 커지면 정식 요구사항으로 승격:
 ### 연결된 레포 (프론트엔드)
 
 ```
-# 같은 프로젝트에 바인딩
-/req:use my-saas
+# 메인 레포에 바인딩 (메인 레포 루트의 로컬 경로 전달)
+/req:use ../backend
 
 # 요구사항 조회 가능 (읽기 전용)
 /req
 /req:show REQ-001
 
-# 요구사항 기반 개발 가능 (캐시에서 읽기)
+# 요구사항 기반 개발 가능 (메인 레포 요구사항 디렉터리 직접 읽기)
 /req:dev REQ-002
 ```
 
-연결된 레포의 역할은 `readonly`:
+연결된 레포의 역할은 `readonly`이며, 메인 레포 경로는 `.devflow/settings.local.json` 의 `requirementSource.path` 에 기록됩니다 (로컬 경로, git 미포함):
 - 요구사항 조회 및 읽기 가능
 - 완료된 요구사항 기반 개발 가능
 - 요구사항 생성/편집/상태 변경 불가
@@ -574,7 +569,7 @@ QUICK 진행 중 범위가 커지면 정식 요구사항으로 승격:
 /req:specs show order-types         # 주문 데이터 타입 정의 조회
 ```
 
-스펙 문서는 `docs/requirements/specs/` 에 저장되며 캐시로 자동 동기화됩니다. 백엔드 수정 후 프론트엔드가 다음에 조회하면 최신 버전을 보게 됩니다.
+스펙 문서는 메인 레포의 `docs/requirements/specs/` 에 저장되며, 읽기 전용 레포는 메인 레포 디렉터리를 직접 읽으므로 별도 동기화가 필요 없습니다. 백엔드 수정 후 프론트엔드가 다음에 조회하면 최신 버전을 보게 됩니다.
 
 주요 용도:
 - 백엔드 데이터 타입 정의 → 프론트엔드 필드 정의 참조
@@ -798,6 +793,6 @@ AI:    🧠 인식: /req:fix Excel 내보내기 인코딩 --auto
 | 브랜치 상태 조회 | `/req:branch status` |
 | 핫픽스 | `/req:branch hotfix <설명>` |
 | 재초기화 | `/req:init my-project --reinit` |
-| 캐시 재구축 | `/req:cache rebuild` |
+| v2에서 업그레이드 | `/req:migrate` |
 | 스펙 문서 조회 | `/req:specs show <이름>` |
 | 스펙 문서 생성 | `/req:specs new <이름>` |

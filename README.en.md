@@ -6,11 +6,14 @@ AI-driven software lifecycle management toolkit. Covers requirements analysis, d
 
 ## Plugins
 
-| Plugin | Description | Version |
-|--------|-------------|---------|
-| **req** | Full requirements workflow — from analysis to archival | v3.5.0 |
-| **pm** | Project management helper — weekly/monthly reports, stats, risk scan, plans | v0.2.0 |
-| **api** | API integration — Swagger parsing, field mapping, code generation | v0.3.0 |
+| Plugin | Description |
+|--------|-------------|
+| **req** | Full requirements workflow — from analysis to archival |
+| **pm** | Project management helper — weekly/monthly reports, stats, risk scan, plans |
+| **api** | API integration — Swagger parsing, field mapping, code generation |
+| **diag** | Production diagnostics — read-only SSH log pull, stack trace parsing, code correlation, fix suggestions |
+
+> Each plugin's current version is tracked via `claude plugins list` or `plugins/<plugin>/.claude-plugin/plugin.json` in the repo.
 
 ---
 
@@ -24,6 +27,7 @@ claude plugins marketplace add https://github.com/zhouhao4221/devflow-claude
 claude plugins install req@devflow    # Requirements management
 claude plugins install pm@devflow     # Project management helper
 claude plugins install api@devflow    # API integration
+claude plugins install diag@devflow   # Production diagnostics
 ```
 
 ```bash
@@ -37,13 +41,15 @@ claude plugins uninstall req@devflow  # Uninstall a plugin
 
 ## Smart Model Tiering
 
-Every command declares a `model` field in frontmatter, chosen by task complexity to balance speed and reasoning depth:
+Commands are split into three tiers by required reasoning strength, declared via the `model` field in frontmatter, balancing speed and reasoning depth:
 
-| Model | Purpose | Typical commands |
-|-------|---------|------------------|
-| **Haiku** | Read-only / list / help | `/req`, `/req:status`, `/req:show`, `/pm:standup`, `/api:help` |
-| **Sonnet** | Standard create / edit / Git ops | `/req:new`, `/req:edit`, `/req:commit`, `/pm:stats`, `/api:config` |
-| **Opus** | Deep analysis / plan generation / AI review | `/req:dev`, `/req:fix`, `/req:review-pr`, `/pm:weekly`, `/api:gen` |
+| Tier | Purpose | Typical commands |
+|------|---------|------------------|
+| **Haiku** | Pure queries / display / config / status transitions with clear rules | `/req`, `/req:status`, `/req:show`, `/req:commit`, `/pm:standup`, `/api:help` |
+| **Sonnet** | Data aggregation + document drafting | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk` |
+| **Session model** (unspecified) | Analyzing code / plan generation / multi-round requirement discussion | `/req:new`, `/req:dev`, `/req:fix`, `/req:do`, `/req:review-pr`, `/api:gen`, `/pm:plan` |
+
+Development commands also delegate high-throughput steps — locating code, running tests, digesting large diffs — to subagents, keeping their raw output out of the main session's context.
 
 Each command also pre-approves only the tools it needs via `allowed-tools`; if a read-only command calls a write tool, you still get a permission prompt first.
 
@@ -67,7 +73,7 @@ Covers the full lifecycle from analysis, review, development, testing, to archiv
 - **Front/back collaboration**: frontend REQ describes interaction, `dev` stage auto-matches backend APIs
 - **PR review & merge**: AI code review, auto-submit comments, one-click merge
 - **Git issue integration**: `--from-issue=#N` creates a requirement directly from a Gitea/GitHub issue; branches/commits/done auto-link and auto-close
-- **Cross-repo sharing**: front/back repos share the same requirement set (local-first + global cache)
+- **Cross-repo sharing**: front/back repos share the same requirement set (single source of truth in the primary repo; readonly repos read directly, no cache, no sync)
 - **Conventional commits**: auto-attach the requirement ID
 - **Changelog**: generated from Git history
 
@@ -157,9 +163,9 @@ Then the daily workflow:
 | Command | Description |
 |---------|-------------|
 | `/req:init <project-name>` | Initialize a project |
-| `/req:use <project-name>` | Switch the bound project |
-| `/req:projects` | List all projects |
-| `/req:cache <action>` | Cache management |
+| `/req:use <primary-repo-path>` | Bind the primary repo; sets the current repo to readonly |
+| `/req:projects` | View the current requirement project |
+| `/req:migrate` | Migrate from the v2 layout to `.devflow/` |
 | `/req:update-template` | Sync the latest templates from the plugin |
 
 ### Requirement lifecycle
@@ -180,10 +186,11 @@ Quick fix (QUICK): Draft → Plan confirmed → In Development → Done
 ### Cross-repo sharing
 
 ```
-~/backend/   (primary)  → docs/requirements/  Local store, git-tracked
-~/frontend/  (readonly) → Reads from global cache; dev auto-matches backend APIs
-~/.claude-requirements/  → Global cache (auto-synced)
+~/backend/   (primary)  → docs/requirements/  Single source of truth, git-tracked, writes take effect immediately
+~/frontend/  (readonly) → Bind with /req:use ~/backend to read the primary repo's requirements directly; dev auto-matches backend APIs
 ```
+
+Configuration lives in `.devflow/settings.json` (team-shared, git-tracked) and `.devflow/settings.local.json` (secrets and local paths, not git-tracked). Projects upgrading from v2 should run `/req:migrate`.
 
 ### AI skills (auto-triggered)
 
@@ -232,6 +239,20 @@ Frontend API integration toolkit with Swagger/OpenAPI parsing, field mapping, an
 | `/api:search <keyword>` | Search endpoints |
 | `/api:gen` | Generate TypeScript types and request functions |
 | `/api:map` | Field mapping analysis |
+
+---
+
+## diag plugin — Production diagnostics
+
+Describe a production error in plain language, and the plugin pulls logs read-only over SSH, parses the stack trace, correlates it with local code, and gives fix suggestions. **Read-only throughout**: SSH host allowlist, command verb allowlist, write-operation blocking, sensitive-input interception, and other guardrail hooks are all enforced, with every SSH command audited to disk.
+
+| Command | Description |
+|---------|-------------|
+| `/diag:init` | Configure the service inventory (hosts, log paths) |
+| `/diag:diagnose <error description>` | Pull logs → parse stack trace → correlate code → fix suggestions |
+| `/diag:audit` | Query audit records |
+
+See [plugins/diag/README.md](plugins/diag/README.md) for details.
 
 ---
 
