@@ -4,7 +4,7 @@
 
 DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4 个插件，覆盖软件研发全生命周期。
 
-> 在本仓库工作 = **开发/维护这些插件本身**，而非使用它们。下游用户安装插件后在他们自己的项目里跑 `/rd:*`、`/pm:*` 等命令。本仓库里出现的 `docs/requirements/`、`docs/reports/` 等是插件自身的 dogfooding 产物（DevFlow 用自己的 req 插件管理自己的需求）。
+> 在本仓库工作 = **开发/维护这些插件本身**，而非使用它们。下游用户安装插件后在他们自己的项目里跑 `/rd:*`、`/pm:*` 等命令。本仓库里出现的 `docs/requirements/`、`docs/reports/` 等是插件自身的 dogfooding 产物（DevFlow 用自己的 rd 插件管理自己的需求）。
 
 面向**下游用户**的文档是 `README.md`（+ 英/韩双语）和 `docs/tutorial.md`；本文件（CLAUDE.md）面向**在本仓库工作的 AI 与维护者**。
 
@@ -28,7 +28,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 >
 > req 插件已于 v4（REQ-004）更名为 **rd**（R&D 研发）：只换命令前缀 `/req:` → `/rd:`（入口 `/rd:req`），`requirement*` 配置字段、`.claude/.req-*` marker、`REQ-XXX` 编号不变；过渡插件 req（`/req:help`）已移除，老用户按 README / 教程 1.6 迁移。
 
-**版本事实源是各 `plugin.json` + `marketplace.json`，不是 README**——README/tutorial 的版本号已过时，且只覆盖 req/pm/api，未收录 diag（已知文档债务，非功能不成熟；diag 由 REQ-001 完整交付）。
+**版本事实源是各 `plugin.json` + `marketplace.json`**——README / tutorial 不写插件版本号。README 三语已介绍全部 4 个插件；教程三语尚未收录 diag（已知文档债务，非功能不成熟；diag 由 REQ-001 完整交付）。
 
 ## 命令与技能结构
 
@@ -176,5 +176,5 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 6. Gitea 一律「tea 优先、curl 回退」，禁止自动 `tea login add`。
 7. 模型分级三档（haiku / `claude-sonnet-5` / 省略）按推理强度选，helper skill 无 `model` 字段；命令内高吞吐步骤走 subagent 委派而非降整条命令的档位。委派规则集中在 `shared/_delegate.md`：切分要细（一个 subagent 一个源文件/一个单元）、素材正文内联进 prompt（给路径必超轮）、写操作满足准入四条才派、超轮用 SendMessage 续问而非重派。详见「命令与技能结构」。
 8. diag 的 6 个风控 Hook 是设计核心，改 hooks 必须同步注册。
-9. `/rd:release` 用 `version-bumper` 按 semver 推导各插件版本；发布事实源是 plugin.json，README 版本号需手动同步（当前已滞后）。
+9. `/rd:release` 用 `version-bumper` 按 semver 推导各插件版本；发布事实源是 plugin.json + marketplace.json，README / tutorial 不写插件版本号，无需同步。
 10. **改 `agents/` 或任何插件文件后，本仓库工作区的改动对运行时无效**——Claude Code 运行时加载的是 `~/.claude/plugins/cache/devflow/<plugin>/<version>/`，`/plugin` 更新则从 `~/.claude/plugins/marketplaces/devflow`（GitHub 克隆）拉。cache 按版本号分目录，**不 bump 版本号 `/plugin` 会报「already at the latest version」而不更新**。要让改动生效并可实测，必须走完：提交 → push → `/plugin` 更新 → `/reload-plugins`。在此之前跑 subagent 测的都是旧定义。
