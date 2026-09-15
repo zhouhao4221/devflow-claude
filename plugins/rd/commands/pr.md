@@ -42,7 +42,7 @@ PR 全流程入口：默认按分支策略中的仓库类型推送分支并创�
 
 - 指定编号 → 读取该需求的 `branch` 字段，按逗号拆分得到分支列表
 - 未指定 → `git branch --show-current`，从分支名提取 `REQ-XXX` / `QUICK-XXX`
-- 两者都失败 → 提示 `请指定需求编号：/rd:pr REQ-XXX` 退出
+- 两者都失败 → 当前分支是 `mainBranch` / `developBranch`（见步骤 3，缺省 `main` / `develop`）时提示 `请先切到功能分支，或指定需求编号：/rd:pr REQ-XXX` 后退出；否则进入**无需求模式**：以当前分支创建 PR，不读需求文档，标题与 Body 按步骤 4「无需求模式」生成（`/rd:do`、`/rd:commit` 自动建的分支、文档修复分支都走这里）
 
 **多分支处理**：`branch` 字段含多个分支时，为**每个分支各创建一个 PR**，依次执行步骤 2–8：
 
@@ -100,6 +100,7 @@ else:
 - REQ-XXX → `feat(REQ-XXX): <标题>`
 - QUICK-XXX → `fix(QUICK-XXX): <标题>`
 - hotfix 分支 → `hotfix: <描述>`
+- 无需求模式 → `<base>...HEAD` 只有 1 个提交时直接用该提交标题；多个提交时为 `<type>: <分支 slug，连字符转空格>`，type 按分支前缀映射：`fix/`→fix、`feat/`→feat、`hotfix/`→hotfix、`docs/`→docs、其他→chore
 
 **Body**（Markdown）：
 ```
@@ -112,6 +113,17 @@ else:
 ## 变更文件
 （从「十一、实现方案.文件改动清单」提取；无则跳过）
 ```
+
+**无需求模式 Body**：
+```
+## 提交
+（`git log --format='- %s' <base>..HEAD`）
+
+## 变更统计
+（`git diff --stat <base>...HEAD` 的汇总行）
+```
+
+分支名含 `-iN` 后缀时，正文末尾追加 `closes #N`。
 
 ### 5. 推送分支
 
