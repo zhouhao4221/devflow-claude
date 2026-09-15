@@ -6,10 +6,11 @@
 |-----|-----|
 | 编号 | REQ-004 |
 | 类型 | 全栈 |
-| 状态 | 开发中 |
+| 状态 | 已完成 |
 | 模块 | 插件架构 |
 | 优先级 | P2 |
 | 创建日期 | 2026-09-15 |
+| 完成日期 | 2026-09-15 |
 | 负责人 | - |
 | branch | feat/REQ-004-rename-req-plugin-to-rd |
 | issue | - |
@@ -22,8 +23,8 @@
 - [x] 待评审
 - [x] 评审通过
 - [x] 开发中
-- [ ] 测试中
-- [ ] 已完成
+- [x] 测试中
+- [x] 已完成
 
 ---
 
@@ -85,7 +86,7 @@ Claude Code 插件命令必须带 `/<插件名>:` 前缀，`plugin.json` 没有�
 - [x] **下游引用清理**：`/rd:migrate` 扫描当前项目 `docs/prompt/`、`docs/requirements/templates/`、CLAUDE.md 中的 `/req:` 引用，逐项确认后替换
 - [x] **过时引用守卫**：`check-layout.py` 将 `/req:` 视为过时引用，历史文档豁免
 - [x] **文档同步**：README / tutorial 三语、根与插件目录级 CLAUDE.md，首次出现 `rd` 注明 R&D
-- [ ] **发版 v4.0.0**：changelog 写明破坏性变更与迁移三步
+- [x] **发版 v4.0.0**：changelog 写明破坏性变更与迁移三步
 
 ---
 
@@ -175,7 +176,7 @@ Claude Code 插件命令必须带 `/<插件名>:` 前缀，`plugin.json` 没有�
 - [x] 测试点1：`check-layout.py --check` 通过；人为植入一处 `/req:` 残留时能被报出
 - [x] 测试点2：diag 冒烟测试与 GitHub Actions CI 通过
 - [x] 测试点3：安装 rd 后 `claude plugin details rd` 列出全部命令与 helper skill，无重复项
-- [ ] 测试点4：5 个 agent 以 `rd:xxx` 名称可被委派（dev / fix / review-pr 各跑一次委派路径）
+- [x] 测试点4：5 个 agent 以 `rd:xxx` 名称可被委派（dev / fix / review-pr 各跑一次委派路径）
 - [x] 测试点5：SessionStart、validate-requirement、confirm-before-commit 三个 hook 的输出中无 `/req:`
 - [x] 测试点6：在含 `/req:` 引用的样例项目执行 `/rd:migrate`，逐项确认替换；拒绝项保留原文
 - [x] 测试点7：过渡插件 req 只注册 `/req:help` 一条命令
@@ -184,9 +185,9 @@ Claude Code 插件命令必须带 `/<插件名>:` 前缀，`plugin.json` 没有�
 
 > 产品/业务方验收时的确认项，描述可观测的业务结果
 
-- [ ] 验收项1：新环境执行 `claude plugins install rd@devflow`，输入 `/rd` 能看到全部命令，`/rd:init` 初始化成功
-- [ ] 验收项2：已装 req 的环境更新 marketplace 后，`/req:help` 显示更名说明；按提示重装 rd 后，原项目 `.devflow/` 配置不做任何修改即可用 `/rd:status` 正常读取需求
-- [ ] 验收项3：开启过提交确认（存在 `.claude/.req-confirm-commit`）的项目，重装后 `git commit` 仍弹出确认
+- [x] 验收项1：新环境执行 `claude plugins install rd@devflow`，输入 `/rd` 能看到全部命令，`/rd:init` 初始化成功
+- [x] 验收项2：已装 req 的环境更新 marketplace 后，`/req:help` 显示更名说明；按提示重装 rd 后，原项目 `.devflow/` 配置不做任何修改即可用 `/rd:status` 正常读取需求
+- [x] 验收项3：开启过提交确认（存在 `.claude/.req-confirm-commit`）的项目，重装后 `git commit` 仍弹出确认
 - [x] 验收项4：README / tutorial 三语中命令均为 `/rd:`，首次出现 rd 处注明 R&D
 
 ---
