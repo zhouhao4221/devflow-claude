@@ -10,8 +10,14 @@
   },
   "plugins": [
     {
+      "name": "rd",
+      "description": "rd（R&D 研发）工作流：需求分析→评审→开发→测试→归档 + 分支/PR/issue/版本；原 req 插件更名而来",
+      "source": "./plugins/rd/",
+      "category": "development"
+    },
+    {
       "name": "req",
-      "description": "需求全流程管理：分析→评审→开发→测试→归档；配置 .devflow、无全局缓存（readonly 直读主仓）",
+      "description": "【已更名为 rd】过渡插件，仅保留 /req:help 迁移说明——请改装 rd@devflow",
       "source": "./plugins/req/",
       "category": "development"
     },

@@ -12,10 +12,10 @@
 
 > **두 단계 시작**: 플러그인 설치 후 Claude Code 세션을 열 때마다, 현재 레포의 초기화 상태와 브랜치 전략 설정 여부를 체크합니다. 둘 중 하나라도 빠져 있으면 세션 시작 시 안내 메시지가 출력됩니다. 아래 두 단계를 완료하면 메시지는 자동으로 사라집니다:
 >
-> 1. `/req:init <project-name>` — 요구사항 프로젝트 초기화
-> 2. `/req:branch init` — 브랜치 전략 설정
+> 1. `/rd:init <project-name>` — 요구사항 프로젝트 초기화
+> 2. `/rd:branch init` — 브랜치 전략 설정
 >
-> 이후 `/req:new` 로 첫 요구사항을 만들 수 있습니다.
+> 이후 `/rd:new` 로 첫 요구사항을 만들 수 있습니다.
 
 ### 1.1 플러그인 설치
 
@@ -24,7 +24,7 @@
 claude plugins marketplace add https://github.com/zhouhao4221/devflow-claude
 
 # 2. marketplace 에서 플러그인 설치
-claude plugins install req@devflow
+claude plugins install rd@devflow
 
 # 설치 확인
 claude plugins list
@@ -35,7 +35,7 @@ claude plugins list
 프로젝트 루트에서 Claude Code 를 실행한 뒤:
 
 ```
-/req:init my-saas
+/rd:init my-saas
 ```
 
 수행 내용:
@@ -59,14 +59,14 @@ claude plugins list
   5. 건너뛰기
 ```
 
-선택한 스니펫은 프로젝트 CLAUDE.md 에 추가되며 기술 스택, 계층 아키텍처 표, 코딩 규칙, 테스트 규칙 등을 포함합니다. `/req:dev` 와 `/req:test` 는 이 정보를 기반으로 플랜을 생성하고 테스트 파일을 찾습니다.
+선택한 스니펫은 프로젝트 CLAUDE.md 에 추가되며 기술 스택, 계층 아키텍처 표, 코딩 규칙, 테스트 규칙 등을 포함합니다. `/rd:dev` 와 `/rd:test` 는 이 정보를 기반으로 플랜을 생성하고 테스트 파일을 찾습니다.
 
 > **이후 수정**: 프로젝트 CLAUDE.md 의 "프로젝트 아키텍처" 섹션을 직접 편집하세요.
 
 ### 1.4 브랜치 전략 설정 (강력 권장)
 
 ```
-/req:branch init
+/rd:branch init
 ```
 
 > 미설정 시 세션 시작 배너가 계속 안내합니다. 설정 완료 후 메시지는 자동으로 사라집니다. 설정 없이도 동작은 하며, 기본값 (`feat/` / `fix/` 하드코딩 prefix, PR 자동 생성 없음) 이 적용됩니다.
@@ -77,18 +77,18 @@ claude plugins list
 - **Trunk-Based**: 짧은 수명 브랜치, 메인 기반 개발
 
 이후 호스팅 종류 선택:
-- **GitHub**: `/req:pr` 시 `gh pr create` 커맨드 제안
-- **Gitea**: `/req:pr` 시 Gitea REST API 를 호출하여 PR 자동 생성
+- **GitHub**: `/rd:pr` 시 `gh pr create` 커맨드 제안
+- **Gitea**: `/rd:pr` 시 Gitea REST API 를 호출하여 PR 자동 생성
 - **기타**: `git merge` 커맨드만 표시
 
-설정 후 `/req:dev`, `/req:commit`, `/req:done`, `/req:pr` 이 자동으로 전략을 따릅니다.
+설정 후 `/rd:dev`, `/rd:commit`, `/rd:done`, `/rd:pr` 이 자동으로 전략을 따릅니다.
 
 ### 1.5 재초기화
 
 기존 프로젝트에서 누락된 파일을 보충 (덮어쓰지 않음):
 
 ```
-/req:init my-saas --reinit
+/rd:init my-saas --reinit
 ```
 
 용도:
@@ -102,12 +102,12 @@ claude plugins list
 v3 부터 설정이 `.claude/settings*.json` 에서 `.devflow/` 로 이전되었고, 전역 캐시 `~/.claude-requirements/` 는 제거되었습니다. 기존 프로젝트는 플러그인 업그레이드 후 다음을 실행하세요:
 
 ```
-/req:migrate
+/rd:migrate
 ```
 
 - `requirementProject` / `requirementRole` / `requirementsDir` / `branchStrategy` 는 `.devflow/settings.json` 으로, `giteaToken` 은 `.devflow/settings.local.json` 으로 이동
 - Claude Code 자체의 hooks / permissions 는 여전히 `.claude/settings.json` 에 남음
-- 읽기 전용 레포는 재바인딩 필요: `/req:use <메인 레포 경로>`
+- 읽기 전용 레포는 재바인딩 필요: `/rd:use <메인 레포 경로>`
 - 메인 레포의 요구사항 문서가 온전한지 확인한 뒤, `~/.claude-requirements/projects/<프로젝트명>/` 을 수동으로 삭제해도 됩니다
 
 > 세션 시작 시 DevFlow 설정이 아직 `.claude/` 에 남아 있으면 마이그레이션 실행을 안내합니다.
@@ -117,12 +117,12 @@ v3 부터 설정이 `.claude/settings*.json` 에서 `.devflow/` 로 이전되었
 플러그인이 새 템플릿을 배포한 경우:
 
 ```
-/req:update-template
+/rd:update-template
 ```
 
 ### 1.8 Gitea Token 설정 (Gitea 레포 필수)
 
-`/req:branch init` 에서 Gitea 를 선택했다면, PR 자동 생성을 위해 API Token 이 필요합니다.
+`/rd:branch init` 에서 Gitea 를 선택했다면, PR 자동 생성을 위해 API Token 이 필요합니다.
 
 **Token 발급:**
 
@@ -141,7 +141,7 @@ v3 부터 설정이 `.claude/settings*.json` 에서 `.devflow/` 로 이전되었
 
 **Token 설정:**
 
-`/req:branch init` 이 이미 `repoType`, `giteaUrl` 등 전략 필드를 `.devflow/settings.json` 의 `branchStrategy` 에 기록했습니다. Token 은 프로젝트의 `.devflow/settings.local.json` **최상위**에 별도로 작성합니다 (`branchStrategy` 안이 아님):
+`/rd:branch init` 이 이미 `repoType`, `giteaUrl` 등 전략 필드를 `.devflow/settings.json` 의 `branchStrategy` 에 기록했습니다. Token 은 프로젝트의 `.devflow/settings.local.json` **최상위**에 별도로 작성합니다 (`branchStrategy` 안이 아님):
 
 ```json
 {
@@ -167,7 +167,7 @@ curl -s -H "Authorization: token your-token-here" \
 ### 2.1 정식 요구사항 (REQ)
 
 ```
-/req:new 사용자 포인트 규칙 관리 --type=백엔드
+/rd:new 사용자 포인트 규칙 관리 --type=백엔드
 ```
 
 AI 가 섹션별로 안내합니다:
@@ -188,7 +188,7 @@ AI 가 섹션별로 안내합니다:
 작은 버그/작은 기능에 적합한 경량 플로우:
 
 ```
-/req:new-quick 포인트 계산 정밀도 손실 수정
+/rd:new-quick 포인트 계산 정밀도 손실 수정
 ```
 
 QUICK 템플릿은 더 간단합니다: 문제 기술 → 구현 플랜 → 검증 방식.
@@ -198,7 +198,7 @@ QUICK 템플릿은 더 간단합니다: 문제 기술 → 구현 플랜 → 검�
 단위가 적절한지 불확실할 때:
 
 ```
-/req:split 사용자 포인트 시스템
+/rd:split 사용자 포인트 시스템
 ```
 
 AI 가 단위를 분석하고 분할 플랜을 제안합니다 (읽기 전용, 문서 생성 없음).
@@ -208,9 +208,9 @@ AI 가 단위를 분석하고 분할 플랜을 제안합니다 (읽기 전용, �
 팀이 Gitea / GitHub issue 를 요구사항 입구로 사용한다면:
 
 ```
-/req:new --from-issue=#12           # 정식 요구사항
-/req:new-quick --from-issue=#5      # 빠른 수정
-/req:do --from-issue=#42            # 문서 없이, issue 본문을 의도로 스마트 개발 실행
+/rd:new --from-issue=#12           # 정식 요구사항
+/rd:new-quick --from-issue=#5      # 빠른 수정
+/rd:do --from-issue=#42            # 문서 없이, issue 본문을 의도로 스마트 개발 실행
 ```
 
 **AI 동작:**
@@ -226,12 +226,12 @@ issue 가 연결되면 전체 체인이 자동으로 issue 번호를 담고 갑�
 
 | 단계 | 동작 |
 |------|------|
-| `/req:dev` 브랜치 생성 | 끝에 `-iN` 자동 추가 (예: `feat/REQ-001-user-points-i12`) |
-| `/req:commit` 커밋 | commit message 끝에 `closes #N` 자동 추가 (PR 머지 시 Git 플랫폼이 issue 자동 종료) |
-| `/req:done` 아카이브 | API 로 issue 를 바로 종료할지 질문 |
-| `/req:do --from-issue` | `-iN` 이 붙은 브랜치 생성; 완료 시 issue 종료 여부 질문 |
+| `/rd:dev` 브랜치 생성 | 끝에 `-iN` 자동 추가 (예: `feat/REQ-001-user-points-i12`) |
+| `/rd:commit` 커밋 | commit message 끝에 `closes #N` 자동 추가 (PR 머지 시 Git 플랫폼이 issue 자동 종료) |
+| `/rd:done` 아카이브 | API 로 issue 를 바로 종료할지 질문 |
+| `/rd:do --from-issue` | `-iN` 이 붙은 브랜치 생성; 완료 시 issue 종료 여부 질문 |
 
-**조회 우선순위**: 요구사항 문서 `issue` 필드 > 브랜치명 `-iN` 서픽스. 문서 없는 `/req:do` 라도 commit / done 이 브랜치명에서 issue 번호를 유추할 수 있습니다.
+**조회 우선순위**: 요구사항 문서 `issue` 필드 > 브랜치명 `-iN` 서픽스. 문서 없는 `/rd:do` 라도 commit / done 이 브랜치명에서 issue 번호를 유추할 수 있습니다.
 
 ---
 
@@ -242,7 +242,7 @@ issue 가 연결되면 전체 체인이 자동으로 issue 번호를 담고 갑�
 ### 3.1 리뷰 제출
 
 ```
-/req:review
+/rd:review
 ```
 
 상태가 초안 → 리뷰 대기 로 전환됩니다.
@@ -250,11 +250,11 @@ issue 가 연결되면 전체 체인이 자동으로 issue 번호를 담고 갑�
 ### 3.2 리뷰 결정
 
 ```
-/req:review pass     # 승인 → 리뷰 통과
-/req:review reject   # 반려 → 초안으로 복귀
+/rd:review pass     # 승인 → 리뷰 통과
+/rd:review reject   # 반려 → 초안으로 복귀
 ```
 
-반려 후 `/req:edit` 로 수정 후 재제출합니다.
+반려 후 `/rd:edit` 로 수정 후 재제출합니다.
 
 ---
 
@@ -263,7 +263,7 @@ issue 가 연결되면 전체 체인이 자동으로 issue 번호를 담고 갑�
 ### 4.1 개발 시작
 
 ```
-/req:dev
+/rd:dev
 ```
 
 실행 흐름:
@@ -290,10 +290,10 @@ CLAUDE.md 계층 순서로 단계별 구현
 
 ### 4.2 브랜치 관리
 
-첫 번째 `/req:dev` 실행 시 AI 가 자동으로:
+첫 번째 `/rd:dev` 실행 시 AI 가 자동으로:
 
 1. 워크스페이스가 깨끗한지 확인 (미커밋 변경이 있으면 중단)
-2. 브랜치 전략 설정 로드 (`/req:branch init` 완료 시)
+2. 브랜치 전략 설정 로드 (`/rd:branch init` 완료 시)
 3. 요구사항 제목에서 영문 브랜치명 생성 후 확인 요청:
    ```
    개발 브랜치 생성: feat/REQ-001-user-points-rule
@@ -306,17 +306,17 @@ CLAUDE.md 계층 순서로 단계별 구현
 브랜치 네이밍 규칙 (prefix 는 전략 설정으로 커스텀 가능):
 - REQ → `feat/REQ-XXX-<english-slug>[-iN]`
 - QUICK → `fix/QUICK-XXX-<english-slug>[-iN]`
-- `/req:do --from-issue` → `<prefix><slug>-iN` (prefix 는 AI 가 의도로부터 결정)
-- 핫픽스 → `hotfix/<english-slug>` (`/req:branch hotfix` 로 생성)
+- `/rd:do --from-issue` → `<prefix><slug>-iN` (prefix 는 AI 가 의도로부터 결정)
+- 핫픽스 → `hotfix/<english-slug>` (`/rd:branch hotfix` 로 생성)
 - `-iN`: Git 플랫폼 issue 연결 시 자동 추가되는 선택적 서픽스 (예: `-i12`), 후속 커맨드의 연결 식별용 (2.4 참조)
 
 ### 4.2.1 브랜치 전략 커맨드
 
 ```
-/req:branch              # 현재 전략 및 브랜치 상태 확인
-/req:branch init         # 인터랙티브 브랜치 전략 + 레포 타입 설정
-/req:branch status       # 전략 설정 및 요구사항별 브랜치 상태 확인
-/req:branch hotfix 설명  # 메인 브랜치에서 핫픽스 브랜치 생성
+/rd:branch              # 현재 전략 및 브랜치 상태 확인
+/rd:branch init         # 인터랙티브 브랜치 전략 + 레포 타입 설정
+/rd:branch status       # 전략 설정 및 요구사항별 브랜치 상태 확인
+/rd:branch hotfix 설명  # 메인 브랜치에서 핫픽스 브랜치 생성
 ```
 
 ### 4.2.2 PR 생성
@@ -324,11 +324,11 @@ CLAUDE.md 계층 순서로 단계별 구현
 개발 완료 후 PR 생성:
 
 ```
-/req:pr              # 현재 브랜치에서 요구사항 자동 매칭하여 PR 생성
-/req:pr REQ-001      # 특정 요구사항으로 PR 생성
+/rd:pr              # 현재 브랜치에서 요구사항 자동 매칭하여 PR 생성
+/rd:pr REQ-001      # 특정 요구사항으로 PR 생성
 ```
 
-`/req:branch init` 에서 설정한 레포 타입에 따라:
+`/rd:branch init` 에서 설정한 레포 타입에 따라:
 - **Gitea**: Gitea REST API 로 PR 자동 생성 (`giteaToken` 필요, 1.8 참조)
 - **GitHub**: `gh` CLI 로 PR 생성
 - **기타**: 브랜치 리모트 푸시 후 머지 커맨드 표시
@@ -340,9 +340,9 @@ Git Flow 의 hotfix 브랜치는 자동으로 두 PR 을 생성합니다 (→ ma
 AI 코드 리뷰와 머지 사용:
 
 ```
-/req:review-pr              # PR 상태 확인
-/req:review-pr review       # AI 코드 리뷰
-/req:review-pr merge        # PR 머지
+/rd:review-pr              # PR 상태 확인
+/rd:review-pr review       # AI 코드 리뷰
+/rd:review-pr merge        # PR 머지
 ```
 
 **리뷰 플로우:**
@@ -353,15 +353,15 @@ AI 코드 리뷰와 머지 사용:
 
 **머지 방식**: `branchStrategy.mergeMethod` 설정에서 읽기 (기본값 `merge`), `merge` / `squash` / `rebase` 지원.
 
-### 4.2.4 스마트 개발 (`/req:do`)
+### 4.2.4 스마트 개발 (`/rd:do`)
 
 최적화, 리팩토링, 업그레이드 등 요구사항 문서가 필요 없는 작업에:
 
 ```
-/req:do 주문 조회 성능 최적화
-/req:do 사용자 서비스 레이어 리팩토링
-/req:do Go 1.23 업그레이드
-/req:do 에러 코드 포맷 통일
+/rd:do 주문 조회 성능 최적화
+/rd:do 사용자 서비스 레이어 리팩토링
+/rd:do Go 1.23 업그레이드
+/rd:do 에러 코드 포맷 통일
 ```
 
 AI 자동 처리:
@@ -370,24 +370,24 @@ AI 자동 처리:
 3. **플랜 확인** — 사용자 확인 후 브랜치 생성 (`improve/` / `feat/` / `fix/` 는 타입으로 자동 선택)
 4. **수정 실행** — 플랜대로 코드 수정
 
-규모가 커지면 `/req:new-quick` 이나 `/req:new` 로 전환을 제안합니다.
+규모가 커지면 `/rd:new-quick` 이나 `/rd:new` 로 전환을 제안합니다.
 
-**`/req:fix` 와의 차이:**
-- `/req:fix` — 버그 수정 전용, AI 가 근본 원인 분석
-- `/req:do` — 버그가 아닌 경우 (최적화/리팩토링/업그레이드), AI 가 의도 분석 후 플로우 선택
+**`/rd:fix` 와의 차이:**
+- `/rd:fix` — 버그 수정 전용, AI 가 근본 원인 분석
+- `/rd:do` — 버그가 아닌 경우 (최적화/리팩토링/업그레이드), AI 가 의도 분석 후 플로우 선택
 
 ### 4.3 개발 이어가기
 
 중단 후 재진입 시 진행 상태를 복원:
 
 ```
-/req:dev REQ-001
+/rd:dev REQ-001
 ```
 
 `--reset` 추가로 구현 플랜 재생성:
 
 ```
-/req:dev REQ-001 --reset
+/rd:dev REQ-001 --reset
 ```
 
 ### 4.4 규범 커밋
@@ -395,7 +395,7 @@ AI 자동 처리:
 개발 중 규범 커밋 사용, 요구사항 번호 자동 연결:
 
 ```
-/req:commit
+/rd:commit
 ```
 
 AI 가 변경 내용을 분석하여 Conventional Commits 형식 메시지 생성:
@@ -411,7 +411,7 @@ feat: 포인트 규칙 CRUD API 구현 (REQ-001)
 ### 5.1 종합 테스트
 
 ```
-/req:test
+/rd:test
 ```
 
 회귀 테스트 + 신규 기능 테스트 포함, 상태가 테스트 중 으로 전환됩니다.
@@ -419,8 +419,8 @@ feat: 포인트 규칙 CRUD API 구현 (REQ-001)
 ### 5.2 단계별 테스트
 
 ```
-/req:test_regression    # 기존 자동화 테스트 실행, 회귀 리포트 생성
-/req:test_new           # 신규 기능용 테스트 케이스 작성 (UT/API/E2E)
+/rd:test_regression    # 기존 자동화 테스트 실행, 회귀 리포트 생성
+/rd:test_new           # 신규 기능용 테스트 케이스 작성 (UT/API/E2E)
 ```
 
 ---
@@ -428,7 +428,7 @@ feat: 포인트 규칙 CRUD API 구현 (REQ-001)
 ## 6. 완료 및 아카이브
 
 ```
-/req:done
+/rd:done
 ```
 
 플로우:
@@ -445,23 +445,23 @@ feat: 포인트 규칙 CRUD API 구현 (REQ-001)
 ### 7.1 요구사항 리스트
 
 ```
-/req                              # 전체 리스트
-/req --type=백엔드                 # 타입 필터
-/req --module=사용자               # 모듈 필터
-/req --type=프론트엔드 --module=사용자
+/rd:req                              # 전체 리스트
+/rd:req --type=백엔드                 # 타입 필터
+/rd:req --module=사용자               # 모듈 필터
+/rd:req --type=프론트엔드 --module=사용자
 ```
 
 ### 7.2 상세 조회
 
 ```
-/req:show REQ-001     # 전체 내용 읽기 (읽기 전용)
-/req:status REQ-001   # 상태와 진척도
+/rd:show REQ-001     # 전체 내용 읽기 (읽기 전용)
+/rd:status REQ-001   # 상태와 진척도
 ```
 
 ### 7.3 편집
 
 ```
-/req:edit REQ-001
+/rd:edit REQ-001
 ```
 
 ---
@@ -471,9 +471,9 @@ feat: 포인트 규칙 CRUD API 구현 (REQ-001)
 모듈은 기능 도메인별 문서로, AI 가 컨텍스트를 이해하는 데 도움을 줍니다.
 
 ```
-/req:modules                  # 모든 모듈 리스트
-/req:modules new 사용자        # 사용자 모듈 문서 생성
-/req:modules show 사용자       # 모듈 상세 조회
+/rd:modules                  # 모든 모듈 리스트
+/rd:modules new 사용자        # 사용자 모듈 문서 생성
+/rd:modules show 사용자       # 모듈 상세 조회
 ```
 
 모듈 문서 내용: 책임 범위, 핵심 기능, 데이터 모델, API 개요, 주요 파일 경로.
@@ -485,14 +485,14 @@ feat: 포인트 규칙 CRUD API 구현 (REQ-001)
 PRD 는 프로젝트 단위 문서로 프로젝트당 한 개입니다.
 
 ```
-/req:prd                      # PRD 상태 개요, 섹션 채움 분석
-/req:prd-edit                 # PRD 편집, AI 보조
-/req:prd-edit 제품 개요       # 특정 섹션 편집
+/rd:prd                      # PRD 상태 개요, 섹션 채움 분석
+/rd:prd-edit                 # PRD 편집, AI 보조
+/rd:prd-edit 제품 개요       # 특정 섹션 편집
 ```
 
 PRD 의 "요구사항 추적" 섹션은 자동 유지보수됩니다:
-- `/req:new` 시 행 추가
-- `/req:done` 시 상태 및 완료일 업데이트
+- `/rd:new` 시 행 추가
+- `/rd:done` 시 상태 및 완료일 업데이트
 
 ---
 
@@ -501,8 +501,8 @@ PRD 의 "요구사항 추적" 섹션은 자동 유지보수됩니다:
 ### 10.1 릴리즈 노트 생성
 
 ```
-/req:changelog v1.2.0                          # 범위 자동 감지
-/req:changelog v1.2.0 --from=v1.1.0 --to=HEAD  # 범위 지정
+/rd:changelog v1.2.0                          # 범위 자동 감지
+/rd:changelog v1.2.0 --from=v1.1.0 --to=HEAD  # 범위 지정
 ```
 
 AI 가 Git 커밋 기록을 분류하여 구조화된 Changelog 를 생성합니다.
@@ -512,7 +512,7 @@ AI 가 Git 커밋 기록을 분류하여 구조화된 Changelog 를 생성합니
 QUICK 진행 중 범위가 커지면 정식 요구사항으로 승격:
 
 ```
-/req:upgrade QUICK-003
+/rd:upgrade QUICK-003
 ```
 
 ---
@@ -525,24 +525,24 @@ QUICK 진행 중 범위가 커지면 정식 요구사항으로 승격:
 
 ```
 # 프로젝트 초기화
-/req:init my-saas
+/rd:init my-saas
 
 # 요구사항 정상 생성 및 관리
-/req:new 사용자 포인트-백엔드 --type=백엔드
+/rd:new 사용자 포인트-백엔드 --type=백엔드
 ```
 
 ### 연결된 레포 (프론트엔드)
 
 ```
 # 메인 레포에 바인딩 (메인 레포 루트의 로컬 경로 전달)
-/req:use ../backend
+/rd:use ../backend
 
 # 요구사항 조회 가능 (읽기 전용)
-/req
-/req:show REQ-001
+/rd:req
+/rd:show REQ-001
 
 # 요구사항 기반 개발 가능 (메인 레포 요구사항 디렉터리 직접 읽기)
-/req:dev REQ-002
+/rd:dev REQ-002
 ```
 
 연결된 레포의 역할은 `readonly`이며, 메인 레포 경로는 `.devflow/settings.local.json` 의 `requirementSource.path` 에 기록됩니다 (로컬 경로, git 미포함):
@@ -557,16 +557,16 @@ QUICK 진행 중 범위가 커지면 정식 요구사항으로 승격:
 **메인 레포 (백엔드):**
 
 ```
-/req:specs new 주문 데이터 타입     # 스펙 문서 생성
-/req:specs edit order-types         # 편집
-/req:specs                          # 모든 스펙 리스트
+/rd:specs new 주문 데이터 타입     # 스펙 문서 생성
+/rd:specs edit order-types         # 편집
+/rd:specs                          # 모든 스펙 리스트
 ```
 
 **읽기 전용 레포 (프론트엔드):**
 
 ```
-/req:specs                          # 스펙 리스트 조회
-/req:specs show order-types         # 주문 데이터 타입 정의 조회
+/rd:specs                          # 스펙 리스트 조회
+/rd:specs show order-types         # 주문 데이터 타입 정의 조회
 ```
 
 스펙 문서는 메인 레포의 `docs/requirements/specs/` 에 저장되며, 읽기 전용 레포는 메인 레포 디렉터리를 직접 읽으므로 별도 동기화가 필요 없습니다. 백엔드 수정 후 프론트엔드가 다음에 조회하면 최신 버전을 보게 됩니다.
@@ -582,36 +582,36 @@ QUICK 진행 중 범위가 커지면 정식 요구사항으로 승격:
 
 ```
                     요구사항 생성
-                /req:new <제목>
+                /rd:new <제목>
                       │
                       ▼
                ┌─────────────┐
-               │  📝 초안     │ ← /req:edit
+               │  📝 초안     │ ← /rd:edit
                └──────┬──────┘
-                      │ /req:review
+                      │ /rd:review
                       ▼
                ┌─────────────┐
                │ 👀 리뷰 대기 │
                └──────┬──────┘
-                      │ /req:review pass
+                      │ /rd:review pass
                       ▼
                ┌─────────────┐
                │ ✅ 리뷰 통과 │
                └──────┬──────┘
-                      │ /req:dev (브랜치 자동 생성)
+                      │ /rd:dev (브랜치 자동 생성)
                       ▼
                ┌─────────────┐
-               │  🔨 개발 중  │ ← /req:commit
-               │             │ ← /req:pr
-               │             │ ← /req:review-pr review
-               │             │ ← /req:review-pr merge
+               │  🔨 개발 중  │ ← /rd:commit
+               │             │ ← /rd:pr
+               │             │ ← /rd:review-pr review
+               │             │ ← /rd:review-pr merge
                └──────┬──────┘
-                      │ /req:test
+                      │ /rd:test
                       ▼
                ┌─────────────┐
                │ 🧪 테스트 중 │
                └──────┬──────┘
-                      │ /req:done (머지 리마인드)
+                      │ /rd:done (머지 리마인드)
                       ▼
                ┌─────────────┐
                │  🎉 완료     │ → completed/ 로 아카이브
@@ -629,48 +629,48 @@ QUICK 진행 중 범위가 커지면 정식 요구사항으로 승격:
 **요구사항 문서**
 
 ```
-요구사항 생성: 사용자 포인트 관리             → /req:new 사용자 포인트 관리
-백엔드 요구사항 추가, 주문 내보내기           → /req:new 주문 내보내기 --type=백엔드
-025 요구사항 수정, 내보내기 기능 추가         → /req:edit REQ-025
+요구사항 생성: 사용자 포인트 관리             → /rd:new 사용자 포인트 관리
+백엔드 요구사항 추가, 주문 내보내기           → /rd:new 주문 내보내기 --type=백엔드
+025 요구사항 수정, 내보내기 기능 추가         → /rd:edit REQ-025
 ```
 
 **수정 & 개발 (문서 없음)**
 
 ```
-로그인 타임아웃 버그 고쳐                     → /req:fix 로그인 타임아웃
-#42 버그 수정                                 → /req:fix --from-issue=#42
-주문 쿼리 성능 최적화                         → /req:do 주문 쿼리 성능 최적화
-사용자 서비스 레이어 리팩토링                 → /req:do 사용자 서비스 레이어 리팩토링
-Go 1.23 으로 업그레이드                       → /req:do Go 1.23 으로 업그레이드
-페이지네이션 기본값 빠르게 수정               → /req:new-quick 페이지네이션 기본값
+로그인 타임아웃 버그 고쳐                     → /rd:fix 로그인 타임아웃
+#42 버그 수정                                 → /rd:fix --from-issue=#42
+주문 쿼리 성능 최적화                         → /rd:do 주문 쿼리 성능 최적화
+사용자 서비스 레이어 리팩토링                 → /rd:do 사용자 서비스 레이어 리팩토링
+Go 1.23 으로 업그레이드                       → /rd:do Go 1.23 으로 업그레이드
+페이지네이션 기본값 빠르게 수정               → /rd:new-quick 페이지네이션 기본값
 ```
 
 **상태 전이** (번호 필수)
 
 ```
-025 개발 시작                                 → /req:dev REQ-025
-025 테스트 시작                               → /req:test REQ-025
-025 리뷰 통과                                 → /req:review pass
-025 리뷰 반려                                 → /req:review reject
-025 완료 / 025 끝났어                          → /req:done REQ-025
+025 개발 시작                                 → /rd:dev REQ-025
+025 테스트 시작                               → /rd:test REQ-025
+025 리뷰 통과                                 → /rd:review pass
+025 리뷰 반려                                 → /rd:review reject
+025 완료 / 025 끝났어                          → /rd:done REQ-025
 ```
 
 **버전 & PR**
 
 ```
-규범 커밋                                     → /req:commit
-PR 생성                                       → /req:pr
-PR 리뷰                                       → /req:review-pr review
-PR 코멘트 조회                                → /req:review-pr fetch-comments
-PR 머지                                       → /req:review-pr merge
+규범 커밋                                     → /rd:commit
+PR 생성                                       → /rd:pr
+PR 리뷰                                       → /rd:review-pr review
+PR 코멘트 조회                                → /rd:review-pr fetch-comments
+PR 머지                                       → /rd:review-pr merge
 ```
 
 **Git 플랫폼 URL 직접 붙여넣기** (issue / PR 자동 인식)
 
 ```
-owner/repo/issues/169 수정                    → /req:fix --from-issue=#169
-owner/repo/issues/12 로 요구사항 생성         → /req:new --from-issue=#12
-owner/repo/pulls/158 리뷰                     → /req:review-pr review (PR 브랜치로 먼저 전환 필요)
+owner/repo/issues/169 수정                    → /rd:fix --from-issue=#169
+owner/repo/issues/12 로 요구사항 생성         → /rd:new --from-issue=#12
+owner/repo/pulls/158 리뷰                     → /rd:review-pr review (PR 브랜치로 먼저 전환 필요)
 ```
 
 동사 없이 URL 만 붙여넣으면 작업 선택 메뉴가 표시됩니다.
@@ -686,22 +686,22 @@ owner/repo/pulls/158 리뷰                     → /req:review-pr review (PR �
 
 **트리거되지 않는 경우**
 
-- 조회 / 표시: "025 보여줘" 는 `/req:show` 로 라우팅
+- 조회 / 표시: "025 보여줘" 는 `/rd:show` 로 라우팅
 - 논의 / 질문: "이 버그 어떻게 고쳐?", "리팩토링해야 하나?"
 - 필수 정보 누락: 번호 없는 "요구사항 수정", 대상 없는 "최적화", 번호 없는 "완료"
-- 슬래시 커맨드로 시작하는 메시지 (`/req:`, `/pm:`, `/api:`)
+- 슬래시 커맨드로 시작하는 메시지 (`/rd:`, `/pm:`, `/api:`)
 - 다른 레포를 가리키는 URL (`git remote` 와 불일치)
 
 ### 13.2 원클릭 수정 (`--auto`)
 
-`/req:fix --auto` 는 모든 확인 인터랙션을 건너뛰고 commit → push → PR 까지 자동 연결합니다.
+`/rd:fix --auto` 는 모든 확인 인터랙션을 건너뛰고 commit → push → PR 까지 자동 연결합니다.
 
-> **전제**: req 플러그인의 확인은 **기본적으로 모두 꺼져 있습니다** — Write/Edit/Bash 호출은 프롬프트 없이 바로 실행됩니다. 자연어로 Claude 에게 "커밋 확인 켜줘"라고 부탁해서 Claude 가 `.claude/.req-confirm-commit` 마커를 만들고 feedback memory 를 저장한 사용자만, `git commit` / `mv` / `rm` REQ 파일 직전에 네이티브 다이얼로그를 보게 됩니다. 이런 사용자에게 `--auto` 는 `.claude/.req-auto` 마커를 생성해 Hook 을 통과시킵니다. **기본 설정에서도 `--auto` 는 여전히 유용**합니다 — 커맨드 레벨의 텍스트 확인(수정 플랜 확인, 타입 선택, issue 종료 확인 등)도 함께 건너뛰고 후속 단계를 자동으로 연결해 줍니다.
+> **전제**: rd 플러그인의 확인은 **기본적으로 모두 꺼져 있습니다** — Write/Edit/Bash 호출은 프롬프트 없이 바로 실행됩니다. 자연어로 Claude 에게 "커밋 확인 켜줘"라고 부탁해서 Claude 가 `.claude/.req-confirm-commit` 마커를 만들고 feedback memory 를 저장한 사용자만, `git commit` / `mv` / `rm` REQ 파일 직전에 네이티브 다이얼로그를 보게 됩니다. 이런 사용자에게 `--auto` 는 `.claude/.req-auto` 마커를 생성해 Hook 을 통과시킵니다. **기본 설정에서도 `--auto` 는 여전히 유용**합니다 — 커맨드 레벨의 텍스트 확인(수정 플랜 확인, 타입 선택, issue 종료 확인 등)도 함께 건너뛰고 후속 단계를 자동으로 연결해 줍니다.
 
 **트리거 방식**
 
 ```
-/req:fix 로그인 타임아웃 --auto                # 명시적
+/rd:fix 로그인 타임아웃 --auto                # 명시적
 Excel 내보내기 인코딩 수정, 확인 불필요        # 자연어
 로그인 타임아웃 원클릭 수정                    # 자연어
 바로 고치고 PR 올려                            # 자연어
@@ -716,9 +716,9 @@ Excel 내보내기 인코딩 수정, 확인 불필요        # 자연어
 |-------------|---------------|
 | 수정 플랜 확인 | 커맨드에 내장 |
 | `git commit` 직전 네이티브 확인 다이얼로그 | 기본적으로 존재하지 않음. 자연어로 확인을 켜놓은 경우(`.claude/.req-confirm-commit` 마커 있음) `.claude/.req-auto` 마커가 Hook 을 통과시킴 |
-| `/req:commit` 인터랙티브 타입 선택 | AI 가 "수정" 으로 자동 추론 |
+| `/rd:commit` 인터랙티브 타입 선택 | AI 가 "수정" 으로 자동 추론 |
 | `--from-issue` 의 issue 종료 확인 | 기본적으로 종료 |
-| `/req:pr` 생성 후 브랜치 정리 확인 | 기본적으로 유지 |
+| `/rd:pr` 생성 후 브랜치 정리 확인 | 기본적으로 유지 |
 | commit → push → PR 수동 연결 | 자동 실행 |
 
 **건너뛸 수 없는 항목** (Claude Code harness 레벨, 로컬에서 설정 필요)
@@ -742,7 +742,7 @@ Excel 내보내기 인코딩 수정, 확인 불필요        # 자연어
 ```
 사용자: Excel 내보내기 인코딩 수정, 확인 불필요
    ↓
-AI:    🧠 인식: /req:fix Excel 내보내기 인코딩 --auto
+AI:    🧠 인식: /rd:fix Excel 내보내기 인코딩 --auto
        ⚙️ --auto 로 건너뛰는 항목: [능력 리스트]
        🔒 건너뛸 수 없음: [harness 권한]
        🛑 건너뛰지 않음: [보호 브랜치, 실제 코드 수정]
@@ -753,18 +753,18 @@ AI:    🧠 인식: /req:fix Excel 내보내기 인코딩 --auto
 
 ### 13.3 `--auto` 를 지원하는 다른 커맨드
 
-**`/req:review-pr review --auto`** — "리뷰 코멘트 업로드 여부" 확인 건너뛰기
+**`/rd:review-pr review --auto`** — "리뷰 코멘트 업로드 여부" 확인 건너뛰기
 
 기본 (—auto 없음) 은 AI 코드 리뷰 완료 후 **축약된 코멘트 프리뷰**를 표시하고 `y/n` 을 기다립니다. 리뷰 결과가 확인 없이 외부에 공개되는 것을 방지하기 위함입니다. `--auto` 를 전달하면 질문을 건너뛰고 바로 업로드합니다.
 
 ```
-/req:review-pr review               # 프리뷰 표시 → y/n 확인 대기
-/req:review-pr review --auto        # 축약 코멘트 바로 업로드
+/rd:review-pr review               # 프리뷰 표시 → y/n 확인 대기
+/rd:review-pr review --auto        # 축약 코멘트 바로 업로드
 ```
 
 자연어 트리거: `원클릭 리뷰`, `자동 리뷰`, `리뷰 후 바로 코멘트`, `묻지 마`.
 
-> **`review` 서브커맨드의 업로드 확인에만 영향.** `/req:review-pr merge` 의 머지 후 브랜치 정리 확인은 `branchStrategy.deleteBranchAfterMerge` 로 제어되고, `/req:review-pr fetch-comments` 의 "수정 적용 여부" 확인은 AI 가 코드를 임의로 수정하지 않도록 유지됩니다.
+> **`review` 서브커맨드의 업로드 확인에만 영향.** `/rd:review-pr merge` 의 머지 후 브랜치 정리 확인은 `branchStrategy.deleteBranchAfterMerge` 로 제어되고, `/rd:review-pr fetch-comments` 의 "수정 적용 여부" 확인은 AI 가 코드를 임의로 수정하지 않도록 유지됩니다.
 
 ---
 
@@ -772,27 +772,27 @@ AI:    🧠 인식: /req:fix Excel 내보내기 인코딩 --auto
 
 | 시나리오 | 커맨드 |
 |----------|--------|
-| 요구사항 브라우징 | `/req` |
-| 정식 요구사항 생성 | `/req:new <제목> --type=백엔드` |
-| 빠른 수정 (문서 있음) | `/req:new-quick <제목>` |
-| 라이트 수정 (문서 없음) | `/req:fix <설명>` |
-| 스마트 개발 (최적화/리팩토링) | `/req:do <설명>` |
-| 편집 | `/req:edit` |
-| 리뷰 제출 | `/req:review` |
-| 리뷰 승인 | `/req:review pass` |
-| 개발 시작 | `/req:dev` |
-| 커밋 | `/req:commit` |
-| PR 생성 | `/req:pr` |
-| AI 코드 리뷰 | `/req:review-pr review` |
-| PR 머지 | `/req:review-pr merge` |
-| 테스트 실행 | `/req:test` |
-| 아카이브 | `/req:done` |
-| PRD 조회 | `/req:prd` |
-| Changelog 생성 | `/req:changelog v1.0.0` |
-| 브랜치 전략 설정 | `/req:branch init` |
-| 브랜치 상태 조회 | `/req:branch status` |
-| 핫픽스 | `/req:branch hotfix <설명>` |
-| 재초기화 | `/req:init my-project --reinit` |
-| v2에서 업그레이드 | `/req:migrate` |
-| 스펙 문서 조회 | `/req:specs show <이름>` |
-| 스펙 문서 생성 | `/req:specs new <이름>` |
+| 요구사항 브라우징 | `/rd:req` |
+| 정식 요구사항 생성 | `/rd:new <제목> --type=백엔드` |
+| 빠른 수정 (문서 있음) | `/rd:new-quick <제목>` |
+| 라이트 수정 (문서 없음) | `/rd:fix <설명>` |
+| 스마트 개발 (최적화/리팩토링) | `/rd:do <설명>` |
+| 편집 | `/rd:edit` |
+| 리뷰 제출 | `/rd:review` |
+| 리뷰 승인 | `/rd:review pass` |
+| 개발 시작 | `/rd:dev` |
+| 커밋 | `/rd:commit` |
+| PR 생성 | `/rd:pr` |
+| AI 코드 리뷰 | `/rd:review-pr review` |
+| PR 머지 | `/rd:review-pr merge` |
+| 테스트 실행 | `/rd:test` |
+| 아카이브 | `/rd:done` |
+| PRD 조회 | `/rd:prd` |
+| Changelog 생성 | `/rd:changelog v1.0.0` |
+| 브랜치 전략 설정 | `/rd:branch init` |
+| 브랜치 상태 조회 | `/rd:branch status` |
+| 핫픽스 | `/rd:branch hotfix <설명>` |
+| 재초기화 | `/rd:init my-project --reinit` |
+| v2에서 업그레이드 | `/rd:migrate` |
+| 스펙 문서 조회 | `/rd:specs show <이름>` |
+| 스펙 문서 생성 | `/rd:specs new <이름>` |

@@ -12,10 +12,10 @@ This tutorial walks through a complete example — from installing the plugin to
 
 > **Two-step launch**: After installing the plugin, every time you open a Claude Code session, the plugin detects whether the repo is initialized and whether a branch strategy is configured. If either is missing, a guidance message is printed at the start of the session. Complete the two steps below and the message disappears:
 >
-> 1. `/req:init <project-name>` — initialize the requirements project
-> 2. `/req:branch init` — configure the branch strategy
+> 1. `/rd:init <project-name>` — initialize the requirements project
+> 2. `/rd:branch init` — configure the branch strategy
 >
-> After that, run `/req:new` to create your first requirement.
+> After that, run `/rd:new` to create your first requirement.
 
 ### 1.1 Install the plugin
 
@@ -24,7 +24,7 @@ This tutorial walks through a complete example — from installing the plugin to
 claude plugins marketplace add https://github.com/zhouhao4221/devflow-claude
 
 # 2. Install the plugin from the marketplace
-claude plugins install req@devflow
+claude plugins install rd@devflow
 
 # Verify installation
 claude plugins list
@@ -35,7 +35,7 @@ claude plugins list
 In the project root, start Claude Code and run:
 
 ```
-/req:init my-saas
+/rd:init my-saas
 ```
 
 This will:
@@ -59,14 +59,14 @@ During init, the plugin checks whether your project CLAUDE.md contains architect
   5. Skip
 ```
 
-The snippet is appended to your project CLAUDE.md and covers tech stack, layered architecture table, coding conventions, testing conventions, etc. `/req:dev` and `/req:test` rely on this info to generate plans and locate test files.
+The snippet is appended to your project CLAUDE.md and covers tech stack, layered architecture table, coding conventions, testing conventions, etc. `/rd:dev` and `/rd:test` rely on this info to generate plans and locate test files.
 
 > **Edit later**: just edit the "Project Architecture" section of your project CLAUDE.md.
 
 ### 1.4 Configure branch strategy (strongly recommended)
 
 ```
-/req:branch init
+/rd:branch init
 ```
 
 > While unconfigured, the session-start banner keeps reminding you; once configured, the reminder disappears. You can still skip configuration — defaults apply (hardcoded `feat/` / `fix/` prefixes, no auto PR).
@@ -77,18 +77,18 @@ Pick your team's branch strategy:
 - **Trunk-Based**: short-lived branches, trunk development
 
 Then pick your hosting type:
-- **GitHub**: `/req:pr` suggests the `gh pr create` command
-- **Gitea**: `/req:pr` calls the Gitea REST API to create the PR
+- **GitHub**: `/rd:pr` suggests the `gh pr create` command
+- **Gitea**: `/rd:pr` calls the Gitea REST API to create the PR
 - **Other**: only prints `git merge` instructions
 
-After configuration, `/req:dev`, `/req:commit`, `/req:done`, `/req:pr` all follow the policy.
+After configuration, `/rd:dev`, `/rd:commit`, `/rd:done`, `/rd:pr` all follow the policy.
 
 ### 1.5 Reinitialize
 
 Backfill missing files on an existing project (non-destructive):
 
 ```
-/req:init my-saas --reinit
+/rd:init my-saas --reinit
 ```
 
 Use cases:
@@ -102,12 +102,12 @@ Use cases:
 Starting in v3, configuration moved from `.claude/settings*.json` to `.devflow/`, and the global cache `~/.claude-requirements/` was removed. On an existing project, after upgrading the plugin, run:
 
 ```
-/req:migrate
+/rd:migrate
 ```
 
 - `requirementProject` / `requirementRole` / `requirementsDir` / `branchStrategy` move to `.devflow/settings.json`, and `giteaToken` moves to `.devflow/settings.local.json`
 - Claude Code's own hooks / permissions stay in `.claude/settings.json`
-- Read-only repos need to rebind: `/req:use <primary-repo-path>`
+- Read-only repos need to rebind: `/rd:use <primary-repo-path>`
 - Once you've confirmed the primary repo's requirements docs are intact, you can manually delete `~/.claude-requirements/projects/<project-name>/`
 
 > At session start, if DevFlow config is still detected under `.claude/`, you'll be prompted to run the migration.
@@ -117,12 +117,12 @@ Starting in v3, configuration moved from `.claude/settings*.json` to `.devflow/`
 If the plugin ships new templates:
 
 ```
-/req:update-template
+/rd:update-template
 ```
 
 ### 1.8 Configure the Gitea token (required for Gitea repos)
 
-If you chose Gitea in `/req:branch init`, a token is required for automated PR creation.
+If you chose Gitea in `/rd:branch init`, a token is required for automated PR creation.
 
 **Create the token:**
 
@@ -141,7 +141,7 @@ If you chose Gitea in `/req:branch init`, a token is required for automated PR c
 
 **Configure the token:**
 
-`/req:branch init` already wrote strategy fields like `repoType` and `giteaUrl` into `branchStrategy` in `.devflow/settings.json`. The token is written separately, at the **top level** of the project's `.devflow/settings.local.json` (not inside `branchStrategy`):
+`/rd:branch init` already wrote strategy fields like `repoType` and `giteaUrl` into `branchStrategy` in `.devflow/settings.json`. The token is written separately, at the **top level** of the project's `.devflow/settings.local.json` (not inside `branchStrategy`):
 
 ```json
 {
@@ -167,7 +167,7 @@ If user info is returned, the token works.
 ### 2.1 Formal requirements (REQ)
 
 ```
-/req:new User Points Rule Management --type=backend
+/rd:new User Points Rule Management --type=backend
 ```
 
 AI walks you section by section:
@@ -188,7 +188,7 @@ Generates `docs/requirements/active/REQ-001-user-points-rule-management.md`.
 For small bugs or small features — a lighter flow:
 
 ```
-/req:new-quick Fix points calculation precision loss
+/rd:new-quick Fix points calculation precision loss
 ```
 
 The QUICK template is shorter: problem statement → plan → verification.
@@ -198,7 +198,7 @@ The QUICK template is shorter: problem statement → plan → verification.
 Not sure if the scope is right?
 
 ```
-/req:split User points system
+/rd:split User points system
 ```
 
 AI analyzes the granularity and suggests a split (read-only, no doc created).
@@ -208,9 +208,9 @@ AI analyzes the granularity and suggests a split (read-only, no doc created).
 If your team uses Gitea / GitHub issues as the intake:
 
 ```
-/req:new --from-issue=#12           # Formal requirement
-/req:new-quick --from-issue=#5      # Quick fix
-/req:do --from-issue=#42            # No doc; treat issue body as the intent for smart dev
+/rd:new --from-issue=#12           # Formal requirement
+/rd:new-quick --from-issue=#5      # Quick fix
+/rd:do --from-issue=#42            # No doc; treat issue body as the intent for smart dev
 ```
 
 **What AI does:**
@@ -226,12 +226,12 @@ When linked to an issue, the whole chain carries the issue number:
 
 | Step | Behavior |
 |------|----------|
-| `/req:dev` creates the branch | Appends `-iN` (e.g., `feat/REQ-001-user-points-i12`) |
-| `/req:commit` | Appends `closes #N` in the commit message (PR merge auto-closes the issue) |
-| `/req:done` | Asks whether to close the issue via API |
-| `/req:do --from-issue` | Branch gets `-iN`; on completion, asks to close the issue |
+| `/rd:dev` creates the branch | Appends `-iN` (e.g., `feat/REQ-001-user-points-i12`) |
+| `/rd:commit` | Appends `closes #N` in the commit message (PR merge auto-closes the issue) |
+| `/rd:done` | Asks whether to close the issue via API |
+| `/rd:do --from-issue` | Branch gets `-iN`; on completion, asks to close the issue |
 
-**Lookup priority**: doc's `issue` field > `-iN` suffix in branch name. This way, even a doc-less `/req:do` lets `commit` and `done` infer the issue number from the branch.
+**Lookup priority**: doc's `issue` field > `-iN` suffix in branch name. This way, even a doc-less `/rd:do` lets `commit` and `done` infer the issue number from the branch.
 
 ---
 
@@ -242,7 +242,7 @@ When linked to an issue, the whole chain carries the issue number:
 ### 3.1 Submit for review
 
 ```
-/req:review
+/rd:review
 ```
 
 Status transitions Draft → In Review.
@@ -250,11 +250,11 @@ Status transitions Draft → In Review.
 ### 3.2 Review decision
 
 ```
-/req:review pass     # Approve → Approved
-/req:review reject   # Reject → back to Draft
+/rd:review pass     # Approve → Approved
+/rd:review reject   # Reject → back to Draft
 ```
 
-After rejection, use `/req:edit` to revise and resubmit.
+After rejection, use `/rd:edit` to revise and resubmit.
 
 ---
 
@@ -263,7 +263,7 @@ After rejection, use `/req:edit` to revise and resubmit.
 ### 4.1 Start development
 
 ```
-/req:dev
+/rd:dev
 ```
 
 Flow:
@@ -290,10 +290,10 @@ Implement layer by layer per CLAUDE.md
 
 ### 4.2 Branch management
 
-On the first `/req:dev`, AI automatically:
+On the first `/rd:dev`, AI automatically:
 
 1. Checks the working tree is clean (aborts if dirty)
-2. Reads branch strategy (if `/req:branch init` was run)
+2. Reads branch strategy (if `/rd:branch init` was run)
 3. Generates an English branch name from the title and asks you to confirm:
    ```
    Will create dev branch: feat/REQ-001-user-points-rule
@@ -301,22 +301,22 @@ On the first `/req:dev`, AI automatically:
    ```
 4. On confirm, creates the branch and writes `branch` into the doc
 
-Re-running `/req:dev` just switches to the recorded branch.
+Re-running `/rd:dev` just switches to the recorded branch.
 
 Branch naming (prefixes configurable via strategy):
 - REQ → `feat/REQ-XXX-<english-slug>[-iN]`
 - QUICK → `fix/QUICK-XXX-<english-slug>[-iN]`
-- `/req:do --from-issue` → `<prefix><slug>-iN` (prefix chosen by AI from intent)
-- Hotfix → `hotfix/<english-slug>` (via `/req:branch hotfix`)
+- `/rd:do --from-issue` → `<prefix><slug>-iN` (prefix chosen by AI from intent)
+- Hotfix → `hotfix/<english-slug>` (via `/rd:branch hotfix`)
 - `-iN`: optional issue suffix (e.g., `-i12`), appended automatically when a Git platform issue is linked (see 2.4)
 
 ### 4.2.1 Branch strategy commands
 
 ```
-/req:branch              # View current strategy and branch status
-/req:branch init         # Interactively configure branch strategy + repo type
-/req:branch status       # View strategy config and each requirement's branch state
-/req:branch hotfix desc  # Create a hotfix branch off main
+/rd:branch              # View current strategy and branch status
+/rd:branch init         # Interactively configure branch strategy + repo type
+/rd:branch status       # View strategy config and each requirement's branch state
+/rd:branch hotfix desc  # Create a hotfix branch off main
 ```
 
 ### 4.2.2 Create a PR
@@ -324,11 +324,11 @@ Branch naming (prefixes configurable via strategy):
 When development is done:
 
 ```
-/req:pr              # Auto-detect the requirement from the current branch
-/req:pr REQ-001      # Create a PR for a specific requirement
+/rd:pr              # Auto-detect the requirement from the current branch
+/rd:pr REQ-001      # Create a PR for a specific requirement
 ```
 
-Based on the repo type from `/req:branch init`:
+Based on the repo type from `/rd:branch init`:
 - **Gitea**: calls the Gitea REST API (needs `giteaToken`, see 1.8)
 - **GitHub**: uses `gh` CLI
 - **Other**: pushes the branch and prints merge instructions
@@ -340,9 +340,9 @@ Git Flow hotfix branches get two PRs (→ main + → develop).
 Use AI review and merge:
 
 ```
-/req:review-pr              # PR status
-/req:review-pr review       # AI code review
-/req:review-pr merge        # Merge the PR
+/rd:review-pr              # PR status
+/rd:review-pr review       # AI code review
+/rd:review-pr merge        # Merge the PR
 ```
 
 **Review flow:**
@@ -353,15 +353,15 @@ Use AI review and merge:
 
 **Merge method**: read from `branchStrategy.mergeMethod` (default `merge`); supports `merge` / `squash` / `rebase`.
 
-### 4.2.4 Smart development (`/req:do`)
+### 4.2.4 Smart development (`/rd:do`)
 
 For optimizations, refactors, upgrades — no requirement doc needed:
 
 ```
-/req:do Optimize order query performance
-/req:do Refactor the user service layer
-/req:do Upgrade Go to 1.23
-/req:do Unify error code formatting
+/rd:do Optimize order query performance
+/rd:do Refactor the user service layer
+/rd:do Upgrade Go to 1.23
+/rd:do Unify error code formatting
 ```
 
 AI automatically:
@@ -370,24 +370,24 @@ AI automatically:
 3. **Confirms the plan** — on confirm, creates a branch (`improve/` / `feat/` / `fix/` chosen by type)
 4. **Applies changes** — edits code per the plan
 
-For larger scope, suggests switching to `/req:new-quick` or `/req:new`.
+For larger scope, suggests switching to `/rd:new-quick` or `/rd:new`.
 
-**Difference vs `/req:fix`:**
-- `/req:fix` — dedicated to bug fixing; AI performs root-cause analysis
-- `/req:do` — non-bug (optimize/refactor/upgrade); AI picks the right flow from intent
+**Difference vs `/rd:fix`:**
+- `/rd:fix` — dedicated to bug fixing; AI performs root-cause analysis
+- `/rd:do` — non-bug (optimize/refactor/upgrade); AI picks the right flow from intent
 
 ### 4.3 Continue development
 
 After an interruption, resume:
 
 ```
-/req:dev REQ-001
+/rd:dev REQ-001
 ```
 
 Add `--reset` to regenerate the plan:
 
 ```
-/req:dev REQ-001 --reset
+/rd:dev REQ-001 --reset
 ```
 
 ### 4.4 Conventional commits
@@ -395,7 +395,7 @@ Add `--reset` to regenerate the plan:
 During development, use the conventional commit helper:
 
 ```
-/req:commit
+/rd:commit
 ```
 
 AI analyzes the diff and produces a Conventional Commits message:
@@ -411,7 +411,7 @@ feat: implement points rule CRUD APIs (REQ-001)
 ### 5.1 Full test
 
 ```
-/req:test
+/rd:test
 ```
 
 Runs regression + new feature tests; status → In Testing.
@@ -419,8 +419,8 @@ Runs regression + new feature tests; status → In Testing.
 ### 5.2 Step-by-step tests
 
 ```
-/req:test_regression    # Run existing automated tests, produce a regression report
-/req:test_new           # Create test cases for the new feature (UT/API/E2E)
+/rd:test_regression    # Run existing automated tests, produce a regression report
+/rd:test_new           # Create test cases for the new feature (UT/API/E2E)
 ```
 
 ---
@@ -428,7 +428,7 @@ Runs regression + new feature tests; status → In Testing.
 ## 6. Archival
 
 ```
-/req:done
+/rd:done
 ```
 
 Flow:
@@ -445,23 +445,23 @@ Flow:
 ### 7.1 Requirements list
 
 ```
-/req                            # List everything
-/req --type=backend             # Filter by type
-/req --module=user              # Filter by module
-/req --type=frontend --module=user
+/rd:req                            # List everything
+/rd:req --type=backend             # Filter by type
+/rd:req --module=user              # Filter by module
+/rd:req --type=frontend --module=user
 ```
 
 ### 7.2 Details
 
 ```
-/req:show REQ-001     # Read-only full view
-/req:status REQ-001   # Status + progress
+/rd:show REQ-001     # Read-only full view
+/rd:status REQ-001   # Status + progress
 ```
 
 ### 7.3 Edit
 
 ```
-/req:edit REQ-001
+/rd:edit REQ-001
 ```
 
 ---
@@ -471,9 +471,9 @@ Flow:
 Modules are functional-domain docs that help AI understand context.
 
 ```
-/req:modules                  # List all modules
-/req:modules new user         # Create the user module doc
-/req:modules show user        # View module details
+/rd:modules                  # List all modules
+/rd:modules new user         # Create the user module doc
+/rd:modules show user        # View module details
 ```
 
 Module docs cover: scope, core features, data model, API overview, key file paths.
@@ -485,14 +485,14 @@ Module docs cover: scope, core features, data model, API overview, key file path
 The PRD is project-level — one per project.
 
 ```
-/req:prd                     # PRD overview + section fill rate
-/req:prd-edit                # Edit PRD with AI assistance
-/req:prd-edit Overview       # Edit a specific section
+/rd:prd                     # PRD overview + section fill rate
+/rd:prd-edit                # Edit PRD with AI assistance
+/rd:prd-edit Overview       # Edit a specific section
 ```
 
 The "Requirement Tracking" section of the PRD is auto-maintained:
-- `/req:new` appends a row
-- `/req:done` updates the status and completion date
+- `/rd:new` appends a row
+- `/rd:done` updates the status and completion date
 
 ---
 
@@ -501,8 +501,8 @@ The "Requirement Tracking" section of the PRD is auto-maintained:
 ### 10.1 Generate release notes
 
 ```
-/req:changelog v1.2.0                          # Auto-detect range
-/req:changelog v1.2.0 --from=v1.1.0 --to=HEAD
+/rd:changelog v1.2.0                          # Auto-detect range
+/rd:changelog v1.2.0 --from=v1.1.0 --to=HEAD
 ```
 
 AI classifies Git commits and generates structured release notes.
@@ -512,7 +512,7 @@ AI classifies Git commits and generates structured release notes.
 When a QUICK grows mid-flight:
 
 ```
-/req:upgrade QUICK-003
+/rd:upgrade QUICK-003
 ```
 
 ---
@@ -525,24 +525,24 @@ For projects split across frontend and backend repos.
 
 ```
 # Initialize the project
-/req:init my-saas
+/rd:init my-saas
 
 # Create and manage requirements normally
-/req:new User Points - Backend --type=backend
+/rd:new User Points - Backend --type=backend
 ```
 
 ### Linked repo (frontend)
 
 ```
 # Bind to the primary repo (pass the local path to the primary repo's root)
-/req:use ../backend
+/rd:use ../backend
 
 # Read-only access
-/req
-/req:show REQ-001
+/rd:req
+/rd:show REQ-001
 
 # Develop based on a requirement (reads directly from the primary repo's requirements directory)
-/req:dev REQ-002
+/rd:dev REQ-002
 ```
 
 Linked repos have role `readonly`, with the primary repo's path recorded in `requirementSource.path` in `.devflow/settings.local.json` (a local path, not checked into Git):
@@ -557,16 +557,16 @@ The primary repo owns spec docs (data types, API contracts, error codes); read-o
 **Primary (backend):**
 
 ```
-/req:specs new Order data types
-/req:specs edit order-types
-/req:specs
+/rd:specs new Order data types
+/rd:specs edit order-types
+/rd:specs
 ```
 
 **Read-only (frontend):**
 
 ```
-/req:specs
-/req:specs show order-types
+/rd:specs
+/rd:specs show order-types
 ```
 
 Specs live in the primary repo's `docs/requirements/specs/`; read-only repos read the primary repo's directory directly, with no sync needed. After the backend edits, the frontend sees the latest on next view.
@@ -582,36 +582,36 @@ Typical uses:
 
 ```
                   Create requirement
-                /req:new <title>
+                /rd:new <title>
                       │
                       ▼
                ┌─────────────┐
-               │ 📝 Draft    │ ← /req:edit
+               │ 📝 Draft    │ ← /rd:edit
                └──────┬──────┘
-                      │ /req:review
+                      │ /rd:review
                       ▼
                ┌─────────────┐
                │ 👀 In Review│
                └──────┬──────┘
-                      │ /req:review pass
+                      │ /rd:review pass
                       ▼
                ┌─────────────┐
                │ ✅ Approved │
                └──────┬──────┘
-                      │ /req:dev (auto branch)
+                      │ /rd:dev (auto branch)
                       ▼
                ┌─────────────┐
-               │ 🔨 In Dev   │ ← /req:commit
-               │             │ ← /req:pr
-               │             │ ← /req:review-pr review
-               │             │ ← /req:review-pr merge
+               │ 🔨 In Dev   │ ← /rd:commit
+               │             │ ← /rd:pr
+               │             │ ← /rd:review-pr review
+               │             │ ← /rd:review-pr merge
                └──────┬──────┘
-                      │ /req:test
+                      │ /rd:test
                       ▼
                ┌─────────────┐
                │ 🧪 In Test  │
                └──────┬──────┘
-                      │ /req:done (merge reminder)
+                      │ /rd:done (merge reminder)
                       ▼
                ┌─────────────┐
                │ 🎉 Done     │ → archived to completed/
@@ -629,48 +629,48 @@ No need to memorize slash commands — describe your intent in plain language an
 **Requirement docs**
 
 ```
-create a requirement: user points management   → /req:new user points management
-new backend requirement: order export           → /req:new order export --type=backend
-edit REQ-025, add export                        → /req:edit REQ-025
+create a requirement: user points management   → /rd:new user points management
+new backend requirement: order export           → /rd:new order export --type=backend
+edit REQ-025, add export                        → /rd:edit REQ-025
 ```
 
 **Fixes & development (no doc)**
 
 ```
-fix the login timeout bug                       → /req:fix login timeout
-fix bug #42                                     → /req:fix --from-issue=#42
-optimize order query performance                → /req:do optimize order query performance
-refactor the user service layer                 → /req:do refactor user service layer
-upgrade Go to 1.23                              → /req:do upgrade Go to 1.23
-quick change to the pagination default          → /req:new-quick pagination default
+fix the login timeout bug                       → /rd:fix login timeout
+fix bug #42                                     → /rd:fix --from-issue=#42
+optimize order query performance                → /rd:do optimize order query performance
+refactor the user service layer                 → /rd:do refactor user service layer
+upgrade Go to 1.23                              → /rd:do upgrade Go to 1.23
+quick change to the pagination default          → /rd:new-quick pagination default
 ```
 
 **State transitions** (ID required)
 
 ```
-start developing 025                            → /req:dev REQ-025
-start testing 025                               → /req:test REQ-025
-025 approved / approve 025                      → /req:review pass
-025 rejected                                    → /req:review reject
-done 025 / close 025                            → /req:done REQ-025
+start developing 025                            → /rd:dev REQ-025
+start testing 025                               → /rd:test REQ-025
+025 approved / approve 025                      → /rd:review pass
+025 rejected                                    → /rd:review reject
+done 025 / close 025                            → /rd:done REQ-025
 ```
 
 **Versioning & PR**
 
 ```
-commit                                          → /req:commit
-create PR / open PR                             → /req:pr
-review PR                                       → /req:review-pr review
-pull PR comments                                → /req:review-pr fetch-comments
-merge PR                                        → /req:review-pr merge
+commit                                          → /rd:commit
+create PR / open PR                             → /rd:pr
+review PR                                       → /rd:review-pr review
+pull PR comments                                → /rd:review-pr fetch-comments
+merge PR                                        → /rd:review-pr merge
 ```
 
 **Paste a Git platform URL** (auto-detect issue / PR)
 
 ```
-fix owner/repo/issues/169                       → /req:fix --from-issue=#169
-create a requirement from owner/repo/issues/12  → /req:new --from-issue=#12
-review owner/repo/pulls/158                     → /req:review-pr review (switch to PR branch first)
+fix owner/repo/issues/169                       → /rd:fix --from-issue=#169
+create a requirement from owner/repo/issues/12  → /rd:new --from-issue=#12
+review owner/repo/pulls/158                     → /rd:review-pr review (switch to PR branch first)
 ```
 
 Pasting a URL without a verb shows a menu to pick the action.
@@ -686,22 +686,22 @@ Pasting a URL without a verb shows a menu to pick the action.
 
 **Does NOT trigger**
 
-- Query / display: "show me 025" routes to `/req:show`
+- Query / display: "show me 025" routes to `/rd:show`
 - Discussion / questions: "how do we fix this bug?", "should we refactor?"
 - Missing required info: "edit requirement" without ID, "optimize" with no object, "done" with no ID
-- Messages starting with a slash command (`/req:`, `/pm:`, `/api:`)
+- Messages starting with a slash command (`/rd:`, `/pm:`, `/api:`)
 - URLs pointing to other repos (mismatches `git remote`)
 
 ### 13.2 One-shot fix (`--auto`)
 
-`/req:fix --auto` skips every confirmation and chains commit → push → PR.
+`/rd:fix --auto` skips every confirmation and chains commit → push → PR.
 
-> **Preamble**: the req plugin's confirmations are **off by default** — all Write/Edit/Bash calls go through without prompting. Only users who have told Claude (in natural language) to enable commit confirmation — which makes Claude create `.claude/.req-confirm-commit` and save a feedback memory — see native dialogs before `git commit` / `mv` / `rm` on REQ files; for them, `--auto` drops a `.claude/.req-auto` marker so the hook lets those through. **Even with the default setting, `--auto` still helps** — it skips the command-level text prompts (fix-plan confirm, type picker, close-issue question, etc.) and chains the follow-up steps automatically.
+> **Preamble**: the rd plugin's confirmations are **off by default** — all Write/Edit/Bash calls go through without prompting. Only users who have told Claude (in natural language) to enable commit confirmation — which makes Claude create `.claude/.req-confirm-commit` and save a feedback memory — see native dialogs before `git commit` / `mv` / `rm` on REQ files; for them, `--auto` drops a `.claude/.req-auto` marker so the hook lets those through. **Even with the default setting, `--auto` still helps** — it skips the command-level text prompts (fix-plan confirm, type picker, close-issue question, etc.) and chains the follow-up steps automatically.
 
 **How to trigger**
 
 ```
-/req:fix login timeout --auto                    # Explicit
+/rd:fix login timeout --auto                    # Explicit
 fix Excel export encoding, no confirm needed     # Natural language
 one-shot fix the login timeout                   # Natural language
 just fix it and open a PR                        # Natural language
@@ -716,9 +716,9 @@ Natural-language triggers: `one-shot fix` / `auto fix` / `just fix and open a PR
 |--------------|------------------|
 | Fix plan confirmation | Built into the command |
 | Native confirm dialog before `git commit` | Off by default; if you opted in via natural language (so `.claude/.req-confirm-commit` exists), the `.claude/.req-auto` marker lets the hook through |
-| `/req:commit` interactive type picker | AI infers "fix" |
+| `/rd:commit` interactive type picker | AI infers "fix" |
 | `--from-issue` close-issue question | Defaults to close |
-| `/req:pr` post-create branch cleanup question | Defaults to keep |
+| `/rd:pr` post-create branch cleanup question | Defaults to keep |
 | Manually chaining commit → push → PR | Done automatically |
 
 **Cannot be skipped** (Claude Code harness — must be set locally)
@@ -742,7 +742,7 @@ Natural-language triggers: `one-shot fix` / `auto fix` / `just fix and open a PR
 ```
 User: fix the Excel export encoding, no confirm needed
    ↓
-AI:   🧠 Recognized: /req:fix Excel export encoding --auto
+AI:   🧠 Recognized: /rd:fix Excel export encoding --auto
       ⚙️ --auto skips: [capability list]
       🔒 Cannot skip: [harness permissions]
       🛑 Won't skip: [protected branches, actual code changes]
@@ -753,18 +753,18 @@ Diagnose → edit code → git commit → git push → open PR
 
 ### 13.3 Other commands that support `--auto`
 
-**`/req:review-pr review --auto`** — skip the "upload review comment?" confirmation
+**`/rd:review-pr review --auto`** — skip the "upload review comment?" confirmation
 
 By default (without `--auto`), after the AI review completes, the command prints a **condensed preview** of the comment that would be uploaded and waits for `y/n`, so the review doesn't go public unreviewed by you. Passing `--auto` skips the prompt and uploads directly.
 
 ```
-/req:review-pr review               # Show preview → wait for y/n
-/req:review-pr review --auto        # Upload the condensed comment directly
+/rd:review-pr review               # Show preview → wait for y/n
+/rd:review-pr review --auto        # Upload the condensed comment directly
 ```
 
 Natural-language triggers: `one-shot review`, `auto review`, `review and submit`, `post the review`, `don't ask me`.
 
-> **Only affects the `review` subcommand's upload prompt.** `/req:review-pr merge` post-merge branch cleanup is controlled by `branchStrategy.deleteBranchAfterMerge`; `/req:review-pr fetch-comments` keeps its "apply changes?" prompt so AI doesn't silently edit code.
+> **Only affects the `review` subcommand's upload prompt.** `/rd:review-pr merge` post-merge branch cleanup is controlled by `branchStrategy.deleteBranchAfterMerge`; `/rd:review-pr fetch-comments` keeps its "apply changes?" prompt so AI doesn't silently edit code.
 
 ---
 
@@ -772,27 +772,27 @@ Natural-language triggers: `one-shot review`, `auto review`, `review and submit`
 
 | Scenario | Command |
 |----------|---------|
-| Browse requirements | `/req` |
-| Create a formal requirement | `/req:new <title> --type=backend` |
-| Quick fix (with doc) | `/req:new-quick <title>` |
-| Lightweight fix (no doc) | `/req:fix <description>` |
-| Smart dev (optimize/refactor) | `/req:do <description>` |
-| Edit | `/req:edit` |
-| Submit for review | `/req:review` |
-| Approve | `/req:review pass` |
-| Start development | `/req:dev` |
-| Commit | `/req:commit` |
-| Create PR | `/req:pr` |
-| AI review | `/req:review-pr review` |
-| Merge PR | `/req:review-pr merge` |
-| Run tests | `/req:test` |
-| Archive | `/req:done` |
-| View PRD | `/req:prd` |
-| Generate changelog | `/req:changelog v1.0.0` |
-| Configure branch strategy | `/req:branch init` |
-| Branch status | `/req:branch status` |
-| Hotfix | `/req:branch hotfix <description>` |
-| Reinitialize | `/req:init my-project --reinit` |
-| Upgrading from v2 | `/req:migrate` |
-| View spec doc | `/req:specs show <name>` |
-| Create spec doc | `/req:specs new <name>` |
+| Browse requirements | `/rd:req` |
+| Create a formal requirement | `/rd:new <title> --type=backend` |
+| Quick fix (with doc) | `/rd:new-quick <title>` |
+| Lightweight fix (no doc) | `/rd:fix <description>` |
+| Smart dev (optimize/refactor) | `/rd:do <description>` |
+| Edit | `/rd:edit` |
+| Submit for review | `/rd:review` |
+| Approve | `/rd:review pass` |
+| Start development | `/rd:dev` |
+| Commit | `/rd:commit` |
+| Create PR | `/rd:pr` |
+| AI review | `/rd:review-pr review` |
+| Merge PR | `/rd:review-pr merge` |
+| Run tests | `/rd:test` |
+| Archive | `/rd:done` |
+| View PRD | `/rd:prd` |
+| Generate changelog | `/rd:changelog v1.0.0` |
+| Configure branch strategy | `/rd:branch init` |
+| Branch status | `/rd:branch status` |
+| Hotfix | `/rd:branch hotfix <description>` |
+| Reinitialize | `/rd:init my-project --reinit` |
+| Upgrading from v2 | `/rd:migrate` |
+| View spec doc | `/rd:specs show <name>` |
+| Create spec doc | `/rd:specs new <name>` |

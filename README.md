@@ -8,12 +8,14 @@ AI 驱动的软件全生命周期管理工具集，覆盖需求分析、开发�
 
 | 插件 | 说明 |
 |------|------|
-| **req** | 需求全流程管理 — 从需求分析到测试归档的完整生命周期 |
+| **rd**（R&D，研发） | 研发工作流 — 需求分析、评审、开发、测试、归档 + 分支/PR/issue/版本（原 req 插件） |
 | **pm** | 项目管理助手 — 周报、月报、统计、风险扫描、方案生成 |
 | **api** | API 对接工具 — Swagger 解析、字段映射、代码生成 |
 | **diag** | 生产诊断 — 只读 SSH 拉日志、解析堆栈、关联代码、给修复建议 |
 
 > 各插件当前版本以 `claude plugins list` 或仓库内 `plugins/<插件>/.claude-plugin/plugin.json` 为准。
+>
+> 原 `req` 插件已更名为 `rd`（R&D 研发）：已安装 `req@devflow` 的用户请卸载后安装 `rd@devflow`，再在项目中执行 `/rd:migrate` 清理旧前缀引用。
 
 ---
 
@@ -24,7 +26,7 @@ AI 驱动的软件全生命周期管理工具集，覆盖需求分析、开发�
 ```bash
 # 从 GitHub 安装
 claude plugins marketplace add https://github.com/zhouhao4221/devflow-claude
-claude plugins install req@devflow    # 需求管理
+claude plugins install rd@devflow    # 需求管理
 claude plugins install pm@devflow     # 项目管理助手
 claude plugins install api@devflow    # API 对接工具
 claude plugins install diag@devflow   # 生产诊断
@@ -33,8 +35,8 @@ claude plugins install diag@devflow   # 生产诊断
 ```bash
 # 插件管理
 claude plugins list                   # 查看已安装插件
-claude plugins update req@devflow     # 更新插件
-claude plugins uninstall req@devflow  # 卸载插件
+claude plugins update rd@devflow     # 更新插件
+claude plugins uninstall rd@devflow  # 卸载插件
 ```
 
 ---
@@ -45,9 +47,9 @@ claude plugins uninstall req@devflow  # 卸载插件
 
 | 档位 | 定位 | 典型命令 |
 |------|------|---------|
-| **Haiku** | 纯查询 / 展示 / 配置 / 规则明确的状态流转 | `/req`、`/req:status`、`/req:show`、`/req:commit`、`/pm:standup`、`/api:help` |
+| **Haiku** | 纯查询 / 展示 / 配置 / 规则明确的状态流转 | `/rd:req`、`/rd:status`、`/rd:show`、`/rd:commit`、`/pm:standup`、`/api:help` |
 | **Sonnet** | 数据聚合 + 成文 | `/pm:weekly`、`/pm:monthly`、`/pm:stats`、`/pm:risk` |
-| **会话模型**（不指定） | 分析代码 / 生成方案 / 多轮需求讨论 | `/req:new`、`/req:dev`、`/req:fix`、`/req:do`、`/req:review-pr`、`/api:gen`、`/pm:plan` |
+| **会话模型**（不指定） | 分析代码 / 生成方案 / 多轮需求讨论 | `/rd:new`、`/rd:dev`、`/rd:fix`、`/rd:do`、`/rd:review-pr`、`/api:gen`、`/pm:plan` |
 
 开发类命令还会把定位代码、跑测试、压缩大 diff 等高吞吐步骤委派给 subagent，原始输出不进主会话上下文。
 
@@ -55,18 +57,18 @@ claude plugins uninstall req@devflow  # 卸载插件
 
 ---
 
-## req 插件 — 需求管理
+## rd 插件（R&D 研发）— 需求与研发流程
 
 覆盖从需求分析、评审、开发、测试到归档的完整生命周期。
 
 ### 核心特性
 
-- **自然语言指令**：直接用中文描述意图，自动映射到 `/req:*` 命令（如"修个登录超时的 bug"→ `/req:fix`、"开始开发025"→ `/req:dev REQ-025`，支持粘贴 issue/PR URL 自动识别）
-- **一键模式**：`/req:fix --auto` 跳过所有确认交互，自动串联 commit → push → PR（通过 `.claude/.req-auto` marker 放行 git 确认弹框）
+- **自然语言指令**：直接用中文描述意图，自动映射到 `/rd:*` 命令（如"修个登录超时的 bug"→ `/rd:fix`、"开始开发025"→ `/rd:dev REQ-025`，支持粘贴 issue/PR URL 自动识别）
+- **一键模式**：`/rd:fix --auto` 跳过所有确认交互，自动串联 commit → push → PR（通过 `.claude/.req-auto` marker 放行 git 确认弹框）
 - **AI 提问式需求分析**：AI 逐轮提问收集信息，一次性生成完整需求文档
 - **完整生命周期**：草稿 → 待评审 → 评审通过 → 开发中 → 测试中 → 已完成
 - **双轨需求**：正式需求（REQ）和快速修复（QUICK）两套流程
-- **智能开发**：`/req:do` 描述意图即可开发，AI 自动分析、选流程、建分支、生成方案
+- **智能开发**：`/rd:do` 描述意图即可开发，AI 自动分析、选流程、建分支、生成方案
 - **开发引导**：读取项目 CLAUDE.md 的分层架构，按配置顺序逐层引导（支持任意技术栈）
 - **开发中文档维护**：AI 发现偏差时主动提示更新需求文档
 - **分支管理**：GitHub Flow / Git Flow / Trunk-Based 三种策略
@@ -83,29 +85,29 @@ claude plugins uninstall req@devflow  # 卸载插件
 
 ```bash
 # 1. 初始化项目（创建 docs/requirements/、生成 PRD、绑定仓库）
-/req:init my-project
+/rd:init my-project
 
 # 2. 配置分支策略（GitHub Flow / Git Flow / Trunk-Based + 仓库托管类型）
-/req:branch init
+/rd:branch init
 ```
 
 随后进入日常工作流：
 
 ```bash
 # 3. 创建需求（AI 提问收集信息 → 一次性生成文档）
-/req:new 用户积分系统
+/rd:new 用户积分系统
 
 # 4. 评审
-/req:review pass
+/rd:review pass
 
 # 5. 开发（AI 生成实现方案，按分层架构引导）
-/req:dev
+/rd:dev
 
 # 6. 测试
-/req:test
+/rd:test
 
 # 7. 完成归档
-/req:done
+/rd:done
 ```
 
 ### 命令一览
@@ -114,59 +116,59 @@ claude plugins uninstall req@devflow  # 卸载插件
 
 | 命令 | 说明 |
 |------|------|
-| `/req` | 列出所有需求，支持 `--type` 和 `--module` 筛选 |
-| `/req:new [标题]` | 创建正式需求（AI 提问 → 生成文档） |
-| `/req:new-quick [标题]` | 创建快速修复（小 bug / 小功能） |
-| `/req:do <描述>` | 智能开发（优化/重构/升级/小调整，无文档） |
-| `/req:fix <描述>` | 轻量修复（bug 修复，无文档） |
-| `/req:edit [REQ-XXX]` | 编辑需求文档 |
-| `/req:show [REQ-XXX]` | 查看需求详情（只读） |
-| `/req:status [REQ-XXX]` | 查看需求状态 |
-| `/req:review [pass\|reject]` | 提交 / 通过 / 驳回评审 |
-| `/req:dev [REQ-XXX]` | 启动或继续开发 |
-| `/req:test [REQ-XXX]` | 综合测试验证 |
-| `/req:test_regression` | 运行已有自动化测试 |
-| `/req:test_new` | 为新功能创建测试用例 |
-| `/req:done [REQ-XXX]` | 完成需求并归档 |
-| `/req:upgrade <QUICK-XXX>` | 快速修复升级为正式需求 |
-| `/req:split [描述]` | 需求粒度分析和拆分建议 |
+| `/rd:req` | 列出所有需求，支持 `--type` 和 `--module` 筛选 |
+| `/rd:new [标题]` | 创建正式需求（AI 提问 → 生成文档） |
+| `/rd:new-quick [标题]` | 创建快速修复（小 bug / 小功能） |
+| `/rd:do <描述>` | 智能开发（优化/重构/升级/小调整，无文档） |
+| `/rd:fix <描述>` | 轻量修复（bug 修复，无文档） |
+| `/rd:edit [REQ-XXX]` | 编辑需求文档 |
+| `/rd:show [REQ-XXX]` | 查看需求详情（只读） |
+| `/rd:status [REQ-XXX]` | 查看需求状态 |
+| `/rd:review [pass\|reject]` | 提交 / 通过 / 驳回评审 |
+| `/rd:dev [REQ-XXX]` | 启动或继续开发 |
+| `/rd:test [REQ-XXX]` | 综合测试验证 |
+| `/rd:test_regression` | 运行已有自动化测试 |
+| `/rd:test_new` | 为新功能创建测试用例 |
+| `/rd:done [REQ-XXX]` | 完成需求并归档 |
+| `/rd:upgrade <QUICK-XXX>` | 快速修复升级为正式需求 |
+| `/rd:split [描述]` | 需求粒度分析和拆分建议 |
 
 #### PR 审查与合并
 
 | 命令 | 说明 |
 |------|------|
-| `/req:pr [REQ-XXX]` | 创建 PR（自动适配 GitHub / Gitea） |
-| `/req:review-pr` | 查看 PR 状态 |
-| `/req:review-pr review` | AI 代码审查，提交评论 |
-| `/req:review-pr merge` | 合并 PR（支持 merge/squash/rebase） |
+| `/rd:pr [REQ-XXX]` | 创建 PR（自动适配 GitHub / Gitea） |
+| `/rd:review-pr` | 查看 PR 状态 |
+| `/rd:review-pr review` | AI 代码审查，提交评论 |
+| `/rd:review-pr merge` | 合并 PR（支持 merge/squash/rebase） |
 
 #### 文档管理
 
 | 命令 | 说明 |
 |------|------|
-| `/req:prd` | 查看 PRD 状态概览 |
-| `/req:prd-edit [章节]` | 编辑 PRD 文档 |
-| `/req:modules` | 列出所有模块 |
-| `/req:specs` | 规范文档管理（数据类型、接口契约等） |
+| `/rd:prd` | 查看 PRD 状态概览 |
+| `/rd:prd-edit [章节]` | 编辑 PRD 文档 |
+| `/rd:modules` | 列出所有模块 |
+| `/rd:specs` | 规范文档管理（数据类型、接口契约等） |
 
 #### 版本与分支
 
 | 命令 | 说明 |
 |------|------|
-| `/req:commit [消息]` | 规范提交，自动关联需求编号 |
-| `/req:changelog <version>` | 生成版本升级说明 |
-| `/req:branch init` | 配置分支策略 |
-| `/req:branch hotfix [描述]` | 创建紧急修复分支 |
+| `/rd:commit [消息]` | 规范提交，自动关联需求编号 |
+| `/rd:changelog <version>` | 生成版本升级说明 |
+| `/rd:branch init` | 配置分支策略 |
+| `/rd:branch hotfix [描述]` | 创建紧急修复分支 |
 
 #### 项目配置
 
 | 命令 | 说明 |
 |------|------|
-| `/req:init <项目名>` | 初始化项目 |
-| `/req:use <主仓路径>` | 绑定主仓库，当前仓库设为只读 |
-| `/req:projects` | 查看当前需求项目 |
-| `/req:migrate` | 从 v2 布局迁移到 `.devflow/` |
-| `/req:update-template` | 同步插件最新模板 |
+| `/rd:init <项目名>` | 初始化项目 |
+| `/rd:use <主仓路径>` | 绑定主仓库，当前仓库设为只读 |
+| `/rd:projects` | 查看当前需求项目 |
+| `/rd:migrate` | 从 v2 布局迁移到 `.devflow/` |
+| `/rd:update-template` | 同步插件最新模板 |
 
 ### 需求生命周期
 
@@ -181,16 +183,16 @@ claude plugins uninstall req@devflow  # 卸载插件
 |------|------|---------|
 | 需求定义 | 一~六（需求描述、功能清单、业务规则、使用场景、数据与交互、测试要点） | AI 提问收集 → 一次性生成 |
 | 流程记录 | 七~九（评审记录、变更记录、关联信息） | 各命令自动填充 |
-| 实现方案 | 十（数据模型、API 设计、文件改动、实现步骤） | `/req:dev` 阶段 AI 分析代码生成 |
+| 实现方案 | 十（数据模型、API 设计、文件改动、实现步骤） | `/rd:dev` 阶段 AI 分析代码生成 |
 
 ### 跨仓库共享
 
 ```
 ~/backend/   (primary)  → docs/requirements/  唯一存储，纳入 git，写入即生效
-~/frontend/  (readonly) → /req:use ~/backend 绑定后直读主仓需求，dev 阶段自动匹配后端接口
+~/frontend/  (readonly) → /rd:use ~/backend 绑定后直读主仓需求，dev 阶段自动匹配后端接口
 ```
 
-配置在 `.devflow/settings.json`（团队共享，入 git）与 `.devflow/settings.local.json`（密钥与本机路径，不入 git）。从 v2 升级的项目执行 `/req:migrate`。
+配置在 `.devflow/settings.json`（团队共享，入 git）与 `.devflow/settings.local.json`（密钥与本机路径，不入 git）。从 v2 升级的项目执行 `/rd:migrate`。
 
 ### AI 技能（自动触发）
 
@@ -210,8 +212,8 @@ claude plugins uninstall req@devflow  # 卸载插件
 
 从 PRD、需求文档和 Git 记录中提取项目数据，按不同场景和受众生成汇报、统计、方案等内容。
 
-- **只读消费**：读取 req 插件产出的数据，不修改需求文档
-- **无需 req 即可工作**：没有需求数据时仍可使用 Git 统计和自由提问
+- **只读消费**：读取 rd 插件产出的数据，不修改需求文档
+- **无需 rd 即可工作**：没有需求数据时仍可使用 Git 统计和自由提问
 - **可选保存**：所有输出均可保存到 `docs/reports/`
 
 | 命令 | 说明 |
