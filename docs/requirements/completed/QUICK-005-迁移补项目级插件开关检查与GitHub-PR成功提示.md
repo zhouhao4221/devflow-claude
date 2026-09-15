@@ -7,7 +7,7 @@
 | 编号 | QUICK-005 |
 | 改动类型 | bug修复 |
 | 端类型 | 全栈 |
-| 状态 | 开发中 |
+| 状态 | 已完成 |
 | 模块 | 快速修复 |
 | 优先级 | P2 |
 | 创建时间 | 2026-09-15 |
@@ -21,7 +21,7 @@
 - [x] 草稿
 - [x] 方案确认
 - [x] 开发中
-- [ ] 已完成
+- [x] 已完成
 
 ---
 
@@ -70,10 +70,10 @@
 
 ## 验证方式
 
-- [ ] 在含 `"enabledPlugins": {"req@devflow": true}` 的样例项目执行 `/rd:migrate` → 2D 列出该键，确认后变为 `rd@devflow` 且值不变；无该键的项目静默跳过
-- [ ] `pr.md` 步骤 6 中 gitea / github 均能找到成功输出定义，下一步为 `/rd:pr review`
-- [ ] 教程三语 1.6 含 enabledPlugins 提醒
-- [ ] `python3 scripts/check-layout.py --check` 通过；确认无副作用
+- [ ] 在含 `"enabledPlugins": {"req@devflow": true}` 的样例项目执行 `/rd:migrate` → 2D 列出该键，确认后变为 `rd@devflow` 且值不变；无该键的项目静默跳过（未实测；`migrate.md` 2D 文本已核对）
+- [x] `pr.md` 步骤 6 中 gitea / github 均能找到成功输出定义，下一步为 `/rd:pr review`（#80 实测：github 回退 compare 链接时输出该提示）
+- [x] 教程三语 1.6 含 enabledPlugins 提醒
+- [x] `python3 scripts/check-layout.py --check` 通过；确认无副作用
 
 ---
 
@@ -82,3 +82,6 @@
 ### 2026-09-15
 - 创建快速需求（讨论「旧 req 项目如何升级」时发现 enabledPlugins 缺口；REQ-005 补测时发现 GitHub 成功输出缺口）
 - 过渡插件 `/req:help` 按维护者决定不改（仅保留一个大版本，v5 删除）
+- 实现随 #78 合并，v4.0.1 发布；过渡插件 req 后于 #79 提前移除
+- 补测（rd 5.0.1）：#80 创建时 gh 未登录，按 github 回退输出 compare 链接 + `/rd:pr review` 下一步提示
+- 用户确认归档（`/rd:done QUICK-005`），状态→已完成，移至 completed/
