@@ -144,7 +144,7 @@ else:
 
 #### github
 
-检查 `command -v gh`。可用 → `gh pr create --title "..." --body "..." --base <target>`，`reviewers` 非空时追加 `--reviewer <逗号分隔列表>`（**不询问**直接执行）。不可用 → 提示命令 + 浏览器 compare 链接。
+检查 gh 是否可用（已安装且 `gh auth status` 通过，只装未登录算不可用）。可用 → `gh pr create --title "..." --body "..." --base <target>`，`reviewers` 非空时追加 `--reviewer <逗号分隔列表>`（**不询问**直接执行）。不可用 → 提示命令 + 浏览器 compare 链接。
 
 #### other
 
