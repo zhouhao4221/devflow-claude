@@ -32,12 +32,6 @@
       "description": "生产诊断 - 只读拉日志、AI 解析堆栈、关联代码、给修复建议，严禁写操作",
       "source": "./plugins/diag/",
       "category": "ops"
-    },
-    {
-      "name": "uat",
-      "description": "用户验收测试（UAT）- AI 驱动的 UI 验收测试，Claude 按测试流程文档逐场景执行界面操作验收",
-      "source": "./plugins/uat/",
-      "category": "quality"
     }
   ]
 }

@@ -20,7 +20,6 @@ description: 版本号管理助手。仅在执行 /req:release 命令时触发�
 | `plugins/pm/.claude-plugin/plugin.json` | `version` | pm 插件独立版本 |
 | `plugins/api/.claude-plugin/plugin.json` | `version` | api 插件独立版本 |
 | `plugins/diag/.claude-plugin/plugin.json` | `version` | diag 插件独立版本 |
-| `plugins/uat/.claude-plugin/plugin.json` | `version` | uat 插件独立版本 |
 
 ---
 
@@ -46,7 +45,6 @@ git diff --name-only <FROM_REF>..HEAD
 | `plugins/pm/` | pm |
 | `plugins/api/` | api |
 | `plugins/diag/` | diag |
-| `plugins/uat/` | uat |
 | 其他（根目录、docs/、.claude/ 等） | 仅影响 marketplace 整体版本 |
 
 ### 3. 推导各插件 bump 等级

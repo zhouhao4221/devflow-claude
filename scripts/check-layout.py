@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""check-layout.py — 校验 5 个插件的目录布局，防止斜杠菜单被污染。
+"""check-layout.py — 校验各插件的目录布局，防止斜杠菜单被污染。
 
 Claude Code 把 `commands/` 下的**每个** `.md` 和 `skills/` 下的**每个**
 子目录都注册成斜杠菜单项。两类东西混进去就会污染菜单、白占 always-on token：
@@ -23,7 +23,7 @@ import re
 import shutil
 import sys
 
-PLUGINS = ["req", "api", "pm", "diag", "uat"]
+PLUGINS = ["req", "api", "pm", "diag"]
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 
