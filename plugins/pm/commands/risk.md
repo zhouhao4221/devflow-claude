@@ -180,7 +180,7 @@ for req in reqs:
 
 **建议操作：**
 - /pm:stats --from=2026-03-01  查看本月详细统计
-- /req:status REQ-003          查看停滞需求详情
+- /rd:status REQ-003          查看停滞需求详情
 - /pm:weekly                   生成周报梳理进展
 ```
 

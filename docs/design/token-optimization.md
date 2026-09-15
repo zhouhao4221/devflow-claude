@@ -1,6 +1,6 @@
 # Token 使用与节约指南
 
-> 面向 DevFlow 插件维护者。每次 `/req:*`、`/api:*`、`/pm:*` 调用的延迟、成本、cache 命中率都受 token 数量影响——本指南给出一套可量化、可执行的节约规则。
+> 面向 DevFlow 插件维护者。每次 `/rd:*`、`/api:*`、`/pm:*` 调用的延迟、成本、cache 命中率都受 token 数量影响——本指南给出一套可量化、可执行的节约规则。
 
 ---
 
@@ -36,10 +36,10 @@
 
 ```bash
 # 看插件所有命令的字节数 → 粗估 token
-wc -c plugins/req/commands/*.md | sort -n
+wc -c plugins/rd/commands/*.md | sort -n
 
 # 单文件估算 token（中英混合 markdown 经验值）
-python3 -c "import os; b=os.path.getsize('plugins/req/commands/release.md'); print(f'{b} bytes ≈ {b//3} tokens')"
+python3 -c "import os; b=os.path.getsize('plugins/rd/commands/release.md'); print(f'{b} bytes ≈ {b//3} tokens')"
 ```
 
 ### 2.2 精确测量
@@ -51,7 +51,7 @@ python3 -c "import os; b=os.path.getsize('plugins/req/commands/release.md'); pri
 python3 -c "
 from anthropic import Anthropic
 c = Anthropic()
-n = c.count_tokens(open('plugins/req/commands/release.md').read())
+n = c.count_tokens(open('plugins/rd/commands/release.md').read())
 print(f'{n} tokens')
 "
 ```
@@ -73,7 +73,7 @@ print(f'{n} tokens')
 
 | 来源 | 触发时机 | 节约手段 |
 |------|---------|---------|
-| **slash 命令文件本身** | 用户键入 `/req:xxx` | §4.1 拆主+rationale |
+| **slash 命令文件本身** | 用户键入 `/rd:xxx` | §4.1 拆主+rationale |
 | **frontmatter 里的 `description`、`argument-hint`** | 命令注册时 | 保持简短 |
 | **CLAUDE.md（项目 + 用户）** | 每次会话/调用 | 不在本插件可控范围；项目 CLAUDE.md 已 ~10KB，注意不要无限膨胀 |
 | **MEMORY.md 索引** | 每次会话 | 索引行 ≤ 150 字符；详细内容放独立 memory 文件按需读 |
@@ -108,7 +108,7 @@ print(f'{n} tokens')
 2. 配套文件 `<command>-rationale.md` 收：设计原理、行为矩阵详解、完整边界情况大表
 3. 主文件用 `详见 rationale §X` 引用，不重复内容
 
-**案例**：`plugins/req/commands/release.md` 从 63 KB 拆到 15 KB 主文件 + 14 KB `release-rationale.md`（按需读）。常见路径每次省 ~12K tokens。
+**案例**：`plugins/rd/commands/release.md` 从 63 KB 拆到 15 KB 主文件 + 14 KB `release-rationale.md`（按需读）。常见路径每次省 ~12K tokens。
 
 ### 4.2 共享文件按主题拆
 
@@ -137,7 +137,7 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 **已应用**：33 个命令，以 `grep -l "^model:" plugins/*/commands/*.md` 为准，不在此维护清单。
 
-**禁忌**：需要复杂推理、代码生成、深度分析的命令（如 `/req:dev`、`/req:do`）不要降级。
+**禁忌**：需要复杂推理、代码生成、深度分析的命令（如 `/rd:dev`、`/rd:do`）不要降级。
 
 **中间档 Sonnet**：数据聚合 + 成文类命令（`/pm:weekly`、`monthly`、`milestone`、`stats`、`progress`、`brief`、`risk`）用 `model: claude-sonnet-5`——比会话模型（Fable/Opus）便宜 2~3 倍，写报告绰绰有余。Sonnet 5 原生 1M 上下文且超 200K 不加价、订阅制不计 extra usage（2026-08 核实），旧的「sonnet[1m] 付费墙」顾虑已不存在。`/pm:plan`、`/pm:ask` 需要真实推理，保持省略。
 
@@ -157,7 +157,7 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 **收益**：脚本不进 prompt，模型只看几行调用代码；执行也比"模型按伪代码 Bash 跑"快得多。
 
-**示例方向**（暂未实施）：`/req:release` 的 `compute_bump`、SQL 合并/回滚生成、Gitea Release API 调用都符合这个模式。
+**示例方向**（暂未实施）：`/rd:release` 的 `compute_bump`、SQL 合并/回滚生成、Gitea Release API 调用都符合这个模式。
 
 ### 4.6 Read 用 `offset/limit` 精读
 
@@ -184,13 +184,13 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 
 **何时用**：命令中某一步会往主会话灌入大量原始输出（跑测试、大 PR diff、批量 grep），或可按独立单元拆分并行（逐单元实施）。
 
-**做法**：命令文档指示把该步骤派给插件自带的 agent（`plugins/req/agents/`），主会话只接收结构化结论；frontmatter `allowed-tools` 加 `Agent`。规则与可用 agent 见 `plugins/req/shared/_delegate.md`。
+**做法**：命令文档指示把该步骤派给插件自带的 agent（`plugins/rd/agents/`），主会话只接收结构化结论；frontmatter `allowed-tools` 加 `Agent`。规则与可用 agent 见 `plugins/rd/shared/_delegate.md`。
 
 **收益**：两层。① 机械步骤跑在 haiku 上（`test-runner`）；② **上下文隔离**——原始输出留在 subagent，主会话之后每一轮都不再为它付费，这一层通常比单价差更大。
 
 **禁忌**：小任务不委派（任务说明 + 回传本身有开销，经验阈值 > 1 万 token 才划算）；不要把需要主会话上下文的推理（方案设计、跨文件改动）拆出去——planner/executor 割裂后返工更贵。整条命令的 `model` 仍按 §4.3 分 haiku / sonnet / 省略三档，委派不是降档的理由。
 
-**已应用**：`/req:test` 阶段一~三回归运行（`test-runner`，haiku）· `/req:dev` §4 / `/req:fix` §1.2 / `/req:do` §2 代码定位（`code-scout`，haiku，主会话只精读返回的 file:line）· `/req:review-pr` 大 PR 需求比对用 `diff-digest` 摘要；代码质量审查改调原生 `/code-review`（自研 `file-reviewer` 已删，实测自研需主会话把 diff 抄进每个 prompt，隔离不成立）。
+**已应用**：`/rd:test` 阶段一~三回归运行（`test-runner`，haiku）· `/rd:dev` §4 / `/rd:fix` §1.2 / `/rd:do` §2 代码定位（`code-scout`，haiku，主会话只精读返回的 file:line）· `/rd:review-pr` 大 PR 需求比对用 `diff-digest` 摘要；代码质量审查改调原生 `/code-review`（自研 `file-reviewer` 已删，实测自研需主会话把 diff 抄进每个 prompt，隔离不成立）。
 
 ---
 

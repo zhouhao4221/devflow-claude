@@ -1,0 +1,11 @@
+{
+  "name": "rd",
+  "version": "5.0.0",
+  "description": "rd（R&D 研发）工作流：需求分析→评审→开发→测试→归档 + 分支/PR/issue/版本；原 req 插件更名而来",
+  "author": {
+    "name": "Haiqing"
+  },
+  "license": "Apache-2.0",
+  "commands": "./commands/",
+  "skills": "./skills/"
+}

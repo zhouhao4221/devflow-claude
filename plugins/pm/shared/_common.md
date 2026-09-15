@@ -4,7 +4,7 @@
 
 ## 数据来源
 
-pm 是 req 数据的**只读消费者**：不修改任何需求文档；没有 req 数据时只输出 Git 指标。
+pm 是 rd 数据的**只读消费者**：不修改任何需求文档；没有 rd 数据时只输出 Git 指标。
 
 配置读 `.devflow/settings.json`，再用 `.devflow/settings.local.json` 覆盖同名字段（不回退 `.claude/settings*.json`，也不读 v2 的 `~/.claude-requirements/` 缓存）：
 
@@ -15,10 +15,10 @@ pm 是 req 数据的**只读消费者**：不修改任何需求文档；没有 r
 | `requirementsDir` | 需求根目录，缺省 `docs/requirements` |
 | `requirementSource.path`（local） | readonly 专用：primary 仓库根的本机绝对路径 |
 
-需求根目录 `ROOT`（与 req `_storage.md` 一致）：
+需求根目录 `ROOT`（与 rd `_storage.md` 一致）：
 
 - `primary`：本仓 `requirementsDir`
-- `readonly`：`requirementSource.path` + **主仓**的 `requirementsDir`（读主仓 `.devflow/settings.json`，缺省同上）。未配置 `requirementSource` → 提示先 `/req:use <primary-repo-path>` 绑定，本次降级为仅 Git 指标
+- `readonly`：`requirementSource.path` + **主仓**的 `requirementsDir`（读主仓 `.devflow/settings.json`，缺省同上）。未配置 `requirementSource` → 提示先 `/rd:use <primary-repo-path>` 绑定，本次降级为仅 Git 指标
 
 `ROOT` 下：`active/`、`completed/`、`modules/`、`PRD.md`、`INDEX.md`。
 

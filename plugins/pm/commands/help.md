@@ -93,7 +93,7 @@ version = read_plugin_json("version")  # ${CLAUDE_PLUGIN_ROOT}/.claude-plugin/pl
   4. /pm:risk         扫描风险项
 
 **前置条件：**
-  - 建议先使用 /req 插件管理需求（非必须）
+  - 建议先使用 rd 插件管理需求（非必须）
   - Git 仓库存在即可使用代码统计功能
   - 无需求数据时仍可使用 stats/ask 命令
 
@@ -163,7 +163,7 @@ audiences.
   4. /pm:risk         Scan for risks
 
 **Prerequisites:**
-  - Recommended: manage requirements via the /req plugin (optional)
+  - Recommended: manage requirements via the rd plugin (optional)
   - A Git repository is enough for code statistics
   - stats/ask work even without requirement data
 
@@ -232,7 +232,7 @@ PRD, 요구사항 문서, Git 기록에서 프로젝트 데이터를 추출하�
   4. /pm:risk         리스크 스캔
 
 **전제 조건:**
-  - /req 플러그인으로 요구사항 관리 권장 (필수 아님)
+  - rd 플러그인으로 요구사항 관리 권장 (필수 아님)
   - Git 레포가 있으면 코드 통계 사용 가능
   - 요구사항 데이터가 없어도 stats/ask 사용 가능
 
@@ -251,7 +251,7 @@ PRD, 요구사항 문서, Git 기록에서 프로젝트 데이터를 추출하�
 }
 ```
 
-后续 `/req:help`、`/api:help`、`/pm:help` 都会默认用该语言。
+后续 `/rd:help`、`/api:help`、`/pm:help` 都会默认用该语言。
 
 ## 用户输入
 

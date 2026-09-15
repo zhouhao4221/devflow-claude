@@ -1,6 +1,6 @@
 # 需求分析：方法论对照与设计评审
 
-> 本文记录 DevFlow `req` 插件中需求分析流程（`/req:new`、`/req:edit`、`requirement-analyzer` 技能、`requirement-template.md`）相对于经典需求分析方法论的符合度评估与改进建议，用于后续讨论和迭代。
+> 本文记录 DevFlow `rd` 插件（原 req）中需求分析流程（`/rd:new`、`/rd:edit`、`requirement-analyzer` 技能、`requirement-template.md`）相对于经典需求分析方法论的符合度评估与改进建议，用于后续讨论和迭代。
 >
 > 最近一次评估：2026-04-17
 
@@ -107,7 +107,7 @@
 
 ### 5. 数据需求的概念建模缺位
 
-**问题**：数据模型（11.1）完全推迟到 `/req:dev` 阶段。
+**问题**：数据模型（11.1）完全推迟到 `/rd:dev` 阶段。
 
 **风险**：需求阶段不讨论核心业务实体 / 关键属性 / 关系，会导致：
 - 功能清单脱离数据语义（"查询订单"但不清楚订单实体结构）
@@ -125,7 +125,7 @@
 | 订单项 | 商品、数量、单价 | N-1 订单 |
 ```
 
-注意：**只描述业务语义，不定义字段类型 / 表结构 / 主外键**，后者仍在 `/req:dev` 生成。
+注意：**只描述业务语义，不定义字段类型 / 表结构 / 主外键**，后者仍在 `/rd:dev` 生成。
 
 ---
 
@@ -176,7 +176,7 @@
 |------|------|
 | 能估出 1-5 天开发量 | 合适 |
 | 估不准、涉及未知技术探索 | 太大，先拆一个 spike |
-| 不足 0.5 天 | 太小，合并到相关功能或用 `/req:new-quick` |
+| 不足 0.5 天 | 太小，合并到相关功能或用 `/rd:new-quick` |
 
 ---
 
@@ -235,13 +235,13 @@
 
 | 文件 | 改动内容 |
 |------|---------|
-| `plugins/req/templates/requirement-template.md` | 第一章新增 `1.5 范围与边界`（本期包含/不做两列）、`1.6 干系人`（角色/关注点/备注三列表格） |
-| `plugins/req/templates/requirement-template.md` | 第十章关联信息新增 **假设** 字段，附"假设 vs 依赖"区分说明 |
-| `plugins/req/skills/requirement-analyzer/SKILL.md` | 第 1 轮提问：质量门槛增加「识别至少一类干系人」；追问触发新增三条：5 Why 深挖（解决方案 → 真问题）、干系人识别、范围边界 |
-| `plugins/req/skills/requirement-analyzer/SKILL.md` | 阶段二生成：补上 1.5、1.6 填充规则；第十章加"假设"提取说明（区分 Assumption vs Dependency） |
-| `plugins/req/commands/new.md` | 阶段二概述同步加入范围边界、干系人、假设，保持与 SKILL.md 一致 |
+| `plugins/rd/templates/requirement-template.md` | 第一章新增 `1.5 范围与边界`（本期包含/不做两列）、`1.6 干系人`（角色/关注点/备注三列表格） |
+| `plugins/rd/templates/requirement-template.md` | 第十章关联信息新增 **假设** 字段，附"假设 vs 依赖"区分说明 |
+| `plugins/rd/skills/requirement-analyzer/SKILL.md` | 第 1 轮提问：质量门槛增加「识别至少一类干系人」；追问触发新增三条：5 Why 深挖（解决方案 → 真问题）、干系人识别、范围边界 |
+| `plugins/rd/skills/requirement-analyzer/SKILL.md` | 阶段二生成：补上 1.5、1.6 填充规则；第十章加"假设"提取说明（区分 Assumption vs Dependency） |
+| `plugins/rd/commands/new.md` | 阶段二概述同步加入范围边界、干系人、假设，保持与 SKILL.md 一致 |
 
-**兼容性处理**：已有需求文档不会被动改动；`/req:edit` 时由用户决定是否补齐新章节；`/req:update-template` 可一键同步新模板到项目本地，不覆盖需求文档。
+**兼容性处理**：已有需求文档不会被动改动；`/rd:edit` 时由用户决定是否补齐新章节；`/rd:update-template` 可一键同步新模板到项目本地，不覆盖需求文档。
 
 ### 第二期（方法论补齐）
 
@@ -265,7 +265,7 @@
 - **新需求**：直接使用新模板
 - **已有需求**：保持原结构，不强制迁移；编辑时由用户决定是否补齐新增章节
 - **版本标记**：模板顶部加 `version: 2` 字段，`requirement-analyzer` 读取时做兼容分支
-- **`/req:update-template` 命令**：提供一键同步最新模板到项目本地，但不覆盖已有需求文档
+- **`/rd:update-template` 命令**：提供一键同步最新模板到项目本地，但不覆盖已有需求文档
 
 ---
 
@@ -276,7 +276,7 @@
 1. **是否强制 Stakeholder Map？** 小团队 / 内部工具可能过度，是否仅作为可选字段？
 2. **Kano Model 分类是否引入？** 对"必备"和"魅力"功能做差异化设计，但会增加提问成本。
 3. **用户故事（User Story）格式是否作为可选输出？** 当前使用场景 + 功能清单组合可读性强，是否也支持 `As a / I want / So that` 格式导出以对接 Jira / 禅道？
-4. **需求间的依赖图是否需要显式化？** 当前只在「关联需求」里列编号，没有 DAG 视图；是否需要 `/req:graph` 命令？
+4. **需求间的依赖图是否需要显式化？** 当前只在「关联需求」里列编号，没有 DAG 视图；是否需要 `/rd:graph` 命令？
 
 ---
 

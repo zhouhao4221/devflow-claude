@@ -115,7 +115,7 @@ API 플러그인 - 튜토리얼
 }
 ```
 
-后续 `/req:help`、`/api:help`、`/pm:help` 都会默认用该语言。
+后续 `/rd:help`、`/api:help`、`/pm:help` 都会默认用该语言。
 
 ## 用户输入
 

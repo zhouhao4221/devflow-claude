@@ -8,12 +8,14 @@ AI 기반 소프트웨어 전체 생명 주기 관리 툴킷. 요구사항 분�
 
 | 플러그인 | 설명 |
 |---------|------|
-| **req** | 요구사항 전체 워크플로우 — 분석부터 아카이브까지 |
+| **rd** (R&D, 연구개발) | 연구개발 워크플로우 — 요구사항 분석·리뷰·개발·테스트·아카이브 + 브랜치/PR/issue/버전 (기존 req 플러그인) |
 | **pm** | 프로젝트 관리 도우미 — 주간/월간 리포트, 통계, 리스크 스캔, 기획안 |
 | **api** | API 연동 — Swagger 파싱, 필드 매핑, 코드 생성 |
 | **diag** | 프로덕션 진단 — 읽기 전용 SSH 로그 수집, 스택 분석, 코드 연결, 수정 제안 |
 
 > 각 플러그인의 현재 버전은 `claude plugins list` 또는 저장소 내 `plugins/<플러그인>/.claude-plugin/plugin.json` 을 기준으로 합니다.
+>
+> 기존 `req` 플러그인은 `rd`(R&D)로 이름이 변경되었습니다: `req@devflow` 를 설치했다면 제거 후 `rd@devflow` 를 설치하고, 프로젝트에서 `/rd:migrate` 로 기존 접두사 참조를 정리하세요.
 
 ---
 
@@ -24,7 +26,7 @@ AI 기반 소프트웨어 전체 생명 주기 관리 툴킷. 요구사항 분�
 ```bash
 # GitHub 에서 설치
 claude plugins marketplace add https://github.com/zhouhao4221/devflow-claude
-claude plugins install req@devflow    # 요구사항 관리
+claude plugins install rd@devflow    # 요구사항 관리
 claude plugins install pm@devflow     # 프로젝트 관리 도우미
 claude plugins install api@devflow    # API 연동
 claude plugins install diag@devflow   # 프로덕션 진단
@@ -33,8 +35,8 @@ claude plugins install diag@devflow   # 프로덕션 진단
 ```bash
 # 플러그인 관리
 claude plugins list                   # 설치된 플러그인 목록
-claude plugins update req@devflow     # 플러그인 업데이트
-claude plugins uninstall req@devflow  # 플러그인 제거
+claude plugins update rd@devflow     # 플러그인 업데이트
+claude plugins uninstall rd@devflow  # 플러그인 제거
 ```
 
 ---
@@ -45,9 +47,9 @@ claude plugins uninstall req@devflow  # 플러그인 제거
 
 | 단계 | 용도 | 대표 커맨드 |
 |------|------|-------------|
-| **Haiku** | 순수 조회 / 표시 / 설정 / 규칙이 명확한 상태 전환 | `/req`, `/req:status`, `/req:show`, `/req:commit`, `/pm:standup`, `/api:help` |
+| **Haiku** | 순수 조회 / 표시 / 설정 / 규칙이 명확한 상태 전환 | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/pm:standup`, `/api:help` |
 | **Sonnet** | 데이터 집계 + 문서화 | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk` |
-| **세션 모델**(미지정) | 코드 분석 / 기획안 생성 / 다회차 요구사항 논의 | `/req:new`, `/req:dev`, `/req:fix`, `/req:do`, `/req:review-pr`, `/api:gen`, `/pm:plan` |
+| **세션 모델**(미지정) | 코드 분석 / 기획안 생성 / 다회차 요구사항 논의 | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:review-pr`, `/api:gen`, `/pm:plan` |
 
 개발 계열 커맨드는 코드 위치 파악, 테스트 실행, 대형 diff 압축 등 처리량이 큰 단계를 subagent 에 위임하여 원본 출력이 메인 세션 컨텍스트에 들어가지 않도록 합니다.
 
@@ -55,18 +57,18 @@ claude plugins uninstall req@devflow  # 플러그인 제거
 
 ---
 
-## req 플러그인 — 요구사항 관리
+## rd 플러그인 (R&D) — 요구사항 & 개발 워크플로우
 
 분석, 리뷰, 개발, 테스트부터 아카이브까지 전체 생명 주기를 커버합니다.
 
 ### 핵심 기능
 
-- **자연어 디스패처**: 자연어로 의도를 말하면 `/req:*` 커맨드에 자동 매핑 (예: "로그인 타임아웃 버그 고쳐" → `/req:fix`, "025 개발 시작" → `/req:dev REQ-025`; issue/PR URL 붙여넣기도 지원)
-- **원클릭 모드**: `/req:fix --auto` 로 모든 확인 인터랙션을 건너뛰고 commit → push → PR 까지 자동 연결 (`.claude/.req-auto` 마커로 네이티브 git 확인 다이얼로그 통과)
+- **자연어 디스패처**: 자연어로 의도를 말하면 `/rd:*` 커맨드에 자동 매핑 (예: "로그인 타임아웃 버그 고쳐" → `/rd:fix`, "025 개발 시작" → `/rd:dev REQ-025`; issue/PR URL 붙여넣기도 지원)
+- **원클릭 모드**: `/rd:fix --auto` 로 모든 확인 인터랙션을 건너뛰고 commit → push → PR 까지 자동 연결 (`.claude/.req-auto` 마커로 네이티브 git 확인 다이얼로그 통과)
 - **AI 문답형 요구사항 분석**: AI 가 라운드별로 질문하여 정보를 수집한 뒤 한 번에 완성된 문서를 생성
 - **전체 생명 주기**: 초안 → 리뷰 대기 → 리뷰 통과 → 개발 중 → 테스트 중 → 완료
 - **듀얼 트랙**: 정식 요구사항 (REQ) 과 빠른 수정 (QUICK) 두 가지 워크플로우
-- **스마트 개발**: `/req:do` — 의도만 설명하면 AI 가 흐름을 선택하고 브랜치를 만들고 기획안을 작성
+- **스마트 개발**: `/rd:do` — 의도만 설명하면 AI 가 흐름을 선택하고 브랜치를 만들고 기획안을 작성
 - **개발 가이드**: 프로젝트 CLAUDE.md 의 계층 아키텍처를 읽어 계층별로 안내 (스택 무관)
 - **개발 중 문서 유지보수**: AI 가 편차를 감지하면 요구사항 문서 업데이트를 제안
 - **브랜치 관리**: GitHub Flow / Git Flow / Trunk-Based
@@ -83,29 +85,29 @@ claude plugins uninstall req@devflow  # 플러그인 제거
 
 ```bash
 # 1. 프로젝트 초기화 (docs/requirements/ 생성, PRD 생성, 레포 바인딩)
-/req:init my-project
+/rd:init my-project
 
 # 2. 브랜치 전략 설정 (GitHub Flow / Git Flow / Trunk-Based + 호스팅 종류)
-/req:branch init
+/rd:branch init
 ```
 
 이후 일상 워크플로우:
 
 ```bash
 # 3. 요구사항 생성 (AI 문답 → 한 번에 문서 생성)
-/req:new 사용자 포인트 시스템
+/rd:new 사용자 포인트 시스템
 
 # 4. 리뷰
-/req:review pass
+/rd:review pass
 
 # 5. 개발 (AI 가 구현 플랜을 생성하고 계층별로 안내)
-/req:dev
+/rd:dev
 
 # 6. 테스트
-/req:test
+/rd:test
 
 # 7. 완료 및 아카이브
-/req:done
+/rd:done
 ```
 
 ### 커맨드 레퍼런스
@@ -114,59 +116,59 @@ claude plugins uninstall req@devflow  # 플러그인 제거
 
 | 커맨드 | 설명 |
 |--------|------|
-| `/req` | 모든 요구사항 리스트 (`--type`, `--module` 필터 지원) |
-| `/req:new [제목]` | 정식 요구사항 생성 (AI Q&A → 문서 생성) |
-| `/req:new-quick [제목]` | 빠른 수정 생성 (작은 버그 / 작은 기능) |
-| `/req:do <설명>` | 스마트 개발 (최적화/리팩토링/업그레이드/소폭 변경, 문서 없음) |
-| `/req:fix <설명>` | 라이트 수정 (버그 수정, 문서 없음) |
-| `/req:edit [REQ-XXX]` | 요구사항 편집 |
-| `/req:show [REQ-XXX]` | 요구사항 상세 보기 (읽기 전용) |
-| `/req:status [REQ-XXX]` | 요구사항 상태 조회 |
-| `/req:review [pass\|reject]` | 리뷰 제출 / 승인 / 반려 |
-| `/req:dev [REQ-XXX]` | 개발 시작 또는 계속 |
-| `/req:test [REQ-XXX]` | 종합 테스트 |
-| `/req:test_regression` | 기존 자동화 테스트 실행 |
-| `/req:test_new` | 새 기능용 테스트 케이스 작성 |
-| `/req:done [REQ-XXX]` | 완료 및 아카이브 |
-| `/req:upgrade <QUICK-XXX>` | 빠른 수정을 정식 요구사항으로 승격 |
-| `/req:split [설명]` | 요구사항 단위 분석 및 분할 제안 |
+| `/rd:req` | 모든 요구사항 리스트 (`--type`, `--module` 필터 지원) |
+| `/rd:new [제목]` | 정식 요구사항 생성 (AI Q&A → 문서 생성) |
+| `/rd:new-quick [제목]` | 빠른 수정 생성 (작은 버그 / 작은 기능) |
+| `/rd:do <설명>` | 스마트 개발 (최적화/리팩토링/업그레이드/소폭 변경, 문서 없음) |
+| `/rd:fix <설명>` | 라이트 수정 (버그 수정, 문서 없음) |
+| `/rd:edit [REQ-XXX]` | 요구사항 편집 |
+| `/rd:show [REQ-XXX]` | 요구사항 상세 보기 (읽기 전용) |
+| `/rd:status [REQ-XXX]` | 요구사항 상태 조회 |
+| `/rd:review [pass\|reject]` | 리뷰 제출 / 승인 / 반려 |
+| `/rd:dev [REQ-XXX]` | 개발 시작 또는 계속 |
+| `/rd:test [REQ-XXX]` | 종합 테스트 |
+| `/rd:test_regression` | 기존 자동화 테스트 실행 |
+| `/rd:test_new` | 새 기능용 테스트 케이스 작성 |
+| `/rd:done [REQ-XXX]` | 완료 및 아카이브 |
+| `/rd:upgrade <QUICK-XXX>` | 빠른 수정을 정식 요구사항으로 승격 |
+| `/rd:split [설명]` | 요구사항 단위 분석 및 분할 제안 |
 
 #### PR 리뷰 & 머지
 
 | 커맨드 | 설명 |
 |--------|------|
-| `/req:pr [REQ-XXX]` | PR 생성 (GitHub / Gitea 자동 감지) |
-| `/req:review-pr` | PR 상태 조회 |
-| `/req:review-pr review` | AI 코드 리뷰, 코멘트 제출 |
-| `/req:review-pr merge` | PR 머지 (merge/squash/rebase 지원) |
+| `/rd:pr [REQ-XXX]` | PR 생성 (GitHub / Gitea 자동 감지) |
+| `/rd:review-pr` | PR 상태 조회 |
+| `/rd:review-pr review` | AI 코드 리뷰, 코멘트 제출 |
+| `/rd:review-pr merge` | PR 머지 (merge/squash/rebase 지원) |
 
 #### 문서 관리
 
 | 커맨드 | 설명 |
 |--------|------|
-| `/req:prd` | PRD 상태 개요 |
-| `/req:prd-edit [섹션]` | PRD 편집 |
-| `/req:modules` | 모든 모듈 리스트 |
-| `/req:specs` | 스펙 문서 (데이터 타입, API 계약 등) |
+| `/rd:prd` | PRD 상태 개요 |
+| `/rd:prd-edit [섹션]` | PRD 편집 |
+| `/rd:modules` | 모든 모듈 리스트 |
+| `/rd:specs` | 스펙 문서 (데이터 타입, API 계약 등) |
 
 #### 버전 & 브랜치
 
 | 커맨드 | 설명 |
 |--------|------|
-| `/req:commit [메시지]` | 요구사항 번호가 자동 연결된 규범 커밋 |
-| `/req:changelog <version>` | 릴리즈 노트 생성 |
-| `/req:branch init` | 브랜치 전략 설정 |
-| `/req:branch hotfix [설명]` | 핫픽스 브랜치 생성 |
+| `/rd:commit [메시지]` | 요구사항 번호가 자동 연결된 규범 커밋 |
+| `/rd:changelog <version>` | 릴리즈 노트 생성 |
+| `/rd:branch init` | 브랜치 전략 설정 |
+| `/rd:branch hotfix [설명]` | 핫픽스 브랜치 생성 |
 
 #### 프로젝트 설정
 
 | 커맨드 | 설명 |
 |--------|------|
-| `/req:init <project-name>` | 프로젝트 초기화 |
-| `/req:use <메인 레포 경로>` | 메인 레포를 바인딩, 현재 레포는 읽기 전용으로 설정 |
-| `/req:projects` | 현재 요구사항 프로젝트 조회 |
-| `/req:migrate` | v2 레이아웃에서 `.devflow/` 로 마이그레이션 |
-| `/req:update-template` | 플러그인 최신 템플릿 동기화 |
+| `/rd:init <project-name>` | 프로젝트 초기화 |
+| `/rd:use <메인 레포 경로>` | 메인 레포를 바인딩, 현재 레포는 읽기 전용으로 설정 |
+| `/rd:projects` | 현재 요구사항 프로젝트 조회 |
+| `/rd:migrate` | v2 레이아웃에서 `.devflow/` 로 마이그레이션 |
+| `/rd:update-template` | 플러그인 최신 템플릿 동기화 |
 
 ### 요구사항 생명 주기
 
@@ -181,16 +183,16 @@ claude plugins uninstall req@devflow  # 플러그인 제거
 |------|------|-----------|
 | 요구사항 정의 | I–VI (설명, 기능 리스트, 규칙, 시나리오, 데이터 & UX, 테스트 포인트) | AI Q&A → 한 번에 생성 |
 | 프로세스 로그 | VII–IX (리뷰, 변경 이력, 연결 정보) | 커맨드가 자동 작성 |
-| 구현 플랜 | X (데이터 모델, API 설계, 파일 변경, 구현 단계) | `/req:dev` 단계에서 생성 |
+| 구현 플랜 | X (데이터 모델, API 설계, 파일 변경, 구현 단계) | `/rd:dev` 단계에서 생성 |
 
 ### 크로스 레포 공유
 
 ```
 ~/backend/   (primary)  → docs/requirements/  유일한 저장소, git 관리, 쓰는 즉시 반영
-~/frontend/  (readonly) → /req:use ~/backend 바인딩 후 메인 레포 요구사항을 직접 읽음, dev 단계에서 백엔드 API 자동 매칭
+~/frontend/  (readonly) → /rd:use ~/backend 바인딩 후 메인 레포 요구사항을 직접 읽음, dev 단계에서 백엔드 API 자동 매칭
 ```
 
-설정은 `.devflow/settings.json`(팀 공유, git 포함)과 `.devflow/settings.local.json`(시크릿 및 로컬 경로, git 미포함)에 있습니다. v2 에서 업그레이드한 프로젝트는 `/req:migrate` 를 실행하세요.
+설정은 `.devflow/settings.json`(팀 공유, git 포함)과 `.devflow/settings.local.json`(시크릿 및 로컬 경로, git 미포함)에 있습니다. v2 에서 업그레이드한 프로젝트는 `/rd:migrate` 를 실행하세요.
 
 ### AI 스킬 (자동 트리거)
 
@@ -210,8 +212,8 @@ claude plugins uninstall req@devflow  # 플러그인 제거
 
 PRD, 요구사항 문서, Git 기록에서 프로젝트 데이터를 추출하여 다양한 대상자에 맞춘 리포트, 통계, 기획안을 생성합니다.
 
-- **읽기 전용**: req 가 생성한 데이터를 소비하며 요구사항 문서는 수정하지 않음
-- **req 없이도 동작**: 요구사항 데이터가 없어도 Git 통계와 자유 질의응답은 사용 가능
+- **읽기 전용**: rd 가 생성한 데이터를 소비하며 요구사항 문서는 수정하지 않음
+- **rd 없이도 동작**: 요구사항 데이터가 없어도 Git 통계와 자유 질의응답은 사용 가능
 - **선택적 저장**: 모든 출력은 `docs/reports/` 에 저장 가능
 
 | 커맨드 | 설명 |

@@ -12,10 +12,10 @@
 
 > **两步启动**：插件安装后，每次打开 Claude Code 会话时，若检测到当前仓库未初始化或未配置分支策略，会自动在会话开头输出引导提示。完成下面两步后提示自动消失：
 >
-> 1. `/req:init <project-name>` — 初始化需求项目
-> 2. `/req:branch init` — 配置分支策略
+> 1. `/rd:init <project-name>` — 初始化需求项目
+> 2. `/rd:branch init` — 配置分支策略
 >
-> 之后即可用 `/req:new` 创建第一个需求。
+> 之后即可用 `/rd:new` 创建第一个需求。
 
 ### 1.1 安装插件
 
@@ -24,7 +24,7 @@
 claude plugins marketplace add https://github.com/zhouhao4221/devflow-claude
 
 # 2. 从 marketplace 安装插件
-claude plugins install req@devflow
+claude plugins install rd@devflow
 
 # 验证安装
 claude plugins list
@@ -35,7 +35,7 @@ claude plugins list
 在项目根目录启动 Claude Code，执行：
 
 ```
-/req:init my-saas
+/rd:init my-saas
 ```
 
 这会：
@@ -60,14 +60,14 @@ claude plugins list
 ```
 
 选择后会将架构片段追加到项目 CLAUDE.md，包含技术栈、分层架构表、开发规范、测试规范等。
-`/req:dev` 和 `/req:test` 依赖这些信息来生成实现方案和定位测试文件。
+`/rd:dev` 和 `/rd:test` 依赖这些信息来生成实现方案和定位测试文件。
 
 > **后续修改**：直接编辑项目 CLAUDE.md 的「项目架构」章节即可。
 
 ### 1.4 配置分支策略（强烈推荐）
 
 ```
-/req:branch init
+/rd:branch init
 ```
 
 > 未配置时，会话启动引导会持续提示；配置完成后提示自动消失。不配置也能用，使用默认行为（硬编码 `feat/` / `fix/` 前缀、不自动创建 PR）。
@@ -78,18 +78,18 @@ claude plugins list
 - **Trunk-Based**：短期分支，主干开发
 
 然后选择仓库托管类型：
-- **GitHub**：`/req:pr` 时提示 `gh pr create` 命令
-- **Gitea**：`/req:pr` 时自动调用 Gitea REST API 创建 PR
+- **GitHub**：`/rd:pr` 时提示 `gh pr create` 命令
+- **Gitea**：`/rd:pr` 时自动调用 Gitea REST API 创建 PR
 - **其他**：仅展示 `git merge` 合并命令
 
-配置后 `/req:dev`、`/req:commit`、`/req:done`、`/req:pr` 会自动遵循策略。
+配置后 `/rd:dev`、`/rd:commit`、`/rd:done`、`/rd:pr` 会自动遵循策略。
 
 ### 1.5 重新初始化
 
 已有项目补充缺失文件（不覆盖已有内容）：
 
 ```
-/req:init my-saas --reinit
+/rd:init my-saas --reinit
 ```
 
 用途：
@@ -103,12 +103,12 @@ claude plugins list
 v3 起配置从 `.claude/settings*.json` 迁到 `.devflow/`，并移除了全局缓存 `~/.claude-requirements/`。老项目升级插件后执行：
 
 ```
-/req:migrate
+/rd:migrate
 ```
 
 - `requirementProject` / `requirementRole` / `requirementsDir` / `branchStrategy` 搬到 `.devflow/settings.json`，`giteaToken` 搬到 `.devflow/settings.local.json`
 - Claude Code 自身的 hooks / permissions 仍留在 `.claude/settings.json`
-- 只读仓库需重新绑定：`/req:use <主仓路径>`
+- 只读仓库需重新绑定：`/rd:use <主仓路径>`
 - 确认主仓需求文档完整后，可手动删除 `~/.claude-requirements/projects/<项目名>/`
 
 > 会话启动时若检测到 DevFlow 配置仍在 `.claude/`，会提示执行迁移。
@@ -118,12 +118,12 @@ v3 起配置从 `.claude/settings*.json` 迁到 `.devflow/`，并移除了全局
 如果插件更新了模板，可以同步最新版：
 
 ```
-/req:update-template
+/rd:update-template
 ```
 
 ### 1.8 配置 Gitea Token（Gitea 仓库必须）
 
-如果 `/req:branch init` 选择了 Gitea 仓库类型，需要配置 API Token 才能自动创建 PR。
+如果 `/rd:branch init` 选择了 Gitea 仓库类型，需要配置 API Token 才能自动创建 PR。
 
 **获取 Token：**
 
@@ -142,7 +142,7 @@ v3 起配置从 `.claude/settings*.json` 迁到 `.devflow/`，并移除了全局
 
 **配置 Token：**
 
-`/req:branch init` 已把 `repoType`、`giteaUrl` 等策略字段写进 `.devflow/settings.json` 的 `branchStrategy`。Token 单独写在项目的 `.devflow/settings.local.json` **顶层**（不在 `branchStrategy` 里）：
+`/rd:branch init` 已把 `repoType`、`giteaUrl` 等策略字段写进 `.devflow/settings.json` 的 `branchStrategy`。Token 单独写在项目的 `.devflow/settings.local.json` **顶层**（不在 `branchStrategy` 里）：
 
 ```json
 {
@@ -168,7 +168,7 @@ curl -s -H "Authorization: token your-token-here" \
 ### 2.1 正式需求（REQ）
 
 ```
-/req:new 用户积分规则管理 --type=后端
+/rd:new 用户积分规则管理 --type=后端
 ```
 
 AI 会引导你逐章完善需求文档：
@@ -189,7 +189,7 @@ AI 会引导你逐章完善需求文档：
 适合小 bug 或小功能，流程更轻量：
 
 ```
-/req:new-quick 修复积分计算精度丢失
+/rd:new-quick 修复积分计算精度丢失
 ```
 
 QUICK 模板更简洁：问题描述 → 实现方案 → 验证方式。
@@ -199,7 +199,7 @@ QUICK 模板更简洁：问题描述 → 实现方案 → 验证方式。
 不确定粒度是否合适？用拆分分析：
 
 ```
-/req:split 用户积分系统
+/rd:split 用户积分系统
 ```
 
 AI 会分析粒度并建议拆分方案（只读，不创建文档）。
@@ -209,9 +209,9 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
 如果团队使用 Gitea / GitHub issue 作为需求入口，可以直接从 issue 创建需求文档，省去二次录入：
 
 ```
-/req:new --from-issue=#12           # 正式需求
-/req:new-quick --from-issue=#5      # 快速修复
-/req:do --from-issue=#42            # 无文档，仅把 issue 内容作为描述跑智能开发
+/rd:new --from-issue=#12           # 正式需求
+/rd:new-quick --from-issue=#5      # 快速修复
+/rd:do --from-issue=#42            # 无文档，仅把 issue 内容作为描述跑智能开发
 ```
 
 **AI 的行为**：
@@ -227,12 +227,12 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
 
 | 环节 | 表现 |
 |------|------|
-| `/req:dev` 创建分支 | 末尾自动追加 `-iN`（如 `feat/REQ-001-user-points-i12`） |
-| `/req:commit` 提交代码 | commit message 末尾自动追加 `closes #N`（PR 合并时 Git 平台自动关闭 issue） |
-| `/req:done` 归档 | 询问是否通过 API 直接关闭 issue |
-| `/req:do --from-issue` | 创建带 `-iN` 的分支；完成时询问关闭 issue |
+| `/rd:dev` 创建分支 | 末尾自动追加 `-iN`（如 `feat/REQ-001-user-points-i12`） |
+| `/rd:commit` 提交代码 | commit message 末尾自动追加 `closes #N`（PR 合并时 Git 平台自动关闭 issue） |
+| `/rd:done` 归档 | 询问是否通过 API 直接关闭 issue |
+| `/rd:do --from-issue` | 创建带 `-iN` 的分支；完成时询问关闭 issue |
 
-**读取优先级**：需求文档 `issue` 字段 > 分支名 `-iN` 后缀。这样即使是无文档的 `/req:do`，commit 和 done 也能从分支名推断 issue 编号。
+**读取优先级**：需求文档 `issue` 字段 > 分支名 `-iN` 后缀。这样即使是无文档的 `/rd:do`，commit 和 done 也能从分支名推断 issue 编号。
 
 ---
 
@@ -243,7 +243,7 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
 ### 3.1 提交评审
 
 ```
-/req:review
+/rd:review
 ```
 
 状态从「草稿」变为「待评审」。
@@ -251,11 +251,11 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
 ### 3.2 评审决议
 
 ```
-/req:review pass     # 通过，进入「评审通过」
-/req:review reject   # 驳回，回到「草稿」
+/rd:review pass     # 通过，进入「评审通过」
+/rd:review reject   # 驳回，回到「草稿」
 ```
 
-驳回后需要 `/req:edit` 修改再重新提审。
+驳回后需要 `/rd:edit` 修改再重新提审。
 
 ---
 
@@ -264,7 +264,7 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
 ### 4.1 启动开发
 
 ```
-/req:dev
+/rd:dev
 ```
 
 执行流程：
@@ -291,10 +291,10 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
 
 ### 4.2 分支管理
 
-首次执行 `/req:dev` 时，AI 自动：
+首次执行 `/rd:dev` 时，AI 自动：
 
 1. 检查工作区是否干净（有未提交改动会终止）
-2. 读取分支策略配置（如已配置 `/req:branch init`）
+2. 读取分支策略配置（如已配置 `/rd:branch init`）
 3. 从需求标题生成英文分支名，供你确认：
    ```
    将创建开发分支：feat/REQ-001-user-points-rule
@@ -302,22 +302,22 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
    ```
 4. 确认后创建分支并写入需求文档的 `branch` 字段
 
-再次执行 `/req:dev` 时，直接切换到已记录的分支。
+再次执行 `/rd:dev` 时，直接切换到已记录的分支。
 
 分支命名规则（前缀可通过策略配置自定义）：
 - REQ → `feat/REQ-XXX-<english-slug>[-iN]`
 - QUICK → `fix/QUICK-XXX-<english-slug>[-iN]`
-- `/req:do --from-issue` → `<prefix><slug>-iN`（前缀由 AI 分析意图决定）
-- 紧急修复 → `hotfix/<english-slug>`（通过 `/req:branch hotfix` 创建）
+- `/rd:do --from-issue` → `<prefix><slug>-iN`（前缀由 AI 分析意图决定）
+- 紧急修复 → `hotfix/<english-slug>`（通过 `/rd:branch hotfix` 创建）
 - `-iN`：可选的 issue 后缀（如 `-i12`），当需求关联了 Git 平台 issue 时自动追加，用于后续命令识别关联（详见 2.8）
 
 ### 4.2.1 分支策略命令
 
 ```
-/req:branch              # 查看当前策略和分支状态
-/req:branch init         # 交互式配置分支策略 + 仓库类型
-/req:branch status       # 查看策略配置和各需求分支状态
-/req:branch hotfix 描述  # 从主分支创建紧急修复分支
+/rd:branch              # 查看当前策略和分支状态
+/rd:branch init         # 交互式配置分支策略 + 仓库类型
+/rd:branch status       # 查看策略配置和各需求分支状态
+/rd:branch hotfix 描述  # 从主分支创建紧急修复分支
 ```
 
 ### 4.2.2 创建 PR
@@ -325,11 +325,11 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
 开发完成后，创建 PR：
 
 ```
-/req:pr              # 根据当前分支自动匹配需求，创建 PR
-/req:pr REQ-001      # 指定需求创建 PR
+/rd:pr              # 根据当前分支自动匹配需求，创建 PR
+/rd:pr REQ-001      # 指定需求创建 PR
 ```
 
-根据 `/req:branch init` 配置的仓库类型：
+根据 `/rd:branch init` 配置的仓库类型：
 - **Gitea**：自动调用 Gitea REST API 创建 PR（需配置 `giteaToken`，见 1.8）
 - **GitHub**：调用 `gh` CLI 创建 PR
 - **其他**：推送分支到远程，展示合并命令
@@ -341,9 +341,9 @@ Git Flow 的 hotfix 分支会自动创建两个 PR（→ main + → develop）�
 PR 创建后，使用 AI 代码审查和合并：
 
 ```
-/req:review-pr              # 查看 PR 状态
-/req:review-pr review       # AI 代码审查
-/req:review-pr merge        # 合并 PR
+/rd:review-pr              # 查看 PR 状态
+/rd:review-pr review       # AI 代码审查
+/rd:review-pr merge        # 合并 PR
 ```
 
 **审查流程：**
@@ -354,15 +354,15 @@ PR 创建后，使用 AI 代码审查和合并：
 
 **合并方式：** 读取 `branchStrategy.mergeMethod` 配置（默认 `merge`），支持 `merge` / `squash` / `rebase`。
 
-### 4.2.4 智能开发（/req:do）
+### 4.2.4 智能开发（/rd:do）
 
 对于优化、重构、升级等无需创建需求文档的任务，使用智能开发命令：
 
 ```
-/req:do 优化订单查询性能
-/req:do 重构用户服务层
-/req:do 升级 Go 到 1.23
-/req:do 统一错误码格式
+/rd:do 优化订单查询性能
+/rd:do 重构用户服务层
+/rd:do 升级 Go 到 1.23
+/rd:do 统一错误码格式
 ```
 
 AI 自动：
@@ -371,24 +371,24 @@ AI 自动：
 3. **确认方案** — 用户确认后创建分支（`improve/`、`feat/`、`fix/` 按类型自动选择）
 4. **执行修改** — 按方案修改代码
 
-规模较大时会建议切换到 `/req:new-quick` 或 `/req:new`。
+规模较大时会建议切换到 `/rd:new-quick` 或 `/rd:new`。
 
-**与 `/req:fix` 的区别：**
-- `/req:fix` — 专门修 bug，AI 会做根因分析
-- `/req:do` — 优化/重构/升级等非 bug 场景，AI 分析意图后选择合适流程
+**与 `/rd:fix` 的区别：**
+- `/rd:fix` — 专门修 bug，AI 会做根因分析
+- `/rd:do` — 优化/重构/升级等非 bug 场景，AI 分析意图后选择合适流程
 
 ### 4.3 继续开发
 
 中断后再次进入，会恢复进度：
 
 ```
-/req:dev REQ-001
+/rd:dev REQ-001
 ```
 
 加 `--reset` 可以重新生成实现方案：
 
 ```
-/req:dev REQ-001 --reset
+/rd:dev REQ-001 --reset
 ```
 
 ### 4.4 规范提交
@@ -396,7 +396,7 @@ AI 自动：
 开发过程中使用规范提交，自动关联需求编号：
 
 ```
-/req:commit
+/rd:commit
 ```
 
 AI 分析改动内容，生成 Conventional Commits 格式的提交信息：
@@ -412,7 +412,7 @@ AI 分析改动内容，生成 Conventional Commits 格式的提交信息：
 ### 5.1 综合测试
 
 ```
-/req:test
+/rd:test
 ```
 
 包含回归测试 + 新功能测试，状态改为「测试中」。
@@ -420,8 +420,8 @@ AI 分析改动内容，生成 Conventional Commits 格式的提交信息：
 ### 5.2 分步测试
 
 ```
-/req:test_regression    # 运行已有自动化测试，生成回归报告
-/req:test_new           # 为新功能创建测试用例（UT/API/E2E）
+/rd:test_regression    # 运行已有自动化测试，生成回归报告
+/rd:test_new           # 为新功能创建测试用例（UT/API/E2E）
 ```
 
 ---
@@ -429,7 +429,7 @@ AI 分析改动内容，生成 Conventional Commits 格式的提交信息：
 ## 六、完成归档
 
 ```
-/req:done
+/rd:done
 ```
 
 流程：
@@ -446,23 +446,23 @@ AI 分析改动内容，生成 Conventional Commits 格式的提交信息：
 ### 7.1 需求列表
 
 ```
-/req                          # 列出所有需求
-/req --type=后端              # 按类型筛选
-/req --module=用户            # 按模块筛选
-/req --type=前端 --module=用户 # 组合筛选
+/rd:req                          # 列出所有需求
+/rd:req --type=后端              # 按类型筛选
+/rd:req --module=用户            # 按模块筛选
+/rd:req --type=前端 --module=用户 # 组合筛选
 ```
 
 ### 7.2 查看详情
 
 ```
-/req:show REQ-001     # 查看需求完整内容（只读）
-/req:status REQ-001   # 查看状态和进度
+/rd:show REQ-001     # 查看需求完整内容（只读）
+/rd:status REQ-001   # 查看状态和进度
 ```
 
 ### 7.3 编辑需求
 
 ```
-/req:edit REQ-001     # 修改已有需求
+/rd:edit REQ-001     # 修改已有需求
 ```
 
 ---
@@ -472,9 +472,9 @@ AI 分析改动内容，生成 Conventional Commits 格式的提交信息：
 模块是按功能域划分的业务文档，帮助 AI 理解上下文。
 
 ```
-/req:modules                  # 列出所有模块
-/req:modules new 用户         # 创建用户模块文档
-/req:modules show 用户        # 查看模块详情
+/rd:modules                  # 列出所有模块
+/rd:modules new 用户         # 创建用户模块文档
+/rd:modules show 用户        # 查看模块详情
 ```
 
 模块文档描述：职责边界、核心功能、数据模型、API 概览、关键文件路径。
@@ -486,14 +486,14 @@ AI 分析改动内容，生成 Conventional Commits 格式的提交信息：
 PRD 是项目级的产品需求文档，一个项目一份。
 
 ```
-/req:prd                      # 查看 PRD 状态概览，分析各章节填充情况
-/req:prd-edit                 # 编辑 PRD，AI 辅助补充内容
-/req:prd-edit 产品概述         # 编辑指定章节
+/rd:prd                      # 查看 PRD 状态概览，分析各章节填充情况
+/rd:prd-edit                 # 编辑 PRD，AI 辅助补充内容
+/rd:prd-edit 产品概述         # 编辑指定章节
 ```
 
 PRD 的「需求追踪」章节会自动维护：
-- `/req:new` 时追加记录
-- `/req:done` 时更新状态和完成日期
+- `/rd:new` 时追加记录
+- `/rd:done` 时更新状态和完成日期
 
 ---
 
@@ -502,8 +502,8 @@ PRD 的「需求追踪」章节会自动维护：
 ### 10.1 生成版本说明
 
 ```
-/req:changelog v1.2.0                          # 自动检测范围
-/req:changelog v1.2.0 --from=v1.1.0 --to=HEAD # 指定范围
+/rd:changelog v1.2.0                          # 自动检测范围
+/rd:changelog v1.2.0 --from=v1.1.0 --to=HEAD # 指定范围
 ```
 
 AI 根据 Git 提交记录分类生成结构化 Changelog。
@@ -513,7 +513,7 @@ AI 根据 Git 提交记录分类生成结构化 Changelog。
 QUICK 做到一半发现范围变大，可以升级为正式需求：
 
 ```
-/req:upgrade QUICK-003
+/rd:upgrade QUICK-003
 ```
 
 ---
@@ -526,24 +526,24 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 
 ```
 # 初始化项目
-/req:init my-saas
+/rd:init my-saas
 
 # 正常创建和管理需求
-/req:new 用户积分-后端 --type=后端
+/rd:new 用户积分-后端 --type=后端
 ```
 
 ### 关联仓库（前端）
 
 ```
 # 绑定到主仓库（传主仓库根目录的本机路径）
-/req:use ../backend
+/rd:use ../backend
 
 # 可以查看需求（只读）
-/req
-/req:show REQ-001
+/rd:req
+/rd:show REQ-001
 
 # 可以基于需求开发（直读主仓需求目录）
-/req:dev REQ-002
+/rd:dev REQ-002
 ```
 
 关联仓库的角色为 `readonly`，主仓路径记录在 `.devflow/settings.local.json` 的 `requirementSource.path`（本机路径，不入 git）：
@@ -558,16 +558,16 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 **主仓库（后端）：**
 
 ```
-/req:specs new 订单数据类型        # 创建规范文档
-/req:specs edit order-types       # 编辑
-/req:specs                        # 列出所有规范
+/rd:specs new 订单数据类型        # 创建规范文档
+/rd:specs edit order-types       # 编辑
+/rd:specs                        # 列出所有规范
 ```
 
 **只读仓库（前端）：**
 
 ```
-/req:specs                        # 查看规范列表
-/req:specs show order-types       # 查看订单数据类型定义
+/rd:specs                        # 查看规范列表
+/rd:specs show order-types       # 查看订单数据类型定义
 ```
 
 规范文档存储在主仓库的 `docs/requirements/specs/`，只读仓库直接读取主仓目录，无需同步。后端修改后，前端下次查看即为最新版本。
@@ -583,36 +583,36 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 
 ```
                     创建需求
-                /req:new 标题
+                /rd:new 标题
                       │
                       ▼
                ┌─────────────┐
-               │   📝 草稿    │ ← /req:edit 修改
+               │   📝 草稿    │ ← /rd:edit 修改
                └──────┬──────┘
-                      │ /req:review
+                      │ /rd:review
                       ▼
                ┌─────────────┐
                │  👀 待评审   │
                └──────┬──────┘
-                      │ /req:review pass
+                      │ /rd:review pass
                       ▼
                ┌─────────────┐
                │ ✅ 评审通过  │
                └──────┬──────┘
-                      │ /req:dev（自动创建分支）
+                      │ /rd:dev（自动创建分支）
                       ▼
                ┌─────────────┐
-               │  🔨 开发中   │ ← /req:commit 提交代码
-               │             │ ← /req:pr 创建 PR
-               │             │ ← /req:review-pr review 审查
-               │             │ ← /req:review-pr merge 合并
+               │  🔨 开发中   │ ← /rd:commit 提交代码
+               │             │ ← /rd:pr 创建 PR
+               │             │ ← /rd:review-pr review 审查
+               │             │ ← /rd:review-pr merge 合并
                └──────┬──────┘
-                      │ /req:test
+                      │ /rd:test
                       ▼
                ┌─────────────┐
                │  🧪 测试中   │
                └──────┬──────┘
-                      │ /req:done（提醒合并分支）
+                      │ /rd:done（提醒合并分支）
                       ▼
                ┌─────────────┐
                │  🎉 已完成   │ → archived to completed/
@@ -630,48 +630,48 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 **需求文档**
 
 ```
-新增需求 用户积分管理          → /req:new 用户积分管理
-新建后端需求，做订单导出        → /req:new 订单导出 --type=后端
-修改025需求，增加导出功能      → /req:edit REQ-025
+新增需求 用户积分管理          → /rd:new 用户积分管理
+新建后端需求，做订单导出        → /rd:new 订单导出 --type=后端
+修改025需求，增加导出功能      → /rd:edit REQ-025
 ```
 
 **修复与开发（无文档）**
 
 ```
-修个登录超时的 bug            → /req:fix 登录超时
-修 #42 这个 bug               → /req:fix --from-issue=#42
-优化订单查询性能              → /req:do 优化订单查询性能
-重构用户服务层                → /req:do 重构用户服务层
-升级 Go 到 1.23               → /req:do 升级 Go 到 1.23
-快速改一下分页默认值          → /req:new-quick 分页默认值
+修个登录超时的 bug            → /rd:fix 登录超时
+修 #42 这个 bug               → /rd:fix --from-issue=#42
+优化订单查询性能              → /rd:do 优化订单查询性能
+重构用户服务层                → /rd:do 重构用户服务层
+升级 Go 到 1.23               → /rd:do 升级 Go 到 1.23
+快速改一下分页默认值          → /rd:new-quick 分页默认值
 ```
 
 **状态流转**（必须带编号）
 
 ```
-开始开发025                   → /req:dev REQ-025
-025 开始测试                  → /req:test REQ-025
-025 评审通过 / 通过评审 025    → /req:review pass
-025 评审驳回                  → /req:review reject
-完成025 / 025 做完了           → /req:done REQ-025
+开始开发025                   → /rd:dev REQ-025
+025 开始测试                  → /rd:test REQ-025
+025 评审通过 / 通过评审 025    → /rd:review pass
+025 评审驳回                  → /rd:review reject
+完成025 / 025 做完了           → /rd:done REQ-025
 ```
 
 **版本与 PR**
 
 ```
-规范提交                      → /req:commit
-创建 PR / 提 PR                → /req:pr
-审查 PR / review PR           → /req:review-pr review
-拉 PR 评论                    → /req:review-pr fetch-comments
-合并 PR                       → /req:review-pr merge
+规范提交                      → /rd:commit
+创建 PR / 提 PR                → /rd:pr
+审查 PR / review PR           → /rd:review-pr review
+拉 PR 评论                    → /rd:review-pr fetch-comments
+合并 PR                       → /rd:review-pr merge
 ```
 
 **直接粘贴 Git 平台 URL**（自动识别 issue / PR）
 
 ```
-修复 owner/repo/issues/169    → /req:fix --from-issue=#169
-创建需求 owner/repo/issues/12  → /req:new --from-issue=#12
-审查 owner/repo/pulls/158     → /req:review-pr review（需先切到 PR 对应分支）
+修复 owner/repo/issues/169    → /rd:fix --from-issue=#169
+创建需求 owner/repo/issues/12  → /rd:new --from-issue=#12
+审查 owner/repo/pulls/158     → /rd:review-pr review（需先切到 PR 对应分支）
 ```
 
 单独粘贴 URL（不带动词）时，会展示选项让你选操作。
@@ -687,22 +687,22 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 
 **不会触发的情况**
 
-- 查询 / 展示类："看一下025" 走 `/req:show`
+- 查询 / 展示类："看一下025" 走 `/rd:show`
 - 讨论 / 提问："这个 bug 怎么修"、"是不是该重构了"、"怎么新增需求"
 - 关键词缺失必要信息："修改需求"无编号、"优化一下"无对象、"完成"无编号
-- 已用斜杠命令开头（`/req:`、`/pm:`、`/api:`）
+- 已用斜杠命令开头（`/rd:`、`/pm:`、`/api:`）
 - URL 指向其他仓库（与 `git remote` 不匹配）
 
 ### 13.2 一键修复（`--auto`）
 
-`/req:fix --auto` 跳过所有确认交互，自动串联 commit → push → PR。
+`/rd:fix --auto` 跳过所有确认交互，自动串联 commit → push → PR。
 
-> **前置说明**：req 插件的确认默认就是**全部直通**。只有曾用自然语言告诉 Claude"开启提交确认"（由 Claude 创建 `.claude/.req-confirm-commit` marker 并写入 memory feedback）的用户，才会看到 `git commit` / `mv` / `rm` REQ 的原生确认弹框；对这部分用户，`--auto` 通过 `.claude/.req-auto` marker 让 Hook 放行。**默认设置下 `--auto` 仍有价值**——它会一并跳过命令层面的文本交互（方案确认、类型选择、issue 关闭询问等）并自动串联后续步骤。
+> **前置说明**：rd 插件的确认默认就是**全部直通**。只有曾用自然语言告诉 Claude"开启提交确认"（由 Claude 创建 `.claude/.req-confirm-commit` marker 并写入 memory feedback）的用户，才会看到 `git commit` / `mv` / `rm` REQ 的原生确认弹框；对这部分用户，`--auto` 通过 `.claude/.req-auto` marker 让 Hook 放行。**默认设置下 `--auto` 仍有价值**——它会一并跳过命令层面的文本交互（方案确认、类型选择、issue 关闭询问等）并自动串联后续步骤。
 
 **触发方式**
 
 ```
-/req:fix 登录超时 --auto                    # 显式
+/rd:fix 登录超时 --auto                    # 显式
 修下 Excel 导出中文乱码，不用确认            # 自然语言
 一键修复登录超时                            # 自然语言
 直接修 Excel 导出乱码并发 PR                # 自然语言
@@ -717,9 +717,9 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 |-------|---------|
 | 修复方案确认 | 命令内置跳过 |
 | `git commit` 前的原生确认弹框 | 默认不存在；若通过自然语言开启（`.claude/.req-confirm-commit` marker），则由 `.claude/.req-auto` marker 让 Hook 放行 |
-| `/req:commit` 的类型交互式选择 | AI 自动推断为「修复」 |
+| `/rd:commit` 的类型交互式选择 | AI 自动推断为「修复」 |
 | `--from-issue` 时的关闭 issue 询问 | 默认关闭 |
-| `/req:pr` 创建后的分支清理询问 | 默认保留 |
+| `/rd:pr` 创建后的分支清理询问 | 默认保留 |
 | 手工串联 commit → push → PR | 自动执行 |
 
 **无法跳过**（Claude Code harness 层，需本地权限设置）
@@ -743,7 +743,7 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 ```
 用户：修下 Excel 导出中文乱码，不用确认
    ↓
-AI：🧠 识别：/req:fix Excel 导出中文乱码 --auto
+AI：🧠 识别：/rd:fix Excel 导出中文乱码 --auto
     ⚙️ --auto 会自动跳过：[能力边界清单]
     🔒 无法跳过：[Claude Code harness 权限]
     🛑 不会跳过：[保护分支、实际代码修改]
@@ -754,18 +754,18 @@ AI：🧠 识别：/req:fix Excel 导出中文乱码 --auto
 
 ### 13.3 其他支持 `--auto` 的命令
 
-**`/req:review-pr review --auto`** — 跳过"是否上传评审评论"的询问
+**`/rd:review-pr review --auto`** — 跳过"是否上传评审评论"的询问
 
 默认情况下（不带 `--auto`），AI 代码审查完成后会展示**精简版评论预览**并询问 `y/n`，避免审查结果直接对外发布。传入 `--auto` 跳过询问，直接上传。
 
 ```
-/req:review-pr review               # 展示预览 → 等待 y/n 确认
-/req:review-pr review --auto        # 直接上传精简版评论
+/rd:review-pr review               # 展示预览 → 等待 y/n 确认
+/rd:review-pr review --auto        # 直接上传精简版评论
 ```
 
 自然语言触发：`一键审查`、`自动审查`、`审查并提交`、`审完直接评论`、`别问我`。
 
-> **只影响 `review` 子命令的上传询问**。`/req:review-pr merge` 的合并后分支清理询问由 `branchStrategy.deleteBranchAfterMerge` 控制；`/req:review-pr fetch-comments` 的"是否应用修改"询问保留，避免 AI 误改代码。
+> **只影响 `review` 子命令的上传询问**。`/rd:review-pr merge` 的合并后分支清理询问由 `branchStrategy.deleteBranchAfterMerge` 控制；`/rd:review-pr fetch-comments` 的"是否应用修改"询问保留，避免 AI 误改代码。
 
 ---
 
@@ -773,27 +773,27 @@ AI：🧠 识别：/req:fix Excel 导出中文乱码 --auto
 
 | 场景 | 命令 |
 |------|------|
-| 看看有哪些需求 | `/req` |
-| 创建正式需求 | `/req:new 标题 --type=后端` |
-| 创建小修复（有文档） | `/req:new-quick 标题` |
-| 轻量修复（无文档） | `/req:fix 问题描述` |
-| 智能开发（优化/重构） | `/req:do 描述` |
-| 编辑需求 | `/req:edit` |
-| 提交评审 | `/req:review` |
-| 通过评审 | `/req:review pass` |
-| 启动开发 | `/req:dev` |
-| 提交代码 | `/req:commit` |
-| 创建 PR | `/req:pr` |
-| AI 代码审查 | `/req:review-pr review` |
-| 合并 PR | `/req:review-pr merge` |
-| 运行测试 | `/req:test` |
-| 完成归档 | `/req:done` |
-| 查看 PRD | `/req:prd` |
-| 生成 Changelog | `/req:changelog v1.0.0` |
-| 配置分支策略 | `/req:branch init` |
-| 查看分支状态 | `/req:branch status` |
-| 紧急修复 | `/req:branch hotfix 描述` |
-| 重新初始化 | `/req:init my-project --reinit` |
-| 从 v2 升级 | `/req:migrate` |
-| 查看规范文档 | `/req:specs show <名称>` |
-| 创建规范文档 | `/req:specs new <名称>` |
+| 看看有哪些需求 | `/rd:req` |
+| 创建正式需求 | `/rd:new 标题 --type=后端` |
+| 创建小修复（有文档） | `/rd:new-quick 标题` |
+| 轻量修复（无文档） | `/rd:fix 问题描述` |
+| 智能开发（优化/重构） | `/rd:do 描述` |
+| 编辑需求 | `/rd:edit` |
+| 提交评审 | `/rd:review` |
+| 通过评审 | `/rd:review pass` |
+| 启动开发 | `/rd:dev` |
+| 提交代码 | `/rd:commit` |
+| 创建 PR | `/rd:pr` |
+| AI 代码审查 | `/rd:review-pr review` |
+| 合并 PR | `/rd:review-pr merge` |
+| 运行测试 | `/rd:test` |
+| 完成归档 | `/rd:done` |
+| 查看 PRD | `/rd:prd` |
+| 生成 Changelog | `/rd:changelog v1.0.0` |
+| 配置分支策略 | `/rd:branch init` |
+| 查看分支状态 | `/rd:branch status` |
+| 紧急修复 | `/rd:branch hotfix 描述` |
+| 重新初始化 | `/rd:init my-project --reinit` |
+| 从 v2 升级 | `/rd:migrate` |
+| 查看规范文档 | `/rd:specs show <名称>` |
+| 创建规范文档 | `/rd:specs new <名称>` |

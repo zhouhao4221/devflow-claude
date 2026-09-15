@@ -8,12 +8,14 @@ AI-driven software lifecycle management toolkit. Covers requirements analysis, d
 
 | Plugin | Description |
 |--------|-------------|
-| **req** | Full requirements workflow — from analysis to archival |
+| **rd** (R&D) | R&D workflow — requirements, review, development, testing, archival + branch/PR/issue/release (formerly the req plugin) |
 | **pm** | Project management helper — weekly/monthly reports, stats, risk scan, plans |
 | **api** | API integration — Swagger parsing, field mapping, code generation |
 | **diag** | Production diagnostics — read-only SSH log pull, stack trace parsing, code correlation, fix suggestions |
 
 > Each plugin's current version is tracked via `claude plugins list` or `plugins/<plugin>/.claude-plugin/plugin.json` in the repo.
+>
+> The former `req` plugin has been renamed to `rd` (R&D): if you installed `req@devflow`, uninstall it, install `rd@devflow`, then run `/rd:migrate` in your project to clean up old prefix references.
 
 ---
 
@@ -24,7 +26,7 @@ AI-driven software lifecycle management toolkit. Covers requirements analysis, d
 ```bash
 # Install from GitHub
 claude plugins marketplace add https://github.com/zhouhao4221/devflow-claude
-claude plugins install req@devflow    # Requirements management
+claude plugins install rd@devflow    # Requirements management
 claude plugins install pm@devflow     # Project management helper
 claude plugins install api@devflow    # API integration
 claude plugins install diag@devflow   # Production diagnostics
@@ -33,8 +35,8 @@ claude plugins install diag@devflow   # Production diagnostics
 ```bash
 # Plugin management
 claude plugins list                   # List installed plugins
-claude plugins update req@devflow     # Update a plugin
-claude plugins uninstall req@devflow  # Uninstall a plugin
+claude plugins update rd@devflow     # Update a plugin
+claude plugins uninstall rd@devflow  # Uninstall a plugin
 ```
 
 ---
@@ -45,9 +47,9 @@ Commands are split into three tiers by required reasoning strength, declared via
 
 | Tier | Purpose | Typical commands |
 |------|---------|------------------|
-| **Haiku** | Pure queries / display / config / status transitions with clear rules | `/req`, `/req:status`, `/req:show`, `/req:commit`, `/pm:standup`, `/api:help` |
+| **Haiku** | Pure queries / display / config / status transitions with clear rules | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/pm:standup`, `/api:help` |
 | **Sonnet** | Data aggregation + document drafting | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk` |
-| **Session model** (unspecified) | Analyzing code / plan generation / multi-round requirement discussion | `/req:new`, `/req:dev`, `/req:fix`, `/req:do`, `/req:review-pr`, `/api:gen`, `/pm:plan` |
+| **Session model** (unspecified) | Analyzing code / plan generation / multi-round requirement discussion | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:review-pr`, `/api:gen`, `/pm:plan` |
 
 Development commands also delegate high-throughput steps — locating code, running tests, digesting large diffs — to subagents, keeping their raw output out of the main session's context.
 
@@ -55,18 +57,18 @@ Each command also pre-approves only the tools it needs via `allowed-tools`; if a
 
 ---
 
-## req plugin — Requirements management
+## rd plugin (R&D) — Requirements & development workflow
 
 Covers the full lifecycle from analysis, review, development, testing, to archival.
 
 ### Core features
 
-- **Natural-language dispatcher**: describe intent in plain language and auto-map to the right `/req:*` command (e.g., "fix the login timeout bug" → `/req:fix`, "start developing 025" → `/req:dev REQ-025`; pasting an issue/PR URL also works)
-- **Auto mode**: `/req:fix --auto` skips every confirmation and chains commit → push → PR in one shot (a `.claude/.req-auto` marker lets the native git-confirm dialog through)
+- **Natural-language dispatcher**: describe intent in plain language and auto-map to the right `/rd:*` command (e.g., "fix the login timeout bug" → `/rd:fix`, "start developing 025" → `/rd:dev REQ-025`; pasting an issue/PR URL also works)
+- **Auto mode**: `/rd:fix --auto` skips every confirmation and chains commit → push → PR in one shot (a `.claude/.req-auto` marker lets the native git-confirm dialog through)
 - **AI-guided requirements analysis**: AI asks questions round by round, then generates a complete document in one shot
 - **Full lifecycle**: Draft → In Review → Approved → In Development → In Testing → Done
 - **Dual tracks**: formal requirements (REQ) and quick fixes (QUICK)
-- **Smart development**: `/req:do` — describe your intent and AI picks the flow, creates a branch, and drafts the plan
+- **Smart development**: `/rd:do` — describe your intent and AI picks the flow, creates a branch, and drafts the plan
 - **Development guidance**: reads your project's layered architecture from CLAUDE.md and guides layer by layer (stack-agnostic)
 - **Live doc maintenance during dev**: AI flags deviations and prompts to update the requirement doc
 - **Branch management**: GitHub Flow / Git Flow / Trunk-Based
@@ -83,29 +85,29 @@ Covers the full lifecycle from analysis, review, development, testing, to archiv
 
 ```bash
 # 1. Initialize the project (creates docs/requirements/, generates PRD, binds the repo)
-/req:init my-project
+/rd:init my-project
 
 # 2. Configure branch strategy (GitHub Flow / Git Flow / Trunk-Based + hosting type)
-/req:branch init
+/rd:branch init
 ```
 
 Then the daily workflow:
 
 ```bash
 # 3. Create a requirement (AI asks questions → generates doc in one shot)
-/req:new user points system
+/rd:new user points system
 
 # 4. Review
-/req:review pass
+/rd:review pass
 
 # 5. Develop (AI generates a plan and guides you layer by layer)
-/req:dev
+/rd:dev
 
 # 6. Test
-/req:test
+/rd:test
 
 # 7. Archive
-/req:done
+/rd:done
 ```
 
 ### Command reference
@@ -114,59 +116,59 @@ Then the daily workflow:
 
 | Command | Description |
 |---------|-------------|
-| `/req` | List all requirements; supports `--type` and `--module` filters |
-| `/req:new [title]` | Create a formal requirement (AI Q&A → generate doc) |
-| `/req:new-quick [title]` | Create a quick fix (small bug / small feature) |
-| `/req:do <description>` | Smart development (optimize/refactor/upgrade/tweak, no doc) |
-| `/req:fix <description>` | Lightweight fix (bug fix, no doc) |
-| `/req:edit [REQ-XXX]` | Edit a requirement |
-| `/req:show [REQ-XXX]` | Show requirement details (read-only) |
-| `/req:status [REQ-XXX]` | Show requirement status |
-| `/req:review [pass\|reject]` | Submit / approve / reject review |
-| `/req:dev [REQ-XXX]` | Start or continue development |
-| `/req:test [REQ-XXX]` | Full test verification |
-| `/req:test_regression` | Run existing automated tests |
-| `/req:test_new` | Create new test cases for a new feature |
-| `/req:done [REQ-XXX]` | Complete and archive |
-| `/req:upgrade <QUICK-XXX>` | Upgrade a quick fix to a formal requirement |
-| `/req:split [description]` | Granularity analysis and split suggestions |
+| `/rd:req` | List all requirements; supports `--type` and `--module` filters |
+| `/rd:new [title]` | Create a formal requirement (AI Q&A → generate doc) |
+| `/rd:new-quick [title]` | Create a quick fix (small bug / small feature) |
+| `/rd:do <description>` | Smart development (optimize/refactor/upgrade/tweak, no doc) |
+| `/rd:fix <description>` | Lightweight fix (bug fix, no doc) |
+| `/rd:edit [REQ-XXX]` | Edit a requirement |
+| `/rd:show [REQ-XXX]` | Show requirement details (read-only) |
+| `/rd:status [REQ-XXX]` | Show requirement status |
+| `/rd:review [pass\|reject]` | Submit / approve / reject review |
+| `/rd:dev [REQ-XXX]` | Start or continue development |
+| `/rd:test [REQ-XXX]` | Full test verification |
+| `/rd:test_regression` | Run existing automated tests |
+| `/rd:test_new` | Create new test cases for a new feature |
+| `/rd:done [REQ-XXX]` | Complete and archive |
+| `/rd:upgrade <QUICK-XXX>` | Upgrade a quick fix to a formal requirement |
+| `/rd:split [description]` | Granularity analysis and split suggestions |
 
 #### PR review & merge
 
 | Command | Description |
 |---------|-------------|
-| `/req:pr [REQ-XXX]` | Create PR (auto-detects GitHub / Gitea) |
-| `/req:review-pr` | Show PR status |
-| `/req:review-pr review` | AI code review, submit comments |
-| `/req:review-pr merge` | Merge PR (supports merge/squash/rebase) |
+| `/rd:pr [REQ-XXX]` | Create PR (auto-detects GitHub / Gitea) |
+| `/rd:review-pr` | Show PR status |
+| `/rd:review-pr review` | AI code review, submit comments |
+| `/rd:review-pr merge` | Merge PR (supports merge/squash/rebase) |
 
 #### Document management
 
 | Command | Description |
 |---------|-------------|
-| `/req:prd` | PRD status overview |
-| `/req:prd-edit [section]` | Edit PRD |
-| `/req:modules` | List all modules |
-| `/req:specs` | Spec documents (data types, API contracts, etc.) |
+| `/rd:prd` | PRD status overview |
+| `/rd:prd-edit [section]` | Edit PRD |
+| `/rd:modules` | List all modules |
+| `/rd:specs` | Spec documents (data types, API contracts, etc.) |
 
 #### Versioning & branches
 
 | Command | Description |
 |---------|-------------|
-| `/req:commit [message]` | Conventional commit with auto-attached requirement ID |
-| `/req:changelog <version>` | Generate release notes |
-| `/req:branch init` | Configure branch strategy |
-| `/req:branch hotfix [description]` | Create a hotfix branch |
+| `/rd:commit [message]` | Conventional commit with auto-attached requirement ID |
+| `/rd:changelog <version>` | Generate release notes |
+| `/rd:branch init` | Configure branch strategy |
+| `/rd:branch hotfix [description]` | Create a hotfix branch |
 
 #### Project configuration
 
 | Command | Description |
 |---------|-------------|
-| `/req:init <project-name>` | Initialize a project |
-| `/req:use <primary-repo-path>` | Bind the primary repo; sets the current repo to readonly |
-| `/req:projects` | View the current requirement project |
-| `/req:migrate` | Migrate from the v2 layout to `.devflow/` |
-| `/req:update-template` | Sync the latest templates from the plugin |
+| `/rd:init <project-name>` | Initialize a project |
+| `/rd:use <primary-repo-path>` | Bind the primary repo; sets the current repo to readonly |
+| `/rd:projects` | View the current requirement project |
+| `/rd:migrate` | Migrate from the v2 layout to `.devflow/` |
+| `/rd:update-template` | Sync the latest templates from the plugin |
 
 ### Requirement lifecycle
 
@@ -181,16 +183,16 @@ Quick fix (QUICK): Draft → Plan confirmed → In Development → Done
 |---------|---------|-----------|
 | Requirement definition | I–VI (description, feature list, rules, scenarios, data & UX, test points) | AI Q&A → generated in one shot |
 | Process log | VII–IX (review, change log, linked info) | Auto-filled by commands |
-| Implementation plan | X (data model, API design, file changes, steps) | Generated by `/req:dev` |
+| Implementation plan | X (data model, API design, file changes, steps) | Generated by `/rd:dev` |
 
 ### Cross-repo sharing
 
 ```
 ~/backend/   (primary)  → docs/requirements/  Single source of truth, git-tracked, writes take effect immediately
-~/frontend/  (readonly) → Bind with /req:use ~/backend to read the primary repo's requirements directly; dev auto-matches backend APIs
+~/frontend/  (readonly) → Bind with /rd:use ~/backend to read the primary repo's requirements directly; dev auto-matches backend APIs
 ```
 
-Configuration lives in `.devflow/settings.json` (team-shared, git-tracked) and `.devflow/settings.local.json` (secrets and local paths, not git-tracked). Projects upgrading from v2 should run `/req:migrate`.
+Configuration lives in `.devflow/settings.json` (team-shared, git-tracked) and `.devflow/settings.local.json` (secrets and local paths, not git-tracked). Projects upgrading from v2 should run `/rd:migrate`.
 
 ### AI skills (auto-triggered)
 
@@ -210,8 +212,8 @@ Configuration lives in `.devflow/settings.json` (team-shared, git-tracked) and `
 
 Extracts project data from PRD, requirement docs, and Git history to generate reports, stats, and plans tailored to different audiences.
 
-- **Read-only**: consumes what req produces; never mutates requirement docs
-- **Works without req**: Git stats and free-form Q&A still work without requirement data
+- **Read-only**: consumes what rd produces; never mutates requirement docs
+- **Works without rd**: Git stats and free-form Q&A still work without requirement data
 - **Optional persistence**: every output can be saved to `docs/reports/`
 
 | Command | Description |

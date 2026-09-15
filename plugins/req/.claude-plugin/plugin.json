@@ -1,11 +1,10 @@
 {
   "name": "req",
-  "version": "4.5.2",
-  "description": "需求全流程管理：分析→评审→开发→测试→归档；配置 .devflow、无全局缓存（readonly 直读主仓）",
+  "version": "5.0.0",
+  "description": "【已更名为 rd】过渡插件，仅保留 /req:help 迁移说明——请改装 rd@devflow",
   "author": {
     "name": "Haiqing"
   },
   "license": "Apache-2.0",
-  "commands": "./commands/",
-  "skills": "./skills/"
+  "commands": "./commands/"
 }
