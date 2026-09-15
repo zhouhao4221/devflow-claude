@@ -69,7 +69,7 @@ model: claude-haiku-4-5-20251001
 
 ### 2D. 项目级插件开关（req 插件更名为 rd 后）
 
-无参数执行时与 2A、2C 一并检测。团队常把 `enabledPlugins` 写在提交进 git 的 `.claude/settings.json`，插件改名后旧键失效——成员拉代码后项目启用的仍是只剩 `/req:help` 的过渡插件。
+无参数执行时与 2A、2C 一并检测。团队常把 `enabledPlugins` 写在提交进 git 的 `.claude/settings.json`，插件改名后旧键失效——成员拉代码后项目启用的仍是已不存在的旧插件名，rd 不会被加载。
 
 - 读取 `.claude/settings.json` 与 `.claude/settings.local.json` 的 `enabledPlugins`
 - 存在旧键 `req@devflow` → 展示所在文件与当前值，确认后键名改为 `rd@devflow`、值保持不变；`rd@devflow` 已存在时只删除旧键

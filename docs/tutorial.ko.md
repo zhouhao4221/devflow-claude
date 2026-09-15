@@ -130,7 +130,7 @@ claude plugins install rd@devflow
 - 기존(legacy) PR 리뷰 커맨드는 `/rd:pr` 로 통합되었습니다: `review-pr review` → `/rd:pr review`, `review-pr merge` → `/rd:pr merge`, `review-pr fetch-comments` → `/rd:pr comments`, 단독 `review-pr` → `/rd:pr status`
 - 주의: `/rd:pr` 를 인자 없이 실행하면 **PR 을 생성**합니다 (legacy `review-pr` 는 인자 없이 실행하면 상태 조회)
 
-> marketplace 업데이트 후 legacy req 플러그인에는 `/req:help` 만 남으며, 실행하면 위 마이그레이션 안내가 표시됩니다.
+> legacy req 플러그인은 marketplace 에서 제거되었습니다. 업데이트 후 `/req:*` 커맨드가 모두 사라졌다면 위 세 단계로 rd 로 전환하세요.
 
 ### 1.7 템플릿 동기화 (선택 사항)
 

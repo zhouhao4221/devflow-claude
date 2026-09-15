@@ -16,12 +16,6 @@
       "category": "development"
     },
     {
-      "name": "req",
-      "description": "【已更名为 rd】过渡插件，仅保留 /req:help 迁移说明——请改装 rd@devflow",
-      "source": "./plugins/req/",
-      "category": "development"
-    },
-    {
       "name": "api",
       "description": "前端 API 对接工具 - Swagger 解析、字段映射、代码生成",
       "source": "./plugins/api/",

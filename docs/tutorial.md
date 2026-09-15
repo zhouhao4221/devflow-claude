@@ -131,7 +131,7 @@ claude plugins install rd@devflow
 - 旧的 PR 审查命令已并入 `/rd:pr`：`review-pr review` → `/rd:pr review`，`review-pr merge` → `/rd:pr merge`，`review-pr fetch-comments` → `/rd:pr comments`，单独的 `review-pr` → `/rd:pr status`
 - 注意：`/rd:pr` 不带参数是**创建 PR**（旧的 `review-pr` 不带参数是查看状态）
 
-> 更新 marketplace 后，旧插件 req 只剩 `/req:help`，执行它可看到上述迁移说明。
+> 旧插件 req 已从 marketplace 移除；若更新后 `/req:*` 命令全部消失，按上面三步改装 rd 即可。
 
 ### 1.7 同步模板（可选）
 
