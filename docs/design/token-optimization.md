@@ -190,7 +190,7 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 
 **禁忌**：小任务不委派（任务说明 + 回传本身有开销，经验阈值 > 1 万 token 才划算）；不要把需要主会话上下文的推理（方案设计、跨文件改动）拆出去——planner/executor 割裂后返工更贵。整条命令的 `model` 仍按 §4.3 分 haiku / sonnet / 省略三档，委派不是降档的理由。
 
-**已应用**：`/rd:test` 阶段一~三回归运行（`test-runner`，haiku）· `/rd:dev` §4 / `/rd:fix` §1.2 / `/rd:do` §2 代码定位（`code-scout`，haiku，主会话只精读返回的 file:line）· `/rd:review-pr` 大 PR 需求比对用 `diff-digest` 摘要；代码质量审查改调原生 `/code-review`（自研 `file-reviewer` 已删，实测自研需主会话把 diff 抄进每个 prompt，隔离不成立）。
+**已应用**：`/rd:test` 阶段一~三回归运行（`test-runner`，haiku）· `/rd:dev` §4 / `/rd:fix` §1.2 / `/rd:do` §2 代码定位（`code-scout`，haiku，主会话只精读返回的 file:line）· `/rd:pr review` 大 PR 需求比对用 `diff-digest` 摘要；代码质量审查改调原生 `/code-review`（自研 `file-reviewer` 已删，实测自研需主会话把 diff 抄进每个 prompt，隔离不成立）。
 
 ---
 

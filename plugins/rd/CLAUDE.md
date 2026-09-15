@@ -11,7 +11,7 @@
 | `CLAUDE.md` | AI 行为指令（通用规则、引用指针） | 每次会话自动加载 |
 | `docs/prompt/architecture.md` | 项目架构知识（分层、规范、技术栈） | `/rd:dev`、`/rd:test` 显式 Read |
 | `docs/prompt/release.md` | 项目发版规则 | `/rd:release` 步骤 0 Read |
-| `docs/prompt/` Prompt 库（`code-generation`/`refactoring`/`test-generation`/`testing`/`error-diagnosis`/`pr-review`/`requirement-structuring`） | 各方面项目特有规范，统一 5 节骨架 | 对应命令按需 Read（`/rd:dev`/`do`/`test*`/`fix`/`review-pr`/`new`·`edit`），缺失降级，非阻塞 |
+| `docs/prompt/` Prompt 库（`code-generation`/`refactoring`/`test-generation`/`testing`/`error-diagnosis`/`pr-review`/`requirement-structuring`） | 各方面项目特有规范，统一 5 节骨架 | 对应命令按需 Read（`/rd:dev`/`do`/`test*`/`fix`/`pr review`/`new`·`edit`），缺失降级，非阻塞 |
 | `docs/requirements/specs/` | 公共知识层（枚举、规则、契约摘要） | 命令按仓库角色注入 |
 | `.devflow/settings.json(.local)` | 结构化配置 | 命令读取字段（local 覆盖同名） |
 | `.claude/skills/<concern>.md` | 窄知识具体约定（如路径变量） | 命令扫描全量注入 |

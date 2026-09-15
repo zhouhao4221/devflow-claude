@@ -49,7 +49,7 @@ Commands are split into three tiers by required reasoning strength, declared via
 |------|---------|------------------|
 | **Haiku** | Pure queries / display / config / status transitions with clear rules | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/pm:standup`, `/api:help` |
 | **Sonnet** | Data aggregation + document drafting | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk` |
-| **Session model** (unspecified) | Analyzing code / plan generation / multi-round requirement discussion | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:review-pr`, `/api:gen`, `/pm:plan` |
+| **Session model** (unspecified) | Analyzing code / plan generation / multi-round requirement discussion | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:pr`, `/api:gen`, `/pm:plan` |
 
 Development commands also delegate high-throughput steps — locating code, running tests, digesting large diffs — to subagents, keeping their raw output out of the main session's context.
 
@@ -138,9 +138,9 @@ Then the daily workflow:
 | Command | Description |
 |---------|-------------|
 | `/rd:pr [REQ-XXX]` | Create PR (auto-detects GitHub / Gitea) |
-| `/rd:review-pr` | Show PR status |
-| `/rd:review-pr review` | AI code review, submit comments |
-| `/rd:review-pr merge` | Merge PR (supports merge/squash/rebase) |
+| `/rd:pr status` | Show PR status |
+| `/rd:pr review` | AI code review, submit comments |
+| `/rd:pr merge` | Merge PR (supports merge/squash/rebase) |
 
 #### Document management
 

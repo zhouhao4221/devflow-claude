@@ -49,7 +49,7 @@ claude plugins uninstall rd@devflow  # 卸载插件
 |------|------|---------|
 | **Haiku** | 纯查询 / 展示 / 配置 / 规则明确的状态流转 | `/rd:req`、`/rd:status`、`/rd:show`、`/rd:commit`、`/pm:standup`、`/api:help` |
 | **Sonnet** | 数据聚合 + 成文 | `/pm:weekly`、`/pm:monthly`、`/pm:stats`、`/pm:risk` |
-| **会话模型**（不指定） | 分析代码 / 生成方案 / 多轮需求讨论 | `/rd:new`、`/rd:dev`、`/rd:fix`、`/rd:do`、`/rd:review-pr`、`/api:gen`、`/pm:plan` |
+| **会话模型**（不指定） | 分析代码 / 生成方案 / 多轮需求讨论 | `/rd:new`、`/rd:dev`、`/rd:fix`、`/rd:do`、`/rd:pr`、`/api:gen`、`/pm:plan` |
 
 开发类命令还会把定位代码、跑测试、压缩大 diff 等高吞吐步骤委派给 subagent，原始输出不进主会话上下文。
 
@@ -138,9 +138,9 @@ claude plugins uninstall rd@devflow  # 卸载插件
 | 命令 | 说明 |
 |------|------|
 | `/rd:pr [REQ-XXX]` | 创建 PR（自动适配 GitHub / Gitea） |
-| `/rd:review-pr` | 查看 PR 状态 |
-| `/rd:review-pr review` | AI 代码审查，提交评论 |
-| `/rd:review-pr merge` | 合并 PR（支持 merge/squash/rebase） |
+| `/rd:pr status` | 查看 PR 状态 |
+| `/rd:pr review` | AI 代码审查，提交评论 |
+| `/rd:pr merge` | 合并 PR（支持 merge/squash/rebase） |
 
 #### 文档管理
 

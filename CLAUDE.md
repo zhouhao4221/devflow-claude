@@ -79,7 +79,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 **委派写操作有准入门槛**（`impl-worker`，见 `_delegate.md` 的「委派实施」）：方案已确认到文件级 + 单元互不依赖 + 契约已定死 + 有验收命令，四条全满足才派；新建抽象、跨层契约变更、方案仍在演化的首版实现一律主会话自己写。验收复核的是 `git diff` 实际内容，不是 subagent 的自述。**降档不是委派的理由**——委派是为了上下文隔离（避免开发中途触发压缩、让已确认方案被摘要化），不是为了把推理换成便宜模型。
 
-**大 PR 代码质量审查不自研**：`/rd:review-pr` 直接调原生 `/code-review`（多 agent 并行 + 逐条验证），档位按 PR 复杂度自动选。原 `file-reviewer` agent 已删：实测自研路径要主会话把 diff 抄进每个 prompt，「diff 不进主会话」不成立，还有误报。
+**大 PR 代码质量审查不自研**：`/rd:pr review` 直接调原生 `/code-review`（多 agent 并行 + 逐条验证），档位按 PR 复杂度自动选。原 `file-reviewer` agent 已删：实测自研路径要主会话把 diff 抄进每个 prompt，「diff 不进主会话」不成立，还有误报。
 
 **两条已知失败模式**（dogfooding 实测踩过）：① prompt 只给素材的磁盘路径而不内联正文 → subagent 把轮次耗在自己找文件上；② 一个 subagent 塞多个文件 → 撞 `maxTurns` 交出半成品。切分要细、素材要内联。
 

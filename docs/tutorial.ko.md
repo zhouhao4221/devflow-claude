@@ -340,9 +340,9 @@ Git Flow 의 hotfix 브랜치는 자동으로 두 PR 을 생성합니다 (→ ma
 AI 코드 리뷰와 머지 사용:
 
 ```
-/rd:review-pr              # PR 상태 확인
-/rd:review-pr review       # AI 코드 리뷰
-/rd:review-pr merge        # PR 머지
+/rd:pr status              # PR 상태 확인
+/rd:pr review       # AI 코드 리뷰
+/rd:pr merge        # PR 머지
 ```
 
 **리뷰 플로우:**
@@ -603,8 +603,8 @@ QUICK 진행 중 범위가 커지면 정식 요구사항으로 승격:
                ┌─────────────┐
                │  🔨 개발 중  │ ← /rd:commit
                │             │ ← /rd:pr
-               │             │ ← /rd:review-pr review
-               │             │ ← /rd:review-pr merge
+               │             │ ← /rd:pr review
+               │             │ ← /rd:pr merge
                └──────┬──────┘
                       │ /rd:test
                       ▼
@@ -660,9 +660,9 @@ Go 1.23 으로 업그레이드                       → /rd:do Go 1.23 으로 �
 ```
 규범 커밋                                     → /rd:commit
 PR 생성                                       → /rd:pr
-PR 리뷰                                       → /rd:review-pr review
-PR 코멘트 조회                                → /rd:review-pr fetch-comments
-PR 머지                                       → /rd:review-pr merge
+PR 리뷰                                       → /rd:pr review
+PR 코멘트 조회                                → /rd:pr comments
+PR 머지                                       → /rd:pr merge
 ```
 
 **Git 플랫폼 URL 직접 붙여넣기** (issue / PR 자동 인식)
@@ -670,7 +670,7 @@ PR 머지                                       → /rd:review-pr merge
 ```
 owner/repo/issues/169 수정                    → /rd:fix --from-issue=#169
 owner/repo/issues/12 로 요구사항 생성         → /rd:new --from-issue=#12
-owner/repo/pulls/158 리뷰                     → /rd:review-pr review (PR 브랜치로 먼저 전환 필요)
+owner/repo/pulls/158 리뷰                     → /rd:pr review (PR 브랜치로 먼저 전환 필요)
 ```
 
 동사 없이 URL 만 붙여넣으면 작업 선택 메뉴가 표시됩니다.
@@ -753,18 +753,18 @@ AI:    🧠 인식: /rd:fix Excel 내보내기 인코딩 --auto
 
 ### 13.3 `--auto` 를 지원하는 다른 커맨드
 
-**`/rd:review-pr review --auto`** — "리뷰 코멘트 업로드 여부" 확인 건너뛰기
+**`/rd:pr review --auto`** — "리뷰 코멘트 업로드 여부" 확인 건너뛰기
 
 기본 (—auto 없음) 은 AI 코드 리뷰 완료 후 **축약된 코멘트 프리뷰**를 표시하고 `y/n` 을 기다립니다. 리뷰 결과가 확인 없이 외부에 공개되는 것을 방지하기 위함입니다. `--auto` 를 전달하면 질문을 건너뛰고 바로 업로드합니다.
 
 ```
-/rd:review-pr review               # 프리뷰 표시 → y/n 확인 대기
-/rd:review-pr review --auto        # 축약 코멘트 바로 업로드
+/rd:pr review               # 프리뷰 표시 → y/n 확인 대기
+/rd:pr review --auto        # 축약 코멘트 바로 업로드
 ```
 
 자연어 트리거: `원클릭 리뷰`, `자동 리뷰`, `리뷰 후 바로 코멘트`, `묻지 마`.
 
-> **`review` 서브커맨드의 업로드 확인에만 영향.** `/rd:review-pr merge` 의 머지 후 브랜치 정리 확인은 `branchStrategy.deleteBranchAfterMerge` 로 제어되고, `/rd:review-pr fetch-comments` 의 "수정 적용 여부" 확인은 AI 가 코드를 임의로 수정하지 않도록 유지됩니다.
+> **`review` 서브커맨드의 업로드 확인에만 영향.** `/rd:pr merge` 의 머지 후 브랜치 정리 확인은 `branchStrategy.deleteBranchAfterMerge` 로 제어되고, `/rd:pr comments` 의 "수정 적용 여부" 확인은 AI 가 코드를 임의로 수정하지 않도록 유지됩니다.
 
 ---
 
@@ -783,8 +783,8 @@ AI:    🧠 인식: /rd:fix Excel 내보내기 인코딩 --auto
 | 개발 시작 | `/rd:dev` |
 | 커밋 | `/rd:commit` |
 | PR 생성 | `/rd:pr` |
-| AI 코드 리뷰 | `/rd:review-pr review` |
-| PR 머지 | `/rd:review-pr merge` |
+| AI 코드 리뷰 | `/rd:pr review` |
+| PR 머지 | `/rd:pr merge` |
 | 테스트 실행 | `/rd:test` |
 | 아카이브 | `/rd:done` |
 | PRD 조회 | `/rd:prd` |
