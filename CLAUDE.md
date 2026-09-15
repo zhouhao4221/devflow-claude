@@ -2,7 +2,7 @@
 
 ## 项目本质
 
-DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 5 个插件，覆盖软件研发全生命周期。
+DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4 个插件，覆盖软件研发全生命周期。
 
 > 在本仓库工作 = **开发/维护这些插件本身**，而非使用它们。下游用户安装插件后在他们自己的项目里跑 `/req:*`、`/pm:*` 等命令。本仓库里出现的 `docs/requirements/`、`docs/reports/` 等是插件自身的 dogfooding 产物（DevFlow 用自己的 req 插件管理自己的需求）。
 
@@ -23,9 +23,10 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 5
 | **pm** | 项目管理助手：周报/月报/统计/风险/方案（只读消费 req 数据） |
 | **api** | 前端 API 对接：Swagger 解析、字段映射、TS 代码生成 |
 | **diag** | 生产诊断（**全程只读**）：SSH 拉日志→解析堆栈→关联代码→修复建议 |
-| **uat** | UI 验收测试：AI 按流程文档逐场景执行界面操作（前身 `qa`） |
 
-**版本事实源是各 `plugin.json` + `marketplace.json`，不是 README**——README/tutorial 的版本号已过时，且只覆盖 req/pm/api，未收录 diag/uat（已知文档债务，非功能不成熟；diag 由 REQ-001、uat 由 REQ-002 完整交付）。
+> uat（UI 验收测试，REQ-002 交付）已于 2026-09 移除：CLI 里驱动浏览器逐场景验收不合适。
+
+**版本事实源是各 `plugin.json` + `marketplace.json`，不是 README**——README/tutorial 的版本号已过时，且只覆盖 req/pm/api，未收录 diag（已知文档债务，非功能不成熟；diag 由 REQ-001 完整交付）。
 
 ## 命令与技能结构
 
@@ -143,11 +144,11 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 | `requirementProject` | settings | 项目名（标签/显示用） | req、pm |
 | `requirementRole` | settings | `primary`/`readonly` | req、pm |
 | `requirementsDir` | settings | 需求目录，默认 `docs/requirements`，可改 | req、pm |
-| `branchStrategy`（对象，不含 token） | settings | `repoType`/`giteaUrl`/`mainBranch`/`developBranch`/`*Prefix`/`branchFrom`/`mergeTarget`/`mergeMethod`/`reviewers` 等 | req、uat |
-| `giteaToken` | settings.local | Gitea API token | req、uat |
+| `branchStrategy`（对象，不含 token） | settings | `repoType`/`giteaUrl`/`mainBranch`/`developBranch`/`*Prefix`/`branchFrom`/`mergeTarget`/`mergeMethod`/`reviewers` 等 | req |
+| `giteaToken` | settings.local | Gitea API token | req |
 | `requirementSource`（`{path,project?}`） | settings.local | **readonly 专用**：指向 primary 仓库根的本机绝对路径，据此直读主仓 | req、pm |
 
-跨插件共享：pm 复用 `requirementProject`/`requirementRole`/`requirementsDir`；uat 复用 `branchStrategy`/`giteaToken`。
+跨插件共享：pm 复用 `requirementProject`/`requirementRole`/`requirementsDir`。
 
 ---
 
@@ -159,7 +160,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 ## 其他插件要点
 
-各插件专属约束在 `plugins/<p>/CLAUDE.md`（pm · api · diag · uat），进入该目录工作时自动加载。
+各插件专属约束在 `plugins/<p>/CLAUDE.md`（pm · api · diag），进入该目录工作时自动加载。
 
 ---
 
