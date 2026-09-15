@@ -45,7 +45,7 @@ Every command declares a `model` field in frontmatter, chosen by task complexity
 | **Sonnet** | Standard create / edit / Git ops | `/req:new`, `/req:edit`, `/req:commit`, `/pm:stats`, `/api:config` |
 | **Opus** | Deep analysis / plan generation / AI review | `/req:dev`, `/req:fix`, `/req:review-pr`, `/pm:weekly`, `/api:gen` |
 
-Each command also restricts its `allowed-tools` to a whitelist, so read-only commands cannot trigger writes.
+Each command also pre-approves only the tools it needs via `allowed-tools`; if a read-only command calls a write tool, you still get a permission prompt first.
 
 ---
 

@@ -45,7 +45,7 @@ claude plugins uninstall req@devflow  # 卸载插件
 | **Sonnet** | 标准创建 / 编辑 / Git 操作 | `/req:new`、`/req:edit`、`/req:commit`、`/pm:stats`、`/api:config` |
 | **Opus** | 深度分析 / 方案生成 / AI 审查 | `/req:dev`、`/req:fix`、`/req:review-pr`、`/pm:weekly`、`/api:gen` |
 
-每个命令还通过 `allowed-tools` 白名单限定可用工具，只读命令不会触发写入操作。
+每个命令还通过 `allowed-tools` 只预授权必需的工具；只读命令若调用写入类工具，会先弹出权限确认。
 
 ---
 

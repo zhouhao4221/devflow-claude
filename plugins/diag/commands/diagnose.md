@@ -1,14 +1,14 @@
 ---
 description: 生产报错定位 - SSH 拉日志 → AI 解析堆栈 → 本地代码关联 → 修复建议
 argument-hint: "<报错描述> [--service=<name>] [--lines=2000] [--pattern=<regex>]"
-allowed-tools: Bash(bash:*, ssh:*), Read, Grep, Glob
+allowed-tools: Bash(bash:*, ssh:*), Read, Grep, Glob, Agent
 ---
 
 # /diag:diagnose - 报错定位
 
 通过自然语言描述报错 → 插件拉取生产日志 → AI 识别堆栈 → 在本地代码关联源码 → 输出诊断报告和修复建议。
 
-**全程只读**，所有 SSH 命令都会经过 5 类 Hook 校验，审计落盘。
+**全程只读**，所有 SSH 命令执行前经过 4 道 Hook 校验（完整性 / 主机白名单 / 命令白名单 / 写操作），执行后审计落盘。
 
 ---
 
@@ -98,6 +98,8 @@ ssh <host> "rm -f /tmp/claude-diag-<session>-*"
 - 用 `Read` 查看命中位置的前后 15 行，理解上下文
 
 若堆栈帧对应的源码在当前仓库找不到 → 标注"**本仓库外**"，不强行定位。
+
+**委派定位**（帧涉及 > 5 个不同类/文件时）：把帧清单（类名 / 方法名 / 文件名 / 行号）**内联进 prompt**，派内置 `Explore` subagent 在本仓库定位，prompt 注明只用 Grep/Glob/Read、不执行 Bash，只回传 `帧序号 | file:line | 匹配方式（精确/模糊/本仓库外）| 一句话依据`。主会话只对命中位置 Read ±15 行做根因判断，避免把大量搜索结果灌进上下文。拉日志的 SSH **不委派**，始终在主会话执行，保证审计链完整。
 
 ### 7. 生成诊断报告
 

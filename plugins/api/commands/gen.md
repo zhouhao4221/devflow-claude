@@ -1,7 +1,7 @@
 ---
 description: 代码生成 - 根据接口定义生成 TypeScript 类型和请求函数
 argument-hint: "<接口路径> [--dir=目录]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(python3:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(python3:*), Agent
 ---
 
 # 代码生成
@@ -92,6 +92,8 @@ AI 在项目中搜索引用了该类型或该请求函数的文件，识别受�
 | 列表/表格页 | 包含 `<Table>`、`columns`、`<List>` 等 | 新增字段可能需要加列，删除字段需要移除列 |
 | 详情页 | 包含只读展示（`<Descriptions>`、`detail.xxx`） | 新增字段可能需要展示，删除字段需要移除 |
 | 其他 | 仅 import 类型用于逻辑处理 | 需检查是否访问了已删除字段 |
+
+**委派搜索**（引用文件 > 5 个，或 `--tag` 批量生成时）：把变更字段表、类型名、请求函数名**内联进 prompt**，派内置 `Explore` subagent 搜索引用并按上表分类，只回传 `文件路径 | 用途 | 涉及字段 | 关键行号`。主会话据此出影响报告和调整方案，不把各页面全文读进主上下文；步骤 3.3 生成具体改法时再定点 Read 相关片段。
 
 输出影响分析报告：
 

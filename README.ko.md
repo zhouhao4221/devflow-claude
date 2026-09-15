@@ -45,7 +45,7 @@ claude plugins uninstall req@devflow  # 플러그인 제거
 | **Sonnet** | 표준 생성 / 편집 / Git 작업 | `/req:new`, `/req:edit`, `/req:commit`, `/pm:stats`, `/api:config` |
 | **Opus** | 심층 분석 / 기획안 생성 / AI 리뷰 | `/req:dev`, `/req:fix`, `/req:review-pr`, `/pm:weekly`, `/api:gen` |
 
-각 커맨드는 `allowed-tools` 화이트리스트로 사용 가능한 툴을 제한하므로, 읽기 전용 커맨드는 쓰기 작업을 트리거할 수 없습니다.
+각 커맨드는 `allowed-tools`로 필요한 툴만 사전 승인하며, 읽기 전용 커맨드가 쓰기 툴을 호출하면 먼저 권한 확인 창이 뜹니다.
 
 ---
 
