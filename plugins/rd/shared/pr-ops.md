@@ -10,6 +10,7 @@
 
 - 依赖已创建的 PR；未找到关联 PR 时提示先执行 `/rd:pr` 创建
 - 确定目标 PR：参数给 `PR-ID` 直接使用；给 `REQ-XXX` 取需求文档 `branch` 字段；都省略时从当前分支匹配
+- **GitHub 的 gh 可用** = 已安装且 `gh auth status` 通过（只装未登录也算不可用）。不可用时：只读查询（status、review 取 PR 元数据、comments 拉评论）回退公开 REST API，私有仓库无凭据时提示 `gh auth login` 后退出；写操作（提交审查评论、Approve、合并）不执行，改为输出 PR 链接与手动操作指引，审查报告仅本地展示
 
 ---
 
@@ -134,6 +135,8 @@ PR 存在 → PR 为 Open → 无合并冲突。逐项失败时提示处理方�
 ### 执行合并
 
 读取 `branchStrategy.mergeMethod`（默认 `merge`），按平台执行（GitHub `gh pr merge --<mergeMethod>`，Gitea merge method 通过 `Do` 字段传递）。`repoType = "other"` 展示手动合并命令。
+
+GitHub 的 gh 不可用时不尝试合并：输出 PR 链接，按 `mergeMethod` 提示网页上对应的按钮（`merge` → Create a merge commit、`squash` → Squash and merge、`rebase` → Rebase and merge），等用户回复已合；再查 API 确认 `merged=true` 才进入「合并后」，仍未合并则如实告知，不给归档提示。
 
 ### 合并后
 

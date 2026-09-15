@@ -12,7 +12,7 @@
     "hotfixPrefix": "hotfix/",
     "branchFrom": "main",
     "mergeTarget": "main",
-    "mergeMethod": "merge",
+    "mergeMethod": "squash",
     "deleteBranchAfterMerge": true
   }
 }
