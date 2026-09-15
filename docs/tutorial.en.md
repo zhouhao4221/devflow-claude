@@ -130,7 +130,7 @@ claude plugins install rd@devflow
 - The legacy PR review command was merged into `/rd:pr`: `review-pr review` → `/rd:pr review`, `review-pr merge` → `/rd:pr merge`, `review-pr fetch-comments` → `/rd:pr comments`, bare `review-pr` → `/rd:pr status`
 - Note: `/rd:pr` with no arguments now **creates a PR** (the legacy `review-pr` with no arguments showed PR status)
 
-> After updating the marketplace, the legacy req plugin only keeps `/req:help`, which shows these migration steps.
+> The legacy req plugin has been removed from the marketplace; if all `/req:*` commands disappear after updating, follow the three steps above to switch to rd.
 
 ### 1.7 Sync templates (optional)
 

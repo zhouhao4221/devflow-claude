@@ -17,7 +17,6 @@ description: 版本号管理助手。仅在执行 /rd:release 命令时触发。
 |------|------|---------|
 | `.claude-plugin/marketplace.json` | `metadata.version` | 整体发布版本，与 git tag 保持一致 |
 | `plugins/rd/.claude-plugin/plugin.json` | `version` | rd 插件独立版本 |
-| `plugins/req/.claude-plugin/plugin.json` | `version` | req 过渡插件版本（更名后仅剩 `/req:help`，v5 删除） |
 | `plugins/pm/.claude-plugin/plugin.json` | `version` | pm 插件独立版本 |
 | `plugins/api/.claude-plugin/plugin.json` | `version` | api 插件独立版本 |
 | `plugins/diag/.claude-plugin/plugin.json` | `version` | diag 插件独立版本 |
@@ -43,7 +42,6 @@ git diff --name-only <FROM_REF>..HEAD
 | 路径前缀 | 归属插件 |
 |---------|---------|
 | `plugins/rd/` | rd |
-| `plugins/req/` | req（更名后的过渡插件） |
 | `plugins/pm/` | pm |
 | `plugins/api/` | api |
 | `plugins/diag/` | diag |

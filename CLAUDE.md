@@ -26,7 +26,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 
 > uat（UI 验收测试，REQ-002 交付）已于 2026-09 移除：CLI 里驱动浏览器逐场景验收不合适。
 >
-> req 插件已于 v4（REQ-004）更名为 **rd**（R&D 研发）：只换命令前缀 `/req:` → `/rd:`（入口 `/rd:req`），`requirement*` 配置字段、`.claude/.req-*` marker、`REQ-XXX` 编号不变；`plugins/req/` 仅剩过渡插件（`/req:help`），v5 删除。
+> req 插件已于 v4（REQ-004）更名为 **rd**（R&D 研发）：只换命令前缀 `/req:` → `/rd:`（入口 `/rd:req`），`requirement*` 配置字段、`.claude/.req-*` marker、`REQ-XXX` 编号不变；过渡插件 req（`/req:help`）已移除，老用户按 README / 教程 1.6 迁移。
 
 **版本事实源是各 `plugin.json` + `marketplace.json`，不是 README**——README/tutorial 的版本号已过时，且只覆盖 req/pm/api，未收录 diag（已知文档债务，非功能不成熟；diag 由 REQ-001 完整交付）。
 

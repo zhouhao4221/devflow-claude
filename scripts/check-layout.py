@@ -20,7 +20,7 @@ Claude Code 把 `commands/` 下的**每个** `.md` 和 `skills/` 下的**每个*
     出现即属合法提及；
     其它确需保留的行尾加 `stale-ok` 豁免。
   - req 插件更名为 rd（REQ-004）后残留的旧前缀：该规则额外扫描 README / tutorial 三语、
-    CLAUDE.md、docs/design、docs/prompt 与需求索引，过渡插件目录 plugins/req/ 豁免。
+    CLAUDE.md、docs/design、docs/prompt 与需求索引。
     本脚本不在批量替换范围内，规则里的旧前缀字面量不会被误改。
 
 用法：check-layout.py [--check] [--plugin P]
@@ -33,7 +33,7 @@ import re
 import shutil
 import sys
 
-PLUGINS = ["rd", "req", "api", "pm", "diag"]
+PLUGINS = ["rd", "api", "pm", "diag"]
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 
@@ -50,7 +50,7 @@ STALE_RULES = [
      "未定义的占位符，改用 ${CLAUDE_PLUGIN_ROOT}", False, ()),
     (re.compile(r"/req(:[a-z_-]+)?([^a-zA-Z/_-]|$)"),
      "req 插件已更名为 rd：命令前缀 /req:xxx 改为 /rd:xxx，入口 /req 改为 /rd:req",
-     True, ("plugins/req/",)),
+     True, ()),
     (re.compile(r"(?<![\w-])review-pr(?![\w-])"),
      "review-pr 已并入 /rd:pr 子命令：status / review / comments / merge（REQ-005）",
      True, ()),
