@@ -1,12 +1,12 @@
 ---
-description: 创建 PR - 根据仓库类型自动创建 Pull Request
-argument-hint: "[REQ-XXX]"
-allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent
+description: PR 全流程 - 创建、查看状态、AI 审查、处理评论、合并
+argument-hint: "[status|review|comments|merge] [REQ-XXX|PR-ID] [--title=] [--base=] [--level=low|medium|high] [--auto]"
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent, Skill
 ---
 
-# 创建 Pull Request
+# Pull Request
 
-根据分支策略中的仓库类型，自动推送分支并创建 PR。
+PR 全流程入口：默认按分支策略中的仓库类型推送分支并创建 PR；带子命令时查看状态、AI 审查、处理评论或合并。
 
 > **Audience:** Engineer
 > 不受仓库角色限制，readonly 也可执行。
@@ -16,15 +16,27 @@ allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent
 ## 命令格式
 
 ```
-/rd:pr [REQ-XXX] [--title=自定义标题] [--base=目标分支]
+/rd:pr [REQ-XXX] [--title=自定义标题] [--base=目标分支]   # 创建 PR（默认）
+/rd:pr <子命令> [REQ-XXX|PR-ID] [选项]                      # 其余 PR 操作
 ```
 
-- 省略编号时根据当前分支名匹配需求
-- `--title`、`--base` 覆盖自动值
+- 创建时省略编号，根据当前分支名匹配需求；`--title`、`--base` 覆盖自动值
+
+## 子命令路由
+
+| 首个参数 | 功能 | 示例 |
+|---------|------|------|
+| `status` | 查看 PR 状态 | `/rd:pr status` |
+| `review` | AI 代码审查（`--level=` 指定 `/code-review` 档位，省略则按 PR 复杂度自动选；`--auto` 跳过提交确认） | `/rd:pr review` |
+| `comments` | 拉取 PR 评论，AI 生成修改清单并应用（`fetch-comments` 视同 `comments`） | `/rd:pr comments` |
+| `merge` | 合并 PR | `/rd:pr merge` |
+| 其他 / 无参数 | 创建 PR，执行下方「执行流程（创建 PR）」 | `/rd:pr REQ-001` |
+
+命中子命令时 Read [`pr-ops.md`](../shared/pr-ops.md) 的「通用前置」与对应小节执行，**不执行**下方创建流程；创建 PR 时不读取该文件。
 
 ---
 
-## 执行流程
+## 执行流程（创建 PR）
 
 ### 1. 识别需求和分支
 
@@ -123,8 +135,8 @@ else:
 ✅ PR 已创建
    <url>
 已请求审核：@user1, @user2     ← reviewers 非空时输出
-改动 <N> 文件 <M> 行 → 建议 /rd:review-pr review（<小 PR：主会话内联审查 | 大 PR：将调用原生 /code-review，档位自动选>）
-合并后 /rd:review-pr merge，或 /rd:done 归档
+改动 <N> 文件 <M> 行 → 建议 /rd:pr review（<小 PR：主会话内联审查 | 大 PR：将调用原生 /code-review，档位自动选>）
+合并后 /rd:pr merge，或 /rd:done 归档
 ```
 
 #### github
@@ -145,7 +157,7 @@ else:
 
 ### 8. 分支清理提示
 
-**auto 模式跳过**：若项目内存在 `.claude/.req-auto` 且 mtime 在 10 分钟内（由 `/rd:fix --auto` 等上游命令创建），直接跳过本步骤，不询问也不切分支——PR 刚创建还没合并，此时删本地分支不合理，合并后用 `/rd:review-pr merge` 自然处理。
+**auto 模式跳过**：若项目内存在 `.claude/.req-auto` 且 mtime 在 10 分钟内（由 `/rd:fix --auto` 等上游命令创建），直接跳过本步骤，不询问也不切分支——PR 刚创建还没合并，此时删本地分支不合理，合并后用 `/rd:pr merge` 自然处理。
 
 非 auto 模式下，`deleteBranchAfterMerge != false` 时询问：
 ```

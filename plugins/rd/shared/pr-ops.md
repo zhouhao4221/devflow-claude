@@ -1,41 +1,19 @@
----
-description: PR 审查与合并 - AI 代码审查、提交评论、合并 PR
-argument-hint: "[review|merge|fetch-comments] [PR-ID] [--level=low|medium|high] [--auto]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent, Skill
----
+# PR 子命令流程（status / review / comments / merge）
 
-# PR 审查与合并
-
-对已创建的 PR 进行 AI 代码审查，可将审查意见提交到平台，审查通过后合并 PR。
+> 由 `/rd:pr <子命令>` 按需读取，不是独立命令；创建 PR 的流程在 `commands/pr.md`。先执行「通用前置」，再执行对应小节。
 
 > 不受仓库角色限制，readonly 可执行。
 >
 > CLI 优先级：GitHub → `gh pr`/`gh api`；Gitea → 按 [`_gitea_cli.md`](../shared/_gitea_cli.md) 检测 `tea`。tea 未覆盖的接口走 curl。
 
-## 命令格式
+## 通用前置
 
-```
-/rd:review-pr [子命令] [REQ-XXX]
-```
-
-| 子命令 | 说明 | 示例 |
-|--------|------|------|
-| (空) | 查看 PR 状态 | `/rd:review-pr` |
-| `review` | AI 代码审查（`--level=` 指定 `/code-review` 档位，省略则按 PR 复杂度自动选） | `/rd:review-pr review` |
-| `fetch-comments` | 拉取 PR 评论，AI 生成修改清单并应用 | `/rd:review-pr fetch-comments` |
-| `merge` | 合并 PR | `/rd:review-pr merge` |
-
-省略编号时从当前分支自动匹配需求。未指定子命令时展示 PR 状态概览。
+- 依赖已创建的 PR；未找到关联 PR 时提示先执行 `/rd:pr` 创建
+- 确定目标 PR：参数给 `PR-ID` 直接使用；给 `REQ-XXX` 取需求文档 `branch` 字段；都省略时从当前分支匹配
 
 ---
 
-## 前置条件
-
-依赖 `/rd:pr` 已创建 PR。未找到关联 PR 时提示先创建。
-
----
-
-## 查看状态
+## status — 查看 PR 状态
 
 根据 `repoType` 查询 PR（从需求文档 `branch` 字段取分支名，Gitea 需指定 `head=OWNER:branch`）。展示：PR 编号、标题、状态、合并方向、是否可合并、审查状态、可用操作。
 
@@ -126,11 +104,11 @@ PR 元数据按平台取（GitHub `gh pr view`，Gitea `/pulls/{N}`），diff �
 
 阻塞=0 且 PR 为 Open 时：
 - **有审核人**（PR reviewers 或 `branchStrategy.reviewers`）→ 提示是否提交 Approved（Gitea `POST /pulls/{N}/reviews` body `{"event":"APPROVED"}`，GitHub `gh pr review --approve`）
-- **无审核人** → 仅展示结果，提示可 `/rd:review-pr merge`
+- **无审核人** → 仅展示结果，提示可 `/rd:pr merge`
 
 ---
 
-## fetch-comments — 拉取评论并修改代码
+## comments — 拉取评论并修改代码
 
 ### 1. 拉取评论
 
@@ -171,13 +149,8 @@ hotfix 分支可能存在两个 PR（→ main + → develop），分别展示，
 
 ## 与 `/rd:release` 的关系
 
-`/rd:review-pr merge` 是单需求里程碑，不是发版：
+`/rd:pr merge` 是单需求里程碑，不是发版：
 - migration SQL 在 merge 时不会被归档，等 `/rd:release` 统一处理
 - 合并到 developBranch ≠ 发布
 - 不要手工 tag 或建 Release，应由 `/rd:release` 原子化完成
 
----
-
-## 用户输入
-
-$ARGUMENTS

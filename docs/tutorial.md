@@ -341,9 +341,9 @@ Git Flow 的 hotfix 分支会自动创建两个 PR（→ main + → develop）�
 PR 创建后，使用 AI 代码审查和合并：
 
 ```
-/rd:review-pr              # 查看 PR 状态
-/rd:review-pr review       # AI 代码审查
-/rd:review-pr merge        # 合并 PR
+/rd:pr status              # 查看 PR 状态
+/rd:pr review       # AI 代码审查
+/rd:pr merge        # 合并 PR
 ```
 
 **审查流程：**
@@ -604,8 +604,8 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
                ┌─────────────┐
                │  🔨 开发中   │ ← /rd:commit 提交代码
                │             │ ← /rd:pr 创建 PR
-               │             │ ← /rd:review-pr review 审查
-               │             │ ← /rd:review-pr merge 合并
+               │             │ ← /rd:pr review 审查
+               │             │ ← /rd:pr merge 合并
                └──────┬──────┘
                       │ /rd:test
                       ▼
@@ -661,9 +661,9 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 ```
 规范提交                      → /rd:commit
 创建 PR / 提 PR                → /rd:pr
-审查 PR / review PR           → /rd:review-pr review
-拉 PR 评论                    → /rd:review-pr fetch-comments
-合并 PR                       → /rd:review-pr merge
+审查 PR / review PR           → /rd:pr review
+拉 PR 评论                    → /rd:pr comments
+合并 PR                       → /rd:pr merge
 ```
 
 **直接粘贴 Git 平台 URL**（自动识别 issue / PR）
@@ -671,7 +671,7 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 ```
 修复 owner/repo/issues/169    → /rd:fix --from-issue=#169
 创建需求 owner/repo/issues/12  → /rd:new --from-issue=#12
-审查 owner/repo/pulls/158     → /rd:review-pr review（需先切到 PR 对应分支）
+审查 owner/repo/pulls/158     → /rd:pr review（需先切到 PR 对应分支）
 ```
 
 单独粘贴 URL（不带动词）时，会展示选项让你选操作。
@@ -754,18 +754,18 @@ AI：🧠 识别：/rd:fix Excel 导出中文乱码 --auto
 
 ### 13.3 其他支持 `--auto` 的命令
 
-**`/rd:review-pr review --auto`** — 跳过"是否上传评审评论"的询问
+**`/rd:pr review --auto`** — 跳过"是否上传评审评论"的询问
 
 默认情况下（不带 `--auto`），AI 代码审查完成后会展示**精简版评论预览**并询问 `y/n`，避免审查结果直接对外发布。传入 `--auto` 跳过询问，直接上传。
 
 ```
-/rd:review-pr review               # 展示预览 → 等待 y/n 确认
-/rd:review-pr review --auto        # 直接上传精简版评论
+/rd:pr review               # 展示预览 → 等待 y/n 确认
+/rd:pr review --auto        # 直接上传精简版评论
 ```
 
 自然语言触发：`一键审查`、`自动审查`、`审查并提交`、`审完直接评论`、`别问我`。
 
-> **只影响 `review` 子命令的上传询问**。`/rd:review-pr merge` 的合并后分支清理询问由 `branchStrategy.deleteBranchAfterMerge` 控制；`/rd:review-pr fetch-comments` 的"是否应用修改"询问保留，避免 AI 误改代码。
+> **只影响 `review` 子命令的上传询问**。`/rd:pr merge` 的合并后分支清理询问由 `branchStrategy.deleteBranchAfterMerge` 控制；`/rd:pr comments` 的"是否应用修改"询问保留，避免 AI 误改代码。
 
 ---
 
@@ -784,8 +784,8 @@ AI：🧠 识别：/rd:fix Excel 导出中文乱码 --auto
 | 启动开发 | `/rd:dev` |
 | 提交代码 | `/rd:commit` |
 | 创建 PR | `/rd:pr` |
-| AI 代码审查 | `/rd:review-pr review` |
-| 合并 PR | `/rd:review-pr merge` |
+| AI 代码审查 | `/rd:pr review` |
+| 合并 PR | `/rd:pr merge` |
 | 运行测试 | `/rd:test` |
 | 完成归档 | `/rd:done` |
 | 查看 PRD | `/rd:prd` |

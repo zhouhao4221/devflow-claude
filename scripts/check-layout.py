@@ -51,6 +51,9 @@ STALE_RULES = [
     (re.compile(r"/req(:[a-z_-]+)?([^a-zA-Z/_-]|$)"),
      "req 插件已更名为 rd：命令前缀 /req:xxx 改为 /rd:xxx，入口 /req 改为 /rd:req",
      True, ("plugins/req/",)),
+    (re.compile(r"(?<![\w-])review-pr(?![\w-])"),
+     "review-pr 已并入 /rd:pr 子命令：status / review / comments / merge（REQ-005）",
+     True, ()),
 ]
 # 标记了「扫描仓库文档」的规则额外检查这些文件/目录（目录下的 .md）
 STALE_DOCS = [

@@ -340,9 +340,9 @@ Git Flow hotfix branches get two PRs (→ main + → develop).
 Use AI review and merge:
 
 ```
-/rd:review-pr              # PR status
-/rd:review-pr review       # AI code review
-/rd:review-pr merge        # Merge the PR
+/rd:pr status              # PR status
+/rd:pr review       # AI code review
+/rd:pr merge        # Merge the PR
 ```
 
 **Review flow:**
@@ -603,8 +603,8 @@ Typical uses:
                ┌─────────────┐
                │ 🔨 In Dev   │ ← /rd:commit
                │             │ ← /rd:pr
-               │             │ ← /rd:review-pr review
-               │             │ ← /rd:review-pr merge
+               │             │ ← /rd:pr review
+               │             │ ← /rd:pr merge
                └──────┬──────┘
                       │ /rd:test
                       ▼
@@ -660,9 +660,9 @@ done 025 / close 025                            → /rd:done REQ-025
 ```
 commit                                          → /rd:commit
 create PR / open PR                             → /rd:pr
-review PR                                       → /rd:review-pr review
-pull PR comments                                → /rd:review-pr fetch-comments
-merge PR                                        → /rd:review-pr merge
+review PR                                       → /rd:pr review
+pull PR comments                                → /rd:pr comments
+merge PR                                        → /rd:pr merge
 ```
 
 **Paste a Git platform URL** (auto-detect issue / PR)
@@ -670,7 +670,7 @@ merge PR                                        → /rd:review-pr merge
 ```
 fix owner/repo/issues/169                       → /rd:fix --from-issue=#169
 create a requirement from owner/repo/issues/12  → /rd:new --from-issue=#12
-review owner/repo/pulls/158                     → /rd:review-pr review (switch to PR branch first)
+review owner/repo/pulls/158                     → /rd:pr review (switch to PR branch first)
 ```
 
 Pasting a URL without a verb shows a menu to pick the action.
@@ -753,18 +753,18 @@ Diagnose → edit code → git commit → git push → open PR
 
 ### 13.3 Other commands that support `--auto`
 
-**`/rd:review-pr review --auto`** — skip the "upload review comment?" confirmation
+**`/rd:pr review --auto`** — skip the "upload review comment?" confirmation
 
 By default (without `--auto`), after the AI review completes, the command prints a **condensed preview** of the comment that would be uploaded and waits for `y/n`, so the review doesn't go public unreviewed by you. Passing `--auto` skips the prompt and uploads directly.
 
 ```
-/rd:review-pr review               # Show preview → wait for y/n
-/rd:review-pr review --auto        # Upload the condensed comment directly
+/rd:pr review               # Show preview → wait for y/n
+/rd:pr review --auto        # Upload the condensed comment directly
 ```
 
 Natural-language triggers: `one-shot review`, `auto review`, `review and submit`, `post the review`, `don't ask me`.
 
-> **Only affects the `review` subcommand's upload prompt.** `/rd:review-pr merge` post-merge branch cleanup is controlled by `branchStrategy.deleteBranchAfterMerge`; `/rd:review-pr fetch-comments` keeps its "apply changes?" prompt so AI doesn't silently edit code.
+> **Only affects the `review` subcommand's upload prompt.** `/rd:pr merge` post-merge branch cleanup is controlled by `branchStrategy.deleteBranchAfterMerge`; `/rd:pr comments` keeps its "apply changes?" prompt so AI doesn't silently edit code.
 
 ---
 
@@ -783,8 +783,8 @@ Natural-language triggers: `one-shot review`, `auto review`, `review and submit`
 | Start development | `/rd:dev` |
 | Commit | `/rd:commit` |
 | Create PR | `/rd:pr` |
-| AI review | `/rd:review-pr review` |
-| Merge PR | `/rd:review-pr merge` |
+| AI review | `/rd:pr review` |
+| Merge PR | `/rd:pr merge` |
 | Run tests | `/rd:test` |
 | Archive | `/rd:done` |
 | View PRD | `/rd:prd` |

@@ -49,7 +49,7 @@ claude plugins uninstall rd@devflow  # 플러그인 제거
 |------|------|-------------|
 | **Haiku** | 순수 조회 / 표시 / 설정 / 규칙이 명확한 상태 전환 | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/pm:standup`, `/api:help` |
 | **Sonnet** | 데이터 집계 + 문서화 | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk` |
-| **세션 모델**(미지정) | 코드 분석 / 기획안 생성 / 다회차 요구사항 논의 | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:review-pr`, `/api:gen`, `/pm:plan` |
+| **세션 모델**(미지정) | 코드 분석 / 기획안 생성 / 다회차 요구사항 논의 | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:pr`, `/api:gen`, `/pm:plan` |
 
 개발 계열 커맨드는 코드 위치 파악, 테스트 실행, 대형 diff 압축 등 처리량이 큰 단계를 subagent 에 위임하여 원본 출력이 메인 세션 컨텍스트에 들어가지 않도록 합니다.
 
@@ -138,9 +138,9 @@ claude plugins uninstall rd@devflow  # 플러그인 제거
 | 커맨드 | 설명 |
 |--------|------|
 | `/rd:pr [REQ-XXX]` | PR 생성 (GitHub / Gitea 자동 감지) |
-| `/rd:review-pr` | PR 상태 조회 |
-| `/rd:review-pr review` | AI 코드 리뷰, 코멘트 제출 |
-| `/rd:review-pr merge` | PR 머지 (merge/squash/rebase 지원) |
+| `/rd:pr status` | PR 상태 조회 |
+| `/rd:pr review` | AI 코드 리뷰, 코멘트 제출 |
+| `/rd:pr merge` | PR 머지 (merge/squash/rebase 지원) |
 
 #### 문서 관리
 

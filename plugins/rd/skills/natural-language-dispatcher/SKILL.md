@@ -78,9 +78,10 @@ description: 自然语言需求调度器。当用户用自然语言描述下列�
 |---------|------|
 | "规范提交"、"提交代码" | `/rd:commit` |
 | "创建 PR"、"提 PR" | `/rd:pr` |
-| "审 PR"、"审查 PR" | `/rd:review-pr review` |
-| "合并 PR" | `/rd:review-pr merge` |
-| "拉 PR 评论"、"处理 PR 反馈" | `/rd:review-pr fetch-comments` |
+| "审 PR"、"审查 PR" | `/rd:pr review` |
+| "合并 PR" | `/rd:pr merge` |
+| "拉 PR 评论"、"处理 PR 反馈" | `/rd:pr comments` |
+| "看看 PR"、"PR 状态" | `/rd:pr status` |
 
 `review` 子命令 `--auto` 触发词："自动审查"、"审查并提交"、"不用确认"等。
 

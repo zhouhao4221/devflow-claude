@@ -64,7 +64,7 @@ REQ-XXX <标题> 已完成
 
 读取 `.devflow/settings.json` 的 `branchStrategy` 和需求文档的 `branch` 字段。无 `branchStrategy` 或 `branch` 为空 → 跳过本步。
 
-按 `repoType` 创建 PR，逻辑同 [pr.md](./pr.md)（push + 创建 PR + 提示 review-pr）。
+按 `repoType` 创建 PR，逻辑同 [pr.md](./pr.md)（push + 创建 PR + 提示 `/rd:pr review`）。
 
 **特殊情况**：
 - `giteaToken` 缺失 → 提示手工 compare 链接
