@@ -140,6 +140,7 @@ claude plugins uninstall rd@devflow  # 卸载插件
 | `/rd:pr [REQ-XXX]` | 创建 PR（自动适配 GitHub / Gitea） |
 | `/rd:pr status` | 查看 PR 状态 |
 | `/rd:pr review` | AI 代码审查，提交评论 |
+| `/rd:pr comments` | 拉取 PR 评论，AI 生成修改清单并应用 |
 | `/rd:pr merge` | 合并 PR（支持 merge/squash/rebase） |
 
 #### 文档管理
@@ -192,7 +193,7 @@ claude plugins uninstall rd@devflow  # 卸载插件
 ~/frontend/  (readonly) → /rd:use ~/backend 绑定后直读主仓需求，dev 阶段自动匹配后端接口
 ```
 
-配置在 `.devflow/settings.json`（团队共享，入 git）与 `.devflow/settings.local.json`（密钥与本机路径，不入 git）。从 v2 升级的项目执行 `/rd:migrate`。
+配置在 `.devflow/settings.json`（团队共享，入 git）与 `.devflow/settings.local.json`（密钥与本机路径，不入 git）。从 v2 升级、或由 req 改装 rd 的项目执行 `/rd:migrate`。
 
 ### AI 技能（自动触发）
 

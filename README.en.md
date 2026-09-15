@@ -140,6 +140,7 @@ Then the daily workflow:
 | `/rd:pr [REQ-XXX]` | Create PR (auto-detects GitHub / Gitea) |
 | `/rd:pr status` | Show PR status |
 | `/rd:pr review` | AI code review, submit comments |
+| `/rd:pr comments` | Fetch PR comments and apply AI-suggested fixes |
 | `/rd:pr merge` | Merge PR (supports merge/squash/rebase) |
 
 #### Document management
@@ -192,7 +193,7 @@ Quick fix (QUICK): Draft → Plan confirmed → In Development → Done
 ~/frontend/  (readonly) → Bind with /rd:use ~/backend to read the primary repo's requirements directly; dev auto-matches backend APIs
 ```
 
-Configuration lives in `.devflow/settings.json` (team-shared, git-tracked) and `.devflow/settings.local.json` (secrets and local paths, not git-tracked). Projects upgrading from v2 should run `/rd:migrate`.
+Configuration lives in `.devflow/settings.json` (team-shared, git-tracked) and `.devflow/settings.local.json` (secrets and local paths, not git-tracked). Projects upgrading from v2, or switching from the renamed req plugin to rd, should run `/rd:migrate`.
 
 ### AI skills (auto-triggered)
 

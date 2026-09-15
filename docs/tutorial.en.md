@@ -97,7 +97,9 @@ Use cases:
 - Redo the CLAUDE.md architecture prompt
 - Recover a deleted `PRD.md` or module doc
 
-### 1.6 Upgrading from v2
+### 1.6 Upgrade migration
+
+#### v2 → v3: configuration moved to `.devflow/`
 
 Starting in v3, configuration moved from `.claude/settings*.json` to `.devflow/`, and the global cache `~/.claude-requirements/` was removed. On an existing project, after upgrading the plugin, run:
 
@@ -111,6 +113,23 @@ Starting in v3, configuration moved from `.claude/settings*.json` to `.devflow/`
 - Once you've confirmed the primary repo's requirements docs are intact, you can manually delete `~/.claude-requirements/projects/<project-name>/`
 
 > At session start, if DevFlow config is still detected under `.claude/`, you'll be prompted to run the migration.
+
+#### req → rd (v4): plugin renamed
+
+Starting in v4, the req plugin is renamed to rd (R&D): the command prefix `/req:` becomes `/rd:`, while command names and behavior stay the same. Projects with the old plugin installed migrate in three steps:
+
+```
+claude plugins uninstall req@devflow
+claude plugins install rd@devflow
+/rd:migrate
+```
+
+- `/rd:migrate` lists old prefix references left in the project's `CLAUDE.md`, `docs/prompt/`, requirement templates, and `.claude/skills/`, and replaces each one after you confirm it
+- No changes needed: `.devflow/` config, requirement docs (`REQ-XXX`), `.claude/.req-*` local switches
+- The legacy PR review command was merged into `/rd:pr`: `review-pr review` → `/rd:pr review`, `review-pr merge` → `/rd:pr merge`, `review-pr fetch-comments` → `/rd:pr comments`, bare `review-pr` → `/rd:pr status`
+- Note: `/rd:pr` with no arguments now **creates a PR** (the legacy `review-pr` with no arguments showed PR status)
+
+> After updating the marketplace, the legacy req plugin only keeps `/req:help`, which shows these migration steps.
 
 ### 1.7 Sync templates (optional)
 
@@ -340,8 +359,9 @@ Git Flow hotfix branches get two PRs (→ main + → develop).
 Use AI review and merge:
 
 ```
-/rd:pr status              # PR status
+/rd:pr status       # PR status
 /rd:pr review       # AI code review
+/rd:pr comments     # Fetch PR comments and apply AI-suggested fixes
 /rd:pr merge        # Merge the PR
 ```
 
@@ -783,7 +803,9 @@ Natural-language triggers: `one-shot review`, `auto review`, `review and submit`
 | Start development | `/rd:dev` |
 | Commit | `/rd:commit` |
 | Create PR | `/rd:pr` |
+| PR status | `/rd:pr status` |
 | AI review | `/rd:pr review` |
+| Handle PR comments | `/rd:pr comments` |
 | Merge PR | `/rd:pr merge` |
 | Run tests | `/rd:test` |
 | Archive | `/rd:done` |
@@ -793,6 +815,6 @@ Natural-language triggers: `one-shot review`, `auto review`, `review and submit`
 | Branch status | `/rd:branch status` |
 | Hotfix | `/rd:branch hotfix <description>` |
 | Reinitialize | `/rd:init my-project --reinit` |
-| Upgrading from v2 | `/rd:migrate` |
+| Upgrade migration (v2→v3, req→rd) | `/rd:migrate` |
 | View spec doc | `/rd:specs show <name>` |
 | Create spec doc | `/rd:specs new <name>` |

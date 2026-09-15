@@ -140,6 +140,7 @@ claude plugins uninstall rd@devflow  # 플러그인 제거
 | `/rd:pr [REQ-XXX]` | PR 생성 (GitHub / Gitea 자동 감지) |
 | `/rd:pr status` | PR 상태 조회 |
 | `/rd:pr review` | AI 코드 리뷰, 코멘트 제출 |
+| `/rd:pr comments` | PR 코멘트를 가져와 수정 목록 생성 후 적용 |
 | `/rd:pr merge` | PR 머지 (merge/squash/rebase 지원) |
 
 #### 문서 관리
@@ -192,7 +193,7 @@ claude plugins uninstall rd@devflow  # 플러그인 제거
 ~/frontend/  (readonly) → /rd:use ~/backend 바인딩 후 메인 레포 요구사항을 직접 읽음, dev 단계에서 백엔드 API 자동 매칭
 ```
 
-설정은 `.devflow/settings.json`(팀 공유, git 포함)과 `.devflow/settings.local.json`(시크릿 및 로컬 경로, git 미포함)에 있습니다. v2 에서 업그레이드한 프로젝트는 `/rd:migrate` 를 실행하세요.
+설정은 `.devflow/settings.json`(팀 공유, git 포함)과 `.devflow/settings.local.json`(시크릿 및 로컬 경로, git 미포함)에 있습니다. v2 에서 업그레이드했거나 이름이 변경된 req 에서 rd 로 옮긴 프로젝트는 `/rd:migrate` 를 실행하세요.
 
 ### AI 스킬 (자동 트리거)
 
