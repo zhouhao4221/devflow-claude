@@ -72,7 +72,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 | `test-runner` haiku | 跑测试 | | `doc-writer` haiku | 按素材+骨架成文/回填章节 |
 | `diff-digest` haiku | 压缩大 diff，可逐文件落盘 | | | |
 
-规则见 `shared/_delegate.md`。派生 subagent 的命令 `allowed-tools` 必须列 `Agent`（`allowed-tools` 是白名单限制，不是免确认）。
+规则见 `shared/_delegate.md`。派生 subagent 的命令 `allowed-tools` 必须列 `Agent`（`allowed-tools` 只做免确认预授权，**不限制**可用工具；没列时仍能派生，但每次都弹确认打断流程）。
 
 **委派写操作有准入门槛**（`impl-worker`，见 `_delegate.md` 的「委派实施」）：方案已确认到文件级 + 单元互不依赖 + 契约已定死 + 有验收命令，四条全满足才派；新建抽象、跨层契约变更、方案仍在演化的首版实现一律主会话自己写。验收复核的是 `git diff` 实际内容，不是 subagent 的自述。**降档不是委派的理由**——委派是为了上下文隔离（避免开发中途触发压缩、让已确认方案被摘要化），不是为了把推理换成便宜模型。
 
@@ -80,7 +80,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 **两条已知失败模式**（dogfooding 实测踩过）：① prompt 只给素材的磁盘路径而不内联正文 → subagent 把轮次耗在自己找文件上；② 一个 subagent 塞多个文件 → 撞 `maxTurns` 交出半成品。切分要细、素材要内联。
 
-**allowed-tools**：只读命令不声明 Write/Edit/Bash。**Token 节约**：单文件 < 30 KB；> 50 KB 拆主文件 + rationale；详见 [`docs/design/token-optimization.md`](./docs/design/token-optimization.md)。
+**allowed-tools**：只读命令不声明 Write/Edit/Bash。不声明 ≠ 禁用——调用时只是弹确认；命令 frontmatter 没有禁用工具的字段（`disallowed-tools` 仅 skill 支持），硬约束只能靠 Hook。**Token 节约**：单文件 < 30 KB；> 50 KB 拆主文件 + rationale；详见 [`docs/design/token-optimization.md`](./docs/design/token-optimization.md)。
 
 ## 自动触发技能（helper skill）
 

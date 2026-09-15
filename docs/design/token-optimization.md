@@ -141,13 +141,13 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 **中间档 Sonnet**：数据聚合 + 成文类命令（`/pm:weekly`、`monthly`、`milestone`、`stats`、`progress`、`brief`、`risk`）用 `model: claude-sonnet-5`——比会话模型（Fable/Opus）便宜 2~3 倍，写报告绰绰有余。Sonnet 5 原生 1M 上下文且超 200K 不加价、订阅制不计 extra usage（2026-08 核实），旧的「sonnet[1m] 付费墙」顾虑已不存在。`/pm:plan`、`/pm:ask` 需要真实推理，保持省略。
 
-### 4.4 收紧 `allowed-tools` 白名单
+### 4.4 收紧 `allowed-tools` 预授权
 
 **何时用**：所有命令。
 
-**做法**：frontmatter 只声明真正需要的工具。例如只读命令禁用 Write/Edit，不需要网络的禁用 WebFetch/WebSearch。
+**做法**：frontmatter 只声明真正需要的工具，只读命令不声明 Write/Edit。注意 `allowed-tools` 只是**免确认预授权**，不限制可用工具——未声明的工具照样能调用，只是会弹确认，不能当安全边界用；命令 frontmatter 也没有禁用工具的字段，硬约束只能靠 Hook。
 
-**收益**：模型不会"误以为"自己有某个工具去尝试调用，省下试错往返；同时 Bash 命令限定子集（`Bash(git:*, gh:*)`）能避免模型尝试运行无关命令。
+**收益**：越界调用（只读命令去写文件、跑无关 Bash）不会被静默放行，用户在确认框里能拦下；Bash 限定子集（`Bash(git:*, gh:*)`）让常规命令免确认、其余命令弹确认。
 
 ### 4.5 把确定性逻辑下沉到 shell 脚本
 

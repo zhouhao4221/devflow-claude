@@ -95,38 +95,18 @@
 - OpenAPI 3.1.x
 - JSON 和 YAML 格式
 
-### 解析流程
+### 脚本调用
 
-```
-1. 读取 .api-config.json 获取 sources
-2. 对每个 source：
-   - url → 用 Python 脚本下载并解析
-   - file → 用 Python 脚本直接解析本地文件
-3. 输出结构化 JSON 到 stdout
-4. AI 读取 JSON 结果进行后续处理
-```
+脚本路径用 `${CLAUDE_PLUGIN_ROOT}/scripts/swagger-parser.py`（插件安装目录，**不是**本仓库的 `plugins/api/`）。每个 source 调一次，数据源二选一 `--url` / `--file`，输出 JSON 到 stdout。
 
-### Python 脚本调用
+命令里写的 `mode=xxx` 对应 `--mode`，**必须显式传**（缺省是 `summary`，漏传不会报错，只会拿到错误的结果）：
 
-```bash
-# 解析 URL
-python3 <plugin-path>/scripts/swagger-parser.py --url "http://localhost:8080/swagger/doc.json"
-
-# 解析本地文件
-python3 <plugin-path>/scripts/swagger-parser.py --file "./docs/swagger.json"
-
-# 搜索接口
-python3 <plugin-path>/scripts/swagger-parser.py --url "..." --search "用户"
-
-# 获取单个接口详情
-python3 <plugin-path>/scripts/swagger-parser.py --url "..." --path "GET /api/v1/users/{id}"
-```
-
-### 脚本路径解析
-
-Python 脚本路径相对于插件安装目录：
-- 开发时：`plugins/api/scripts/swagger-parser.py`
-- 安装后：通过 `plugin.json` 所在目录推算
+| mode | 附加参数 | 用途 |
+|------|---------|------|
+| `summary` | — | 接口总数与分组概览 |
+| `list` | `--tag`（可选） | 接口列表 |
+| `search` | `--keyword <关键词>` | 搜索接口（没有 `--search` 参数） |
+| `detail` | `--path "<METHOD> <path>"` | 单个接口完整 schema（$ref 已解析） |
 
 ## 字段映射规则
 

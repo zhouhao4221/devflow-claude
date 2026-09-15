@@ -10,7 +10,7 @@
 #   T3 写操作阻断：重定向 / tee / systemctl / docker rm / kubectl delete /
 #                  mysql INSERT / sudo / find -delete / apt install
 #   T4 敏感输入拦截：password / bearer / AWS / sk-key / 普通消息
-#   T5 Hook 完整性：全部存在放行 / 缺失时拒绝
+#   T5 Hook 完整性：全部存在放行 / 缺失时拒绝 / 会话 marker 落盘 / 非 ssh 跳过
 #   T9 审计完整性：JSONL 字段齐全
 #
 # 不覆盖（依赖 AI 行为或真实环境，需人工验证）：
@@ -167,14 +167,22 @@ assert_prompt_deny "T4d sensitive: sk- api key" "sk-abcdefghijklmnopqrstuvwxyz01
 assert_prompt_allow "T4e sensitive: normal msg" "订单接口报 500，帮忙看一下"
 
 # ===== T5: Hook 完整性校验 =====
-rm -f "/tmp/diag-validated-${CLAUDE_SESSION_ID}-"* 2>/dev/null
+rm -f "$DIAG_HOME/runtime/validated-"* 2>/dev/null
 assert_allow "T5a validate-hooks: all present passes" \
     "ssh prod-web-01 tail /var/log/app/order.log" "validate-hooks"
+# marker 只按会话 id 落盘（曾带 $$，每个 Hook 进程都不同，导致每条命令重复校验）
+if [ -f "$DIAG_HOME/runtime/validated-${CLAUDE_SESSION_ID}" ]; then
+    RESULTS+=("✅ T5a-marker validate-hooks: session marker persisted")
+    PASS=$((PASS+1))
+else
+    RESULTS+=("❌ T5a-marker validate-hooks: session marker missing")
+    FAIL=$((FAIL+1))
+fi
 
 CHAOS_DIR=$(mktemp -d)
 cp -r "$PLUGIN"/* "$CHAOS_DIR/"
 rm "$CHAOS_DIR/hooks/audit-log.sh"
-rm -f "/tmp/diag-validated-${CLAUDE_SESSION_ID}-"* 2>/dev/null
+rm -f "$DIAG_HOME/runtime/validated-"* 2>/dev/null
 out=$(jq -n --arg c "ssh prod-web-01 tail /x" '{tool_input:{command:$c}}' | \
     CLAUDE_PLUGIN_ROOT="$CHAOS_DIR" bash "$CHAOS_DIR/hooks/validate-hooks.sh")
 if echo "$out" | jq -e '.hookSpecificOutput.permissionDecision == "deny"' >/dev/null 2>&1; then
@@ -182,6 +190,16 @@ if echo "$out" | jq -e '.hookSpecificOutput.permissionDecision == "deny"' >/dev/
     PASS=$((PASS+1))
 else
     RESULTS+=("❌ T5b validate-hooks: missing hook NOT detected")
+    FAIL=$((FAIL+1))
+fi
+# 非 ssh 命令不参与校验（Hook 缺失的环境下也应放行 git status 这类本地命令）
+out=$(jq -n --arg c "git status" '{tool_input:{command:$c}}' | \
+    CLAUDE_PLUGIN_ROOT="$CHAOS_DIR" bash "$CHAOS_DIR/hooks/validate-hooks.sh")
+if [ -z "$out" ]; then
+    RESULTS+=("✅ T5c validate-hooks: non-ssh command skipped")
+    PASS=$((PASS+1))
+else
+    RESULTS+=("❌ T5c validate-hooks: non-ssh command was validated")
     FAIL=$((FAIL+1))
 fi
 rm -rf "$CHAOS_DIR"

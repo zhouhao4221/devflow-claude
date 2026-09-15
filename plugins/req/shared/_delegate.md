@@ -42,7 +42,7 @@
 | `impl-worker` | sonnet | 按实施单修改一个独立单元的代码 | 改动摘要 + 验收结果 + 越界需求/存疑项 |
 | `doc-writer` | haiku | 按素材和模板骨架成文/回填章节 | 产物路径 + 要点核对表 |
 
-命令的 frontmatter `allowed-tools` **必须包含 `Agent`**（`allowed-tools` 是白名单限制，缺失则无法派生）。
+命令的 frontmatter `allowed-tools` **必须包含 `Agent`**（`allowed-tools` 是免确认预授权而非白名单：缺失时仍能派生，但每次派生都弹确认，打断流程）。
 
 代码质量审查不在此列：`/req:review-pr` 大 PR 直接调原生 `/code-review`（Skill 工具，`allowed-tools` 需列 `Skill`），规则见该命令。
 
