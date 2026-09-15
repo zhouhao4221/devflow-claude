@@ -54,7 +54,7 @@ model: claude-haiku-4-5-20251001
 
 #### 4.1 CLAUDE.md 架构检查
 
-检查 CLAUDE.md 是否含：`分层架构`、`目录结构`、`技术栈`、`项目架构`、`Architecture`、`Tech Stack`、`Project Structure` 之一。缺失时引导（与 `/req:init` 架构检查一致），选择项目类型后从 `<plugin-path>/templates/claude-md-snippets/` 追加片段。
+检查 CLAUDE.md 是否含：`分层架构`、`目录结构`、`技术栈`、`项目架构`、`Architecture`、`Tech Stack`、`Project Structure` 之一。缺失时引导（与 `/req:init` 架构检查一致），选择项目类型后从 `${CLAUDE_PLUGIN_ROOT}/templates/claude-md-snippets/` 追加片段。
 
 #### 4.2 分支策略检查
 

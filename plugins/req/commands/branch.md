@@ -9,7 +9,7 @@ model: claude-haiku-4-5-20251001
 
 管理项目的 Git 分支策略，与需求流程（dev/commit/done）联动。
 
-> 不受仓库角色限制，readonly 可执行。不触发缓存同步。写入规范见 [`_storage.md`](../shared/_storage.md#settings-文件写入规范)。
+> 不受仓库角色限制，readonly 可执行。写入规范见 [`_storage.md`](../shared/_storage.md#settings-文件写入规范)。
 
 ## 命令格式
 
@@ -28,7 +28,7 @@ model: claude-haiku-4-5-20251001
 
 ## init
 
-交互式选择分支策略。`branchStrategy` 写入 `.claude/settings.json`，`giteaToken` 写入 `.claude/settings.local.json`。
+交互式选择分支策略。`branchStrategy` 写入 `.devflow/settings.json`，`giteaToken` 写入 `.devflow/settings.local.json` 顶层字段（写法见 `_storage.md`「settings 文件写入规范」）。
 
 ### 流程
 
@@ -98,7 +98,7 @@ model: claude-haiku-4-5-20251001
 
 未配置策略时保持默认行为（`feat/`/`fix/` 前缀，不做分支检查，通用合并提醒），不会报错。
 
-配置文件：`branchStrategy` 写入 `.claude/settings.json`（团队共享），`giteaToken` 写入 `.claude/settings.local.json`（不提交）。
+配置文件：`branchStrategy` 写入 `.devflow/settings.json`（团队共享），`giteaToken` 写入 `.devflow/settings.local.json` 顶层字段（不提交）。
 
 ---
 

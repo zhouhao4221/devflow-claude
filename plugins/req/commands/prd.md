@@ -29,10 +29,9 @@ model: claude-haiku-4-5-20251001
 
 ### 1. 解析存储路径（按角色）
 
-读取 `.claude/settings.local.json` 的 `requirementProject` 和 `requirementRole`，按角色确定 PRD 路径：
-- `readonly`：`<requirementSource.path>/<requirementsDir>/PRD.md`
-- `primary`：`docs/requirements/PRD.md`，本地不存在时回退到缓存
-- 未绑定：`docs/requirements/PRD.md`
+读取 `.devflow/settings.json` 的 `requirementRole` / `requirementsDir`（`.devflow/settings.local.json` 同名字段覆盖），按角色确定 PRD 路径：
+- `readonly`：`<requirementSource.path>/<主仓 requirementsDir>/PRD.md`
+- `primary` / 未配置角色：本仓 `<requirementsDir>/PRD.md`（`requirementsDir` 缺省 `docs/requirements`）
 
 ### 2. 检查 PRD 存在性
 
@@ -50,7 +49,7 @@ model: claude-haiku-4-5-20251001
 ```
 优先级：
 1. 本地模板：docs/requirements/templates/prd-template.md
-2. 插件模板：<plugin-path>/templates/prd-template.md
+2. 插件模板：${CLAUDE_PLUGIN_ROOT}/templates/prd-template.md
 ```
 
 **两个路径都不存在时，终止操作**：

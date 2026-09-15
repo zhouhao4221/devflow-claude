@@ -118,7 +118,7 @@ description: PRD 分析助手。仅在执行 /req:prd-edit 命令时触发。帮
 
 编辑 PRD 内容时，**必须严格遵循模板格式**：
 
-1. **先读取模板**：优先 `docs/requirements/templates/prd-template.md`，其次 `<plugin-path>/templates/prd-template.md`
+1. **先读取模板**：优先 `docs/requirements/templates/prd-template.md`，其次 `${CLAUDE_PLUGIN_ROOT}/templates/prd-template.md`
    - **两个路径都不存在时，终止操作**，提示用户执行 `/req:update-template prd` 恢复模板
 2. **章节结构不可变**：不得新增、删除、合并或重命名模板中的章节
 3. **层级标题不可变**：章节标题、编号必须与模板完全一致

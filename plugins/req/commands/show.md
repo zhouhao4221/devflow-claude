@@ -29,26 +29,21 @@ model: claude-haiku-4-5-20251001
 
 如果未提供编号：
 
-按修改时间排序扫描角色对应的 active 目录（readonly 用缓存，primary 优先本地不存在时用缓存，未绑定只用本地）。无结果时提示创建；唯一时自动选中；多个时列表让用户输入序号选择。
+按修改时间排序扫描需求根目录的 `active/`（根目录解析见步骤 1）。无结果时提示创建；唯一时自动选中；多个时列表让用户输入序号选择。
 
 ### 1. 解析存储路径（按角色）
 
-读取 `.claude/settings.local.json` 的 `requirementProject` 和 `requirementRole`，按角色确定路径：
-- `readonly`：根目录为 `<requirementSource.path>/<requirementsDir>`
-- `primary`：本地根目录为 `docs/requirements`，缓存为备用
-- 未绑定：仅使用 `docs/requirements`
+读取 `.devflow/settings.json` 的 `requirementRole` / `requirementsDir`（`.devflow/settings.local.json` 同名字段覆盖），确定需求根目录 `ROOT`：
+- `readonly`：`<requirementSource.path>/<主仓 requirementsDir>`；未配置 `requirementSource` 时提示先 `/req:use <primary-repo-path>` 绑定
+- `primary` / 未配置角色：本仓 `requirementsDir`（缺省 `docs/requirements`）
+
+`$ACTIVE` = `ROOT/active`，`$COMPLETED` = `ROOT/completed`。
 
 ### 2. 查找需求文档（按角色）
 
-**`primary` 角色**搜索位置（按优先级）：
-1. `$ACTIVE/REQ-XXX-*.md`（本地）
-2. `$COMPLETED/REQ-XXX-*.md`（本地）
-3. `$CACHE_ACTIVE/REQ-XXX-*.md`（本地不存在时）
-4. `$CACHE_COMPLETED/REQ-XXX-*.md`（本地不存在时）
-
-**`readonly` 角色**搜索位置：
-1. `$ACTIVE/REQ-XXX-*.md`（缓存）
-2. `$COMPLETED/REQ-XXX-*.md`（缓存）
+两种角色搜索顺序相同（无缓存，readonly 的 `ROOT` 即主仓目录）：
+1. `$ACTIVE/REQ-XXX-*.md`
+2. `$COMPLETED/REQ-XXX-*.md`
 
 如果未找到：
 ```
@@ -293,7 +288,7 @@ model: claude-haiku-4-5-20251001
 
 ## 注意事项
 
-1. **纯只读**：本命令不修改任何文件，不触发缓存同步
+1. **纯只读**：本命令不修改任何文件
 2. **展示原文**：直接展示需求文档中的原始内容，不做摘要或改写
 3. **跳过占位文本**：如果某章节仅包含模板占位文本（如 `_开发阶段填充_`），标注"（未填写）"并跳过内容
 4. **支持 QUICK 和 REQ**：自动识别需求类型，按对应模板结构展示

@@ -21,11 +21,11 @@ model: claude-haiku-4-5-20251001
 
 ### 0. 解析存储路径
 
-从 `settings.local.json` 读取 `requirementProject`，确定本地路径（`docs/requirements/active|completed`）和主仓需求目录路径。
+读取 `.devflow/settings.json` 的 `requirementRole` / `requirementsDir`（`.devflow/settings.local.json` 同名字段覆盖）。`readonly` 仓库不能升级需求，提示到主仓执行后终止；否则需求根目录为本仓 `requirementsDir`（缺省 `docs/requirements`），下文 `docs/requirements/` 均指该目录。
 
 ### 1. 定位源文件
 
-优先在本地 active/ 查找 `QUICK-XXX-*.md`，不存在时查缓存；两处都找不到则报错退出。
+在 `active/` 查找 `QUICK-XXX-*.md`，找不到则报错退出。
 
 **状态检查**：
 - 已完成的 QUICK 不允许升级（已归档）
@@ -45,7 +45,7 @@ model: claude-haiku-4-5-20251001
 
 ### 3. 生成新编号
 
-格式：`REQ-XXX`（三位数字）。扫描本地和缓存中已有的最大 REQ 编号，取两者较大值 +1。
+格式：`REQ-XXX`（三位数字）。扫描 `active/` 与 `completed/` 中已有的最大 REQ 编号 +1。
 
 ### 4. 内容转换
 
@@ -138,10 +138,6 @@ model: claude-haiku-4-5-20251001
 
 **归档**：在原文件末尾追加升级标记（含日期和新编号），移动到 completed/。
 **删除**：直接删除源文件。
-
-#### 6.3 同步缓存
-
-将新 REQ 文件复制到缓存 active/，按用户选择同步处理缓存中的 QUICK 文件（归档或删除）。
 
 ### 7. 触发需求完善
 

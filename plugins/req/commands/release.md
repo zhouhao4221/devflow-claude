@@ -10,7 +10,7 @@ model: claude-haiku-4-5-20251001
 准备发版产物（SQL 合并、回滚脚本、changelog、commit、PR）并**默认创建 draft Release**。加 `--tag` 额外创建 annotated git tag；加 `--no-draft` 直接正式发布。
 
 > **Audience:** Engineer
-> readonly 仓库可用。不触发缓存同步。
+> readonly 仓库可用。
 > CLI 优先：GitHub → `gh`；Gitea → 检测 `tea`，不支持的接口回退 curl。详见 [`_gitea_cli.md`](../shared/_gitea_cli.md)。
 > 设计原理和边界情况详见 [`release-rationale.md`](../shared/release-rationale.md)。
 > **发布前置**：先运行 `python3 scripts/check-layout.py --check` 校验插件布局（`skills/` 无命令镜像、`commands/` 无非命令文件、相对链接全部可达）；报错则运行 `python3 scripts/check-layout.py` 清理可清理的部分，其余手工修完再纳入本次发布。
@@ -58,14 +58,14 @@ model: claude-haiku-4-5-20251001
 
 文件不存在时三个变量均为空，跳过对应行为，不打印任何提示。
 
-读取 `.claude/settings.local.json` 中的 `requirementRole`：
+读取 `.devflow/settings.json` 的 `requirementRole`（`.devflow/settings.local.json` 同名字段覆盖）：
 
 - **readonly**：
-  - 从主仓需求目录 `<requirementSource.path>/<requirementsDir>/` 读取需求文档
-  - **禁止修改任何 `docs/requirements/` 下的文件**（包括状态更新、关联信息追加等）
+  - 从主仓需求目录 `<requirementSource.path>/<主仓 requirementsDir>/` 读取需求文档
+  - **禁止修改主仓需求目录下的任何文件**（包括状态更新、关联信息追加等）
   - SQL 合并（`<MIGRATIONS_DIR>/released/`）和 changelog（`docs/changelogs/`）的写入**不受此限**——这些是版本产物，不是需求文档；目录不存在时自动创建
   - 其余步骤（git commit、PR、tag）照常执行
-- **primary / 未配置**：正常读写本地 `docs/requirements/`
+- **primary / 未配置**：正常读写本仓 `requirementsDir`（缺省 `docs/requirements/`）
 
 **目录变量解析**：
 

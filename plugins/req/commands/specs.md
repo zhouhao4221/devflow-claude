@@ -31,12 +31,11 @@ model: claude-haiku-4-5-20251001
 ## 存储路径
 
 ```
-<需求根目录>/specs/        # 本地（primary）
-<requirementSource.path>/<requirementsDir>/specs/   # 缓存（readonly 读此处）
+<需求根目录>/specs/
 ```
 
-- **primary**：读写本地 `docs/requirements/specs/`
-- **readonly**：只读缓存，禁止写操作
+- **primary**：读写本仓 `<requirementsDir>/specs/`
+- **readonly**：直读主仓 `<requirementSource.path>/<主仓 requirementsDir>/specs/`（无副本），禁止写操作
 
 ---
 
@@ -73,7 +72,6 @@ updated: <YYYY-MM-DD>
 - **文件命名**：用户输入中文名时，生成 kebab-case 英文文件名（如 `订单数据类型` → `order-types.md`）
 - **查找**：`show` / `edit` 支持中文名或文件名模糊匹配
 - **edit**：修改完成后必须更新 `updated` 字段为当天日期
-- **缓存同步**：Write/Edit 操作 `specs/` 下的文件后，PostToolUse Hook 自动同步到缓存（仅 primary）
 
 ---
 

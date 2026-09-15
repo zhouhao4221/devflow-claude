@@ -28,8 +28,8 @@ model: claude-haiku-4-5-20251001
 | `done` | 完成需求 | `/req:done REQ-001` |
 | `status` | 查看状态 | `/req:status REQ-001` |
 | `init` | 初始化项目 | `/req:init my-project` |
-| `use` | 切换项目 | `/req:use my-project` |
-| `projects` | 列出所有项目 | `/req:projects` |
+| `use` | 绑定主仓（设为 readonly） | `/req:use ../backend` |
+| `projects` | 查看当前需求项目 | `/req:projects` |
 | `migrate` | 迁移本地需求到主仓需求目录 | `/req:migrate my-project` |
 | `modules` | 列出所有模块 | `/req:modules` |
 | `branch` | 分支管理 | `/req:branch init` |
@@ -40,20 +40,10 @@ model: claude-haiku-4-5-20251001
 
 ## 需求存储路径解析
 
-### 路径优先级
+读取 `.devflow/settings.json` 的 `requirementRole` / `requirementsDir`（`.devflow/settings.local.json` 同名字段覆盖），确定需求根目录：
 
-1. **主仓需求目录**（推荐）：`<requirementSource.path>/<requirementsDir>/`
-2. **本地目录**（回退）：`docs/requirements/`
-
-### 解析流程
-
-```
-1. 检查 .claude/settings.local.json 中的 requirementProject
-2. 如果设置了 requirementProject:
-   → 使用 <requirementSource.path>/<requirementsDir>/
-3. 如果未设置:
-   → 回退到本地 docs/requirements/
-```
+- `primary` / 未配置角色：本仓 `requirementsDir`（缺省 `docs/requirements/`）
+- `readonly`：`<requirementSource.path>/<主仓 requirementsDir>/`，无本地副本、直读主仓；未配置 `requirementSource` 时提示先 `/req:use <primary-repo-path>` 绑定
 
 ### 目录结构
 
@@ -74,7 +64,7 @@ template.md    # 需求模板
 
 ### 0. 解析需求路径
 
-读取 `.claude/settings.local.json` 的 `requirementProject`：有绑定时使用 `<requirementSource.path>/<requirementsDir>/active/`，否则使用 `docs/requirements/active/`。
+按上文「需求存储路径解析」确定需求根目录，扫描其 `active/`。
 
 ### 1. 扫描需求目录
 
@@ -108,7 +98,7 @@ template.md    # 需求模板
 
 **头部信息**（每次 `/req` 都展示）：
 
-从 `<plugin-path>/.claude-plugin/plugin.json` 读取版本号，从 `settings.local.json` 读取 `requirementProject`、`requirementRole`、`branchStrategy`，检查 CLAUDE.md 是否含架构描述关键词。
+从 `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` 读取版本号，从 `settings.local.json` 读取 `requirementProject`、`requirementRole`、`branchStrategy`，检查 CLAUDE.md 是否含架构描述关键词。
 
 ```
 需求工作流 v<version> | 项目：<project> (<role>)

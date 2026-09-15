@@ -95,7 +95,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 | 未提供项目名 | 提示 `/req:init my-project` |
 | 项目名含非法字符 | 仅允许字母、数字、连字符 |
 | 本地目录已存在（无 --reinit） | 提示用 `--reinit` 补充 |
-| readonly 本地缓存缺失 | 警告不阻塞，继续初始化 |
+| readonly 指向的主仓需求目录不存在 | 警告不阻塞，继续初始化，提示稍后 `/req:use <primary-repo-path>` 重新绑定 |
 | 权限不足 | 提示检查目录权限 |
 
 ---

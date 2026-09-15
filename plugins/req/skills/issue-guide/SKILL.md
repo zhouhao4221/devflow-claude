@@ -11,13 +11,13 @@ description: Issue 操作引导助手。在执行 /req:issue 命令，或需要�
 
 ## 一、前置：读取平台配置
 
-所有操作开始前，读取 `.claude/settings.local.json` 的 `branchStrategy`：
+所有操作开始前，读取 `.devflow/settings.json`，再用 `.devflow/settings.local.json` 覆盖同名字段：
 
 | 字段 | 用途 |
 |------|------|
-| `repoType` | `github` / `gitea` / `other` — 决定使用哪套 CLI |
-| `giteaUrl` | Gitea 实例地址（**必须从配置读取，禁止从 git remote 猜测**） |
-| `giteaToken` | Gitea API Token |
+| `branchStrategy.repoType` | `github` / `gitea` / `other` — 决定使用哪套 CLI |
+| `branchStrategy.giteaUrl` | Gitea 实例地址（**必须从配置读取，禁止从 git remote 猜测**） |
+| `giteaToken` | Gitea API Token（`.devflow/settings.local.json` 顶层字段，不在 `branchStrategy` 内） |
 
 **OWNER/REPO 解析**：从 `git remote get-url origin` 提取，去掉 `.git` 后缀取最后两段路径。支持 SSH（`git@host:owner/repo.git`）和 HTTPS（`https://host/owner/repo.git`）。
 

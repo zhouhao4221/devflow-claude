@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, python3:*, jq:
 
 统一管理 GitHub / Gitea issue 的全生命周期：创建、编辑、关闭、重开、列表、查看、评论。
 
-> 不受仓库角色限制，readonly 也可执行。不触发缓存同步。
+> 不受仓库角色限制，readonly 也可执行。
 >
 > **CLI 优先级**：GitHub 走 `gh`；Gitea 按 [`_gitea_cli.md`](../shared/_gitea_cli.md) 检测 `tea`，可用即走 `tea`，否则回退 curl。`tea` 不支持的操作（评论列表、标签增删等）始终走 curl。
 
@@ -33,7 +33,7 @@ issue 编号支持 `#42` 和 `42` 两种写法。所有子命令都先执行前�
 
 ## §1 前置检查
 
-读取 `.claude/settings.local.json` 的 `branchStrategy`：
+读取 `.devflow/settings.json` 的 `branchStrategy`（`.devflow/settings.local.json` 同名字段覆盖），`giteaToken` 取 `.devflow/settings.local.json` 顶层字段：
 
 | repoType | 要求 | 失败时 |
 |---------|------|-------|

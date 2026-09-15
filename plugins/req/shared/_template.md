@@ -79,9 +79,9 @@
 
 | 需求类型 | 优先读取 | 回退读取 |
 |---------|---------|---------|
-| REQ-XXX | `docs/requirements/templates/requirement-template.md` | `<plugin-path>/templates/requirement-template.md` |
-| QUICK-XXX | `docs/requirements/templates/quick-template.md` | `<plugin-path>/templates/quick-template.md` |
-| PRD | `docs/requirements/templates/prd-template.md` | `<plugin-path>/templates/prd-template.md` |
+| REQ-XXX | `docs/requirements/templates/requirement-template.md` | `${CLAUDE_PLUGIN_ROOT}/templates/requirement-template.md` |
+| QUICK-XXX | `docs/requirements/templates/quick-template.md` | `${CLAUDE_PLUGIN_ROOT}/templates/quick-template.md` |
+| PRD | `docs/requirements/templates/prd-template.md` | `${CLAUDE_PLUGIN_ROOT}/templates/prd-template.md` |
 
 **模板不存在时终止**：两个路径都不存在时，**必须终止操作**，提示用户执行 `/req:update-template` 恢复模板。不得在无模板的情况下创建或编辑文档。
 

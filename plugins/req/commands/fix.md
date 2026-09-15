@@ -10,7 +10,6 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, m
 
 > **Audience:** Engineer
 > 此命令**不受仓库角色限制**，readonly 仓库也可执行。
-> 不触发缓存同步（无需求文档）。
 >
 > **CLI 优先级**：GitHub 用 `gh`；Gitea 按 [`_gitea_cli.md`](../shared/_gitea_cli.md) 检测 `tea`，可用即走 `tea`，否则回退本文 curl 示例。
 

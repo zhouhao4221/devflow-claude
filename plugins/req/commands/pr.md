@@ -9,7 +9,7 @@ allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent
 根据分支策略中的仓库类型，自动推送分支并创建 PR。
 
 > **Audience:** Engineer
-> 不受仓库角色限制，readonly 也可执行。不触发缓存同步。
+> 不受仓库角色限制，readonly 也可执行。
 >
 > **CLI 优先级**：GitHub 走 `gh pr create`；Gitea 按 [`_gitea_cli.md`](../shared/_gitea_cli.md) 检测，可用 `tea` 时走 `tea pulls create --base <target> --head <branch> --title ... --description ...`，否则回退本文 curl 示例。
 
@@ -48,13 +48,13 @@ allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent
 
 ### 3. 读取策略配置 + 推导合并目标
 
-读取 `.claude/settings.local.json.branchStrategy`：
+读取 `.devflow/settings.json` 的 `branchStrategy`（`.devflow/settings.local.json` 同名字段覆盖）：
 - `model`（`git-flow` / `github-flow` / `trunk-based`，缺省 `github-flow`）
 - `mainBranch`（缺省 `main`）
 - `developBranch`（缺省 `develop`，git-flow 专用）
 - `mergeTarget`（兜底值，缺省 `main`）
 - `repoType`（缺省 `other`）
-- `giteaUrl`、`giteaToken`（仅 gitea 需要）
+- `giteaUrl`（仅 gitea 需要）；`giteaToken` 不在 `branchStrategy` 内，取 `.devflow/settings.local.json` 顶层字段
 - `deleteBranchAfterMerge`（缺省 `true`）
 - `reviewers`（数组，缺省 `[]`；非空则自动设置审核人，无需确认）
 

@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 AI 辅助分析和修改产品需求文档（PRD），支持按章节编辑和从现有需求反推内容。
 
 > **Audience:** Product Manager
-> 存储路径和缓存同步规则见 [_storage.md](../shared/_storage.md)
+> 存储路径规则见 [_storage.md](../shared/_storage.md)
 
 ## 命令格式
 
@@ -39,7 +39,7 @@ AI 辅助分析和修改产品需求文档（PRD），支持按章节编辑和�
 ```
 优先级：
 1. 本地模板：docs/requirements/templates/prd-template.md
-2. 插件模板：<plugin-path>/templates/prd-template.md
+2. 插件模板：${CLAUDE_PLUGIN_ROOT}/templates/prd-template.md
 ```
 
 **两个路径都不存在时，终止操作**：
@@ -167,10 +167,9 @@ AI 智能分析完成
 
 更新元信息表中的「最后更新」字段为当前日期。
 
-### 9. 保存并同步缓存
+### 9. 保存
 
-- 写入本地文件 `docs/requirements/PRD.md`
-- **同步到主仓需求目录**（通过 PostToolUse Hook 自动触发）
+- 写入 `docs/requirements/PRD.md`（写入即生效，无同步步骤）
 
 ### 10. 输出结果
 
@@ -179,7 +178,6 @@ AI 智能分析完成
 路径：docs/requirements/PRD.md
 修改章节：功能需求、技术方案
 版本：v1.0 → v1.1
-缓存：已同步
 
 下一步：
 - /req:prd            查看 PRD 状态

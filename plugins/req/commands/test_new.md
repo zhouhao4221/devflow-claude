@@ -10,7 +10,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 
 为新开发的功能创建自动化测试用例，包括 UT、API 测试和 E2E 测试。
 
-> 存储和缓存同步见 [`_storage.md`](../shared/_storage.md)
+> 存储路径规则见 [`_storage.md`](../shared/_storage.md)
 
 ## 命令格式
 

@@ -79,7 +79,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 ```
 优先级：
 1. 本地模板：docs/requirements/templates/requirement-template.md
-2. 插件模板：<plugin-path>/templates/requirement-template.md
+2. 插件模板：${CLAUDE_PLUGIN_ROOT}/templates/requirement-template.md
 ```
 
 **两个路径都不存在时，终止操作**：

@@ -10,7 +10,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 
 针对指定需求执行综合测试：运行已有测试 → 引导创建新测试 → 交互验证测试要点。
 
-> 存储和缓存同步见 [`_storage.md`](../shared/_storage.md)
+> 存储路径规则见 [`_storage.md`](../shared/_storage.md)
 
 ## 命令格式
 
