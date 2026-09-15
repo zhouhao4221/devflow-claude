@@ -97,7 +97,9 @@ claude plugins list
 - CLAUDE.md 아키텍처 안내 재실행
 - 삭제된 `PRD.md` 또는 모듈 문서 복구
 
-### 1.6 v2에서 업그레이드
+### 1.6 업그레이드 마이그레이션
+
+#### v2 → v3: 설정을 `.devflow/` 로 이전
 
 v3 부터 설정이 `.claude/settings*.json` 에서 `.devflow/` 로 이전되었고, 전역 캐시 `~/.claude-requirements/` 는 제거되었습니다. 기존 프로젝트는 플러그인 업그레이드 후 다음을 실행하세요:
 
@@ -111,6 +113,23 @@ v3 부터 설정이 `.claude/settings*.json` 에서 `.devflow/` 로 이전되었
 - 메인 레포의 요구사항 문서가 온전한지 확인한 뒤, `~/.claude-requirements/projects/<프로젝트명>/` 을 수동으로 삭제해도 됩니다
 
 > 세션 시작 시 DevFlow 설정이 아직 `.claude/` 에 남아 있으면 마이그레이션 실행을 안내합니다.
+
+#### req → rd (v4): 플러그인 이름 변경
+
+v4 부터 req 플러그인은 rd (R&D, 연구개발) 로 이름이 변경되었습니다. 커맨드 접두사 `/req:` 가 `/rd:` 로 바뀌며, 커맨드 이름과 기능은 그대로입니다. 기존 플러그인을 설치한 프로젝트는 세 단계로 마이그레이션합니다:
+
+```
+claude plugins uninstall req@devflow
+claude plugins install rd@devflow
+/rd:migrate
+```
+
+- `/rd:migrate` 는 프로젝트의 `CLAUDE.md`, `docs/prompt/`, 요구사항 템플릿, `.claude/skills/` 에 남은 기존 접두사 참조를 나열하고, 항목별로 확인한 뒤 교체합니다
+- 변경 불필요: `.devflow/` 설정, 요구사항 문서 (`REQ-XXX`), `.claude/.req-*` 로컬 스위치
+- 기존(legacy) PR 리뷰 커맨드는 `/rd:pr` 로 통합되었습니다: `review-pr review` → `/rd:pr review`, `review-pr merge` → `/rd:pr merge`, `review-pr fetch-comments` → `/rd:pr comments`, 단독 `review-pr` → `/rd:pr status`
+- 주의: `/rd:pr` 를 인자 없이 실행하면 **PR 을 생성**합니다 (legacy `review-pr` 는 인자 없이 실행하면 상태 조회)
+
+> marketplace 업데이트 후 legacy req 플러그인에는 `/req:help` 만 남으며, 실행하면 위 마이그레이션 안내가 표시됩니다.
 
 ### 1.7 템플릿 동기화 (선택 사항)
 
@@ -340,8 +359,9 @@ Git Flow 의 hotfix 브랜치는 자동으로 두 PR 을 생성합니다 (→ ma
 AI 코드 리뷰와 머지 사용:
 
 ```
-/rd:pr status              # PR 상태 확인
+/rd:pr status       # PR 상태 확인
 /rd:pr review       # AI 코드 리뷰
+/rd:pr comments     # PR 코멘트를 가져와 수정 목록 생성 후 적용
 /rd:pr merge        # PR 머지
 ```
 
@@ -783,7 +803,9 @@ AI:    🧠 인식: /rd:fix Excel 내보내기 인코딩 --auto
 | 개발 시작 | `/rd:dev` |
 | 커밋 | `/rd:commit` |
 | PR 생성 | `/rd:pr` |
+| PR 상태 조회 | `/rd:pr status` |
 | AI 코드 리뷰 | `/rd:pr review` |
+| PR 코멘트 처리 | `/rd:pr comments` |
 | PR 머지 | `/rd:pr merge` |
 | 테스트 실행 | `/rd:test` |
 | 아카이브 | `/rd:done` |
@@ -793,6 +815,6 @@ AI:    🧠 인식: /rd:fix Excel 내보내기 인코딩 --auto
 | 브랜치 상태 조회 | `/rd:branch status` |
 | 핫픽스 | `/rd:branch hotfix <설명>` |
 | 재초기화 | `/rd:init my-project --reinit` |
-| v2에서 업그레이드 | `/rd:migrate` |
+| 업그레이드 마이그레이션 (v2→v3, req→rd) | `/rd:migrate` |
 | 스펙 문서 조회 | `/rd:specs show <이름>` |
 | 스펙 문서 생성 | `/rd:specs new <이름>` |

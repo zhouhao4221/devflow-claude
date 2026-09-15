@@ -98,7 +98,9 @@ claude plugins list
 - 重新引导 CLAUDE.md 架构描述
 - 恢复被误删的 PRD.md 或模块文档
 
-### 1.6 从 v2 升级
+### 1.6 升级迁移
+
+#### v2 → v3：配置迁到 `.devflow/`
 
 v3 起配置从 `.claude/settings*.json` 迁到 `.devflow/`，并移除了全局缓存 `~/.claude-requirements/`。老项目升级插件后执行：
 
@@ -112,6 +114,23 @@ v3 起配置从 `.claude/settings*.json` 迁到 `.devflow/`，并移除了全局
 - 确认主仓需求文档完整后，可手动删除 `~/.claude-requirements/projects/<项目名>/`
 
 > 会话启动时若检测到 DevFlow 配置仍在 `.claude/`，会提示执行迁移。
+
+#### req → rd（v4）：插件更名
+
+v4 起 req 插件更名为 rd（R&D 研发），命令前缀 `/req:` 改为 `/rd:`，命令名与功能不变。已安装旧插件的项目按三步迁移：
+
+```
+claude plugins uninstall req@devflow
+claude plugins install rd@devflow
+/rd:migrate
+```
+
+- `/rd:migrate` 会列出本项目 `CLAUDE.md`、`docs/prompt/`、需求模板、`.claude/skills/` 中残留的旧前缀引用，逐处确认后替换
+- 无需改动：`.devflow/` 配置、需求文档（`REQ-XXX`）、`.claude/.req-*` 本地开关
+- 旧的 PR 审查命令已并入 `/rd:pr`：`review-pr review` → `/rd:pr review`，`review-pr merge` → `/rd:pr merge`，`review-pr fetch-comments` → `/rd:pr comments`，单独的 `review-pr` → `/rd:pr status`
+- 注意：`/rd:pr` 不带参数是**创建 PR**（旧的 `review-pr` 不带参数是查看状态）
+
+> 更新 marketplace 后，旧插件 req 只剩 `/req:help`，执行它可看到上述迁移说明。
 
 ### 1.7 同步模板（可选）
 
@@ -341,8 +360,9 @@ Git Flow 的 hotfix 分支会自动创建两个 PR（→ main + → develop）�
 PR 创建后，使用 AI 代码审查和合并：
 
 ```
-/rd:pr status              # 查看 PR 状态
+/rd:pr status       # 查看 PR 状态
 /rd:pr review       # AI 代码审查
+/rd:pr comments     # 拉取 PR 评论，AI 生成修改清单并应用
 /rd:pr merge        # 合并 PR
 ```
 
@@ -784,7 +804,9 @@ AI：🧠 识别：/rd:fix Excel 导出中文乱码 --auto
 | 启动开发 | `/rd:dev` |
 | 提交代码 | `/rd:commit` |
 | 创建 PR | `/rd:pr` |
+| 查看 PR 状态 | `/rd:pr status` |
 | AI 代码审查 | `/rd:pr review` |
+| 处理 PR 评论 | `/rd:pr comments` |
 | 合并 PR | `/rd:pr merge` |
 | 运行测试 | `/rd:test` |
 | 完成归档 | `/rd:done` |
@@ -794,6 +816,6 @@ AI：🧠 识别：/rd:fix Excel 导出中文乱码 --auto
 | 查看分支状态 | `/rd:branch status` |
 | 紧急修复 | `/rd:branch hotfix 描述` |
 | 重新初始化 | `/rd:init my-project --reinit` |
-| 从 v2 升级 | `/rd:migrate` |
+| 升级迁移（v2→v3、req→rd） | `/rd:migrate` |
 | 查看规范文档 | `/rd:specs show <名称>` |
 | 创建规范文档 | `/rd:specs new <名称>` |
