@@ -28,7 +28,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 >
 > req 插件已于 v4（REQ-004）更名为 **rd**（R&D 研发）：只换命令前缀 `/req:` → `/rd:`（入口 `/rd:req`），`requirement*` 配置字段、`.claude/.req-*` marker、`REQ-XXX` 编号不变；过渡插件 req（`/req:help`）已移除，老用户按 README / 教程 1.6 迁移。
 
-**版本事实源是各 `plugin.json` + `marketplace.json`**——README / tutorial 不写插件版本号。README 三语已介绍全部 4 个插件；教程三语尚未收录 diag（已知文档债务，非功能不成熟；diag 由 REQ-001 完整交付）。
+**版本事实源是各 `plugin.json` + `marketplace.json`**——README / tutorial 不写插件版本号。README 三语介绍全部 4 个插件（diag 另有 `plugins/diag/README.md`）；教程是 rd 全流程示例，不覆盖 pm / api / diag。
 
 ## 命令与技能结构
 
