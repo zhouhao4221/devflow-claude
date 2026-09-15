@@ -39,10 +39,11 @@ claude plugins list
 ```
 
 这会：
-- 创建本地目录 `docs/requirements/`（active/、completed/、modules/、templates/）
-- 创建全局缓存 `~/.claude-requirements/projects/my-saas/`
+- 创建需求目录 `docs/requirements/`（active/、completed/、modules/、templates/；目录位置可用 `requirementsDir` 调整）
 - 生成 PRD 文档模板 `docs/requirements/PRD.md`
-- 在 `.claude/settings.local.json` 中记录项目名和角色
+- 在 `.devflow/settings.json` 中记录项目名、角色（`primary`）和需求目录（团队共享，纳入 git）
+
+需求文档只在本仓库保存一份，写入即生效，没有缓存和同步。
 
 ### 1.3 CLAUDE.md 架构描述
 
@@ -97,22 +98,20 @@ claude plugins list
 - 重新引导 CLAUDE.md 架构描述
 - 恢复被误删的 PRD.md 或模块文档
 
-### 1.6 缓存重建
+### 1.6 从 v2 升级
 
-全局缓存损坏或丢失时，从本地存储重建：
-
-```
-/req:cache rebuild
-```
-
-其他缓存操作：
+v3 起配置从 `.claude/settings*.json` 迁到 `.devflow/`，并移除了全局缓存 `~/.claude-requirements/`。老项目升级插件后执行：
 
 ```
-/req:cache info          # 查看缓存状态
-/req:cache clear         # 清理当前项目缓存
-/req:cache clear-all     # 清理所有项目缓存
-/req:cache export        # 导出缓存数据
+/req:migrate
 ```
+
+- `requirementProject` / `requirementRole` / `requirementsDir` / `branchStrategy` 搬到 `.devflow/settings.json`，`giteaToken` 搬到 `.devflow/settings.local.json`
+- Claude Code 自身的 hooks / permissions 仍留在 `.claude/settings.json`
+- 只读仓库需重新绑定：`/req:use <主仓路径>`
+- 确认主仓需求文档完整后，可手动删除 `~/.claude-requirements/projects/<项目名>/`
+
+> 会话启动时若检测到 DevFlow 配置仍在 `.claude/`，会提示执行迁移。
 
 ### 1.7 同步模板（可选）
 
@@ -143,19 +142,15 @@ claude plugins list
 
 **配置 Token：**
 
-在项目的 `.claude/settings.local.json` 中，将 token 写入 `branchStrategy.giteaToken` 字段：
+`/req:branch init` 已把 `repoType`、`giteaUrl` 等策略字段写进 `.devflow/settings.json` 的 `branchStrategy`。Token 单独写在项目的 `.devflow/settings.local.json` **顶层**（不在 `branchStrategy` 里）：
 
 ```json
 {
-  "branchStrategy": {
-    "repoType": "gitea",
-    "giteaUrl": "https://your-gitea.com",
-    "giteaToken": "your-token-here"
-  }
+  "giteaToken": "your-token-here"
 }
 ```
 
-> **安全提示**：`settings.local.json` 不应提交到 Git，确认已加入 `.gitignore`。
+> **安全提示**：`.devflow/settings.local.json` 不应提交到 Git，确认已加入 `.gitignore`。
 
 **验证 Token：**
 
@@ -540,18 +535,18 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 ### 关联仓库（前端）
 
 ```
-# 绑定到同一项目
-/req:use my-saas
+# 绑定到主仓库（传主仓库根目录的本机路径）
+/req:use ../backend
 
 # 可以查看需求（只读）
 /req
 /req:show REQ-001
 
-# 可以基于需求开发（从缓存读取）
+# 可以基于需求开发（直读主仓需求目录）
 /req:dev REQ-002
 ```
 
-关联仓库的角色为 `readonly`：
+关联仓库的角色为 `readonly`，主仓路径记录在 `.devflow/settings.local.json` 的 `requirementSource.path`（本机路径，不入 git）：
 - 可以查看和读取需求
 - 可以基于已完成需求开发
 - 不能创建、编辑、变更需求状态
@@ -575,7 +570,7 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 /req:specs show order-types       # 查看订单数据类型定义
 ```
 
-规范文档存储在 `docs/requirements/specs/`，通过缓存自动同步。后端修改后，前端下次查看即为最新版本。
+规范文档存储在主仓库的 `docs/requirements/specs/`，只读仓库直接读取主仓目录，无需同步。后端修改后，前端下次查看即为最新版本。
 
 典型用途：
 - 后端定义数据类型 → 前端查阅字段定义
@@ -799,6 +794,6 @@ AI：🧠 识别：/req:fix Excel 导出中文乱码 --auto
 | 查看分支状态 | `/req:branch status` |
 | 紧急修复 | `/req:branch hotfix 描述` |
 | 重新初始化 | `/req:init my-project --reinit` |
-| 缓存重建 | `/req:cache rebuild` |
+| 从 v2 升级 | `/req:migrate` |
 | 查看规范文档 | `/req:specs show <名称>` |
 | 创建规范文档 | `/req:specs new <名称>` |

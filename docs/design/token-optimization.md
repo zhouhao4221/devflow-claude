@@ -117,7 +117,7 @@ print(f'{n} tokens')
 **做法**：按读取主题切成多个小文件：
 
 ```
-_storage.md        # settings + 存储路径 + 缓存同步
+_storage.md        # settings + 存储路径 + 写入规则（无缓存）
 _branch.md         # 分支策略配置
 _issue.md          # Issue 拉取 + 分支/commit 关联
 _template.md       # 模板约束 + 状态确认
@@ -175,7 +175,7 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 
 **做法**：
 - `validate-requirement.sh` 只输出 `✅` / `❌ <一句话>`，不要 dump 整个文件
-- `sync-cache.sh` 静默成功，只在失败时打印
+- `confirm-before-commit.sh` 默认静默放行，仅拦截时输出决策
 - `session-context.sh` 控制在 30 行以内
 
 ---
@@ -188,7 +188,7 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 
 **收益**：两层。① 机械步骤跑在 haiku 上（`test-runner`）；② **上下文隔离**——原始输出留在 subagent，主会话之后每一轮都不再为它付费，这一层通常比单价差更大。
 
-**禁忌**：小任务不委派（任务说明 + 回传本身有开销，经验阈值 > 1 万 token 才划算）；不要把需要主会话上下文的推理（方案设计、跨文件改动）拆出去——planner/executor 割裂后返工更贵。整条命令的 `model` 仍按 §4.3 只分 haiku / 省略两档。
+**禁忌**：小任务不委派（任务说明 + 回传本身有开销，经验阈值 > 1 万 token 才划算）；不要把需要主会话上下文的推理（方案设计、跨文件改动）拆出去——planner/executor 割裂后返工更贵。整条命令的 `model` 仍按 §4.3 分 haiku / sonnet / 省略三档，委派不是降档的理由。
 
 **已应用**：`/req:test` 阶段一~三回归运行（`test-runner`，haiku）· `/req:dev` §4 / `/req:fix` §1.2 / `/req:do` §2 代码定位（`code-scout`，haiku，主会话只精读返回的 file:line）· `/req:review-pr` 大 PR 需求比对用 `diff-digest` 摘要；代码质量审查改调原生 `/code-review`（自研 `file-reviewer` 已删，实测自研需主会话把 diff 抄进每个 prompt，隔离不成立）。
 
@@ -247,4 +247,4 @@ wc -c plugins/*/shared/*.md | sort -nr
 
 - Anthropic prompt caching: https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
 - Claude tokenizer 行为差异：中文每字 1.5~2 tokens 是因为 BPE 把 UTF-8 多字节字符切多个 token
-- 项目 CLAUDE.md 「命令结构」章节列出了已应用降级的 18 个命令清单
+- 项目 CLAUDE.md「命令与技能结构」章节定义模型分级三档；已应用清单以 `grep -l "^model:" plugins/*/commands/*.md` 为准

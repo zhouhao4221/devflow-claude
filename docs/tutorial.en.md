@@ -39,10 +39,11 @@ In the project root, start Claude Code and run:
 ```
 
 This will:
-- Create the local directory `docs/requirements/` (`active/`, `completed/`, `modules/`, `templates/`)
-- Create the global cache `~/.claude-requirements/projects/my-saas/`
+- Create the requirements directory `docs/requirements/` (`active/`, `completed/`, `modules/`, `templates/`; the location can be adjusted via `requirementsDir`)
 - Generate the PRD template `docs/requirements/PRD.md`
-- Record the project name and role in `.claude/settings.local.json`
+- Record the project name, role (`primary`), and requirements directory in `.devflow/settings.json` (shared with the team, checked into Git)
+
+The requirements docs live in a single copy in this repo — writes take effect immediately, with no cache and no sync.
 
 ### 1.3 CLAUDE.md architecture description
 
@@ -96,22 +97,20 @@ Use cases:
 - Redo the CLAUDE.md architecture prompt
 - Recover a deleted `PRD.md` or module doc
 
-### 1.6 Rebuild cache
+### 1.6 Upgrading from v2
 
-When the global cache is corrupted or missing, rebuild from local storage:
-
-```
-/req:cache rebuild
-```
-
-Other cache operations:
+Starting in v3, configuration moved from `.claude/settings*.json` to `.devflow/`, and the global cache `~/.claude-requirements/` was removed. On an existing project, after upgrading the plugin, run:
 
 ```
-/req:cache info          # Inspect cache state
-/req:cache clear         # Clear the current project's cache
-/req:cache clear-all     # Clear all projects' caches
-/req:cache export        # Export cache data
+/req:migrate
 ```
+
+- `requirementProject` / `requirementRole` / `requirementsDir` / `branchStrategy` move to `.devflow/settings.json`, and `giteaToken` moves to `.devflow/settings.local.json`
+- Claude Code's own hooks / permissions stay in `.claude/settings.json`
+- Read-only repos need to rebind: `/req:use <primary-repo-path>`
+- Once you've confirmed the primary repo's requirements docs are intact, you can manually delete `~/.claude-requirements/projects/<project-name>/`
+
+> At session start, if DevFlow config is still detected under `.claude/`, you'll be prompted to run the migration.
 
 ### 1.7 Sync templates (optional)
 
@@ -142,19 +141,15 @@ If you chose Gitea in `/req:branch init`, a token is required for automated PR c
 
 **Configure the token:**
 
-Write it into `branchStrategy.giteaToken` of `.claude/settings.local.json`:
+`/req:branch init` already wrote strategy fields like `repoType` and `giteaUrl` into `branchStrategy` in `.devflow/settings.json`. The token is written separately, at the **top level** of the project's `.devflow/settings.local.json` (not inside `branchStrategy`):
 
 ```json
 {
-  "branchStrategy": {
-    "repoType": "gitea",
-    "giteaUrl": "https://your-gitea.com",
-    "giteaToken": "your-token-here"
-  }
+  "giteaToken": "your-token-here"
 }
 ```
 
-> **Security**: `settings.local.json` must not be committed to Git — make sure it is in `.gitignore`.
+> **Security**: `.devflow/settings.local.json` must not be committed to Git — make sure it is in `.gitignore`.
 
 **Verify:**
 
@@ -539,18 +534,18 @@ For projects split across frontend and backend repos.
 ### Linked repo (frontend)
 
 ```
-# Bind to the same project
-/req:use my-saas
+# Bind to the primary repo (pass the local path to the primary repo's root)
+/req:use ../backend
 
 # Read-only access
 /req
 /req:show REQ-001
 
-# Develop based on a requirement (reads from cache)
+# Develop based on a requirement (reads directly from the primary repo's requirements directory)
 /req:dev REQ-002
 ```
 
-Linked repos have role `readonly`:
+Linked repos have role `readonly`, with the primary repo's path recorded in `requirementSource.path` in `.devflow/settings.local.json` (a local path, not checked into Git):
 - Can view and read requirements
 - Can develop based on completed requirements
 - Cannot create/edit/transition requirements
@@ -574,7 +569,7 @@ The primary repo owns spec docs (data types, API contracts, error codes); read-o
 /req:specs show order-types
 ```
 
-Specs live in `docs/requirements/specs/` and sync via cache automatically. After the backend edits, the frontend sees the latest on next view.
+Specs live in the primary repo's `docs/requirements/specs/`; read-only repos read the primary repo's directory directly, with no sync needed. After the backend edits, the frontend sees the latest on next view.
 
 Typical uses:
 - Backend defines data types → frontend consumes field definitions
@@ -798,6 +793,6 @@ Natural-language triggers: `one-shot review`, `auto review`, `review and submit`
 | Branch status | `/req:branch status` |
 | Hotfix | `/req:branch hotfix <description>` |
 | Reinitialize | `/req:init my-project --reinit` |
-| Rebuild cache | `/req:cache rebuild` |
+| Upgrading from v2 | `/req:migrate` |
 | View spec doc | `/req:specs show <name>` |
 | Create spec doc | `/req:specs new <name>` |
