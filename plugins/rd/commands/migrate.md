@@ -1,15 +1,16 @@
 ---
-description: 迁移 - 旧布局迁到 .devflow、调整需求目录、req→rd 命令前缀替换
+description: 迁移 - 旧布局迁到 .devflow、调整需求目录、req→rd 命令前缀与插件开关替换
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, mv:*, ls:*, rm:*)
 model: claude-haiku-4-5-20251001
 ---
 
 # 迁移需求
 
-支持三类迁移：
+支持四类迁移：
 1. **配置迁移**：从 v2.x 旧布局（`.claude/` 配置 + `~/.claude-requirements/` 全局缓存）迁到 v3（`.devflow/` + 无缓存）
 2. **目录迁移**：调整需求文档存放目录（`requirementsDir`）
 3. **命令前缀迁移**：req 插件更名为 rd 后，把本项目文件里残留的旧前缀 `/req:` 替换为 `/rd:`（逐项确认）
+4. **插件开关迁移**：项目级 `.claude/settings.json(.local)` 的 `enabledPlugins` 中旧插件名 `req@devflow` 改为 `rd@devflow`（确认后替换）
 
 ## 命令格式
 
@@ -17,7 +18,7 @@ model: claude-haiku-4-5-20251001
 /rd:migrate [--to=<new-requirementsDir>]
 ```
 
-- 无参数：执行配置迁移（旧布局 -> `.devflow/`），并检测旧前缀 `/req` 引用（2C）
+- 无参数：执行配置迁移（旧布局 -> `.devflow/`），并检测旧前缀 `/req` 引用（2C）与项目级插件开关（2D）
 - `--to=<dir>`：把需求目录迁移到新位置并更新 `requirementsDir`
 
 ---
@@ -66,9 +67,18 @@ model: claude-haiku-4-5-20251001
 
 未检测到时输出「未发现 /req 旧前缀引用，无需清理」。
 
+### 2D. 项目级插件开关（req 插件更名为 rd 后）
+
+无参数执行时与 2A、2C 一并检测。团队常把 `enabledPlugins` 写在提交进 git 的 `.claude/settings.json`，插件改名后旧键失效——成员拉代码后项目启用的仍是只剩 `/req:help` 的过渡插件。
+
+- 读取 `.claude/settings.json` 与 `.claude/settings.local.json` 的 `enabledPlugins`
+- 存在旧键 `req@devflow` → 展示所在文件与当前值，确认后键名改为 `rd@devflow`、值保持不变；`rd@devflow` 已存在时只删除旧键
+- 只改这一个键，不动其它插件与 Claude Code 自身配置（hooks / permissions）；这是本命令唯一会修改 `.claude/` 的地方
+- 未检测到旧键时静默跳过
+
 ### 3. 输出结果
 
-显示迁移类型、搬运的字段/文件、新配置位置与后续提示（如 readonly 重绑定、删除旧缓存）。执行了 2C 时附替换汇总：已替换与跳过的 `文件:行号` 清单。
+显示迁移类型、搬运的字段/文件、新配置位置与后续提示（如 readonly 重绑定、删除旧缓存）。执行了 2C 时附替换汇总：已替换与跳过的 `文件:行号` 清单；执行了 2D 时列出改动的 settings 文件，并提示提交以便团队成员同步。
 
 ---
 

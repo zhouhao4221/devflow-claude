@@ -142,15 +142,6 @@ else:
    - tea CLI 无对应子命令，统一走 curl
    - 单个失败（用户名不存在 / 权限不足）不阻塞主流程，输出 ⚠️ 提示后继续
 
-成功输出：
-```
-✅ PR 已创建
-   <url>
-已请求审核：@user1, @user2     ← reviewers 非空时输出
-改动 <N> 文件 <M> 行 → 建议 /rd:pr review（<小 PR：主会话内联审查 | 大 PR：将调用原生 /code-review，档位自动选>）
-合并后 /rd:pr merge，或 /rd:done 归档
-```
-
 #### github
 
 检查 `command -v gh`。可用 → `gh pr create --title "..." --body "..." --base <target>`，`reviewers` 非空时追加 `--reviewer <逗号分隔列表>`（**不询问**直接执行）。不可用 → 提示命令 + 浏览器 compare 链接。
@@ -161,6 +152,17 @@ else:
 ```
 分支已推送：<branch> → <target>
 合并命令：git checkout <target> && git merge <branch>
+```
+
+#### 成功输出（gitea / github 共用）
+
+PR 创建成功或复用已有 open PR 时输出；github 的 `gh` 不可用、只给出 compare 链接时，第一行改为「请打开链接创建 PR：<compare 链接>」，其余行照常输出（other 按上方小节输出，不适用）：
+```
+✅ PR 已创建
+   <url>
+已请求审核：@user1, @user2     ← reviewers 非空时输出
+改动 <N> 文件 <M> 行 → 建议 /rd:pr review（<小 PR：主会话内联审查 | 大 PR：将调用原生 /code-review，档位自动选>）
+合并后 /rd:pr merge，或 /rd:done 归档
 ```
 
 ### 7. 多目标处理

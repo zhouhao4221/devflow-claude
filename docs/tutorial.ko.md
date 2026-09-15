@@ -126,6 +126,7 @@ claude plugins install rd@devflow
 
 - `/rd:migrate` 는 프로젝트의 `CLAUDE.md`, `docs/prompt/`, 요구사항 템플릿, `.claude/skills/` 에 남은 기존 접두사 참조를 나열하고, 항목별로 확인한 뒤 교체합니다
 - 변경 불필요: `.devflow/` 설정, 요구사항 문서 (`REQ-XXX`), `.claude/.req-*` 로컬 스위치
+- 프로젝트 `.claude/settings.json` 의 `enabledPlugins` 에 `"req@devflow": true` 가 있으면 `rd@devflow` 로 바꿔야 합니다 (`/rd:migrate` 가 감지해 확인 후 교체하며, 변경 후 커밋하세요). 그렇지 않으면 저장소를 받은 팀원은 여전히 기존 플러그인을 활성화합니다
 - 기존(legacy) PR 리뷰 커맨드는 `/rd:pr` 로 통합되었습니다: `review-pr review` → `/rd:pr review`, `review-pr merge` → `/rd:pr merge`, `review-pr fetch-comments` → `/rd:pr comments`, 단독 `review-pr` → `/rd:pr status`
 - 주의: `/rd:pr` 를 인자 없이 실행하면 **PR 을 생성**합니다 (legacy `review-pr` 는 인자 없이 실행하면 상태 조회)
 
