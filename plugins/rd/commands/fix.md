@@ -304,7 +304,7 @@ AI 按确认的方案修改代码。
 
 | 方式 | 命令 | 文档 | 分支 | 适用场景 |
 |------|------|------|------|---------|
-| 轻量修复 | `/rd:fix` | 无 | fix/slug | 日常小 bug，改动 < 5 个文件 |
+| 轻量修复 | `/rd:fix` | 无 | fix/slug | 日常小 bug，无需留痕（选型见 `_granularity.md`） |
 | 有记录的修复 | `/rd:new-quick` | QUICK 文档 | fix/QUICK-XXX-slug | 需要记录的修复，方便追溯 |
 | 紧急修复 | `/rd:branch hotfix` | 无 | hotfix/slug | 线上紧急问题，从主分支拉 |
 
