@@ -7,10 +7,11 @@
 | 编号 | QUICK-006 |
 | 改动类型 | bug修复 |
 | 端类型 | 全栈 |
-| 状态 | 开发中 |
+| 状态 | 已完成 |
 | 模块 | 快速修复 |
 | 优先级 | P2 |
 | 创建时间 | 2026-09-15 |
+| 完成日期 | 2026-09-16 |
 | 负责人 | |
 | 关联需求 | REQ-005、QUICK-005 |
 | branch | fix/QUICK-006-pr-merge-without-gh |
@@ -20,8 +21,8 @@
 
 - [x] 草稿
 - [x] 开发中
-- [ ] 测试中
-- [ ] 已完成
+- [x] 测试中
+- [x] 已完成
 
 ---
 
@@ -72,7 +73,7 @@
 - [x] `pr-ops.md` 通用前置写明 gh 可用判定（已安装且已登录）、只读回退公开 API、写操作降级为链接与手动指引
 - [x] `pr-ops.md` merge 小节 gh 不可用时输出 PR 链接 + 按 `mergeMethod` 的网页按钮提示，用户回复已合后经 API 核实 `merged` 才进入「合并后」
 - [x] `pr.md` 步骤 6 github 判定含已登录；`.devflow/settings.json` 的 `mergeMethod` 为 `squash`
-- [ ] 升级到含本修复的 rd 版本后，在 gh 未登录环境对一个 open PR 执行 `/rd:pr merge` → 输出链接与 Squash and merge 提示，手动合并后核实通过并提示 `/rd:done`
+- [x] 升级到含本修复的 rd 版本后，在 gh 未登录环境对一个 open PR 执行 `/rd:pr merge` → 输出链接与 Squash and merge 提示，手动合并后核实通过并提示 `/rd:done`（2026-09-16 于 #86、#87 各实测一次，均按预期）
 - [x] `python3 scripts/check-layout.py --check` 通过；确认无副作用
 
 ---
@@ -82,3 +83,7 @@
 ### 2026-09-15
 - 创建快速需求（REQ-005 补测验收项 2：#80 `/rd:pr merge` 在 gh 未登录时无处理规则，维护者手动 squash 合并；同时发现本仓库 mergeMethod 与 squash 约定不符）
 - 方案经用户确认，进入开发；完成 3 个文件改动，文档核对项与守卫通过；运行时验证（gh 未登录环境执行 `/rd:pr merge`）待发版升级后补测
+
+### 2026-09-16
+- `/rd:test`（rd 5.1.0）：回归三项通过（布局守卫、需求守卫、diag 冒烟 37/37）；交互验证最后一项按 #86 / #87 实测勾选，验证方式 5/5；状态→测试中
+- 用户确认归档（`/rd:done`，rd 5.1.0），状态→已完成，移至 completed/
