@@ -7,20 +7,20 @@
 | 编号 | QUICK-007 |
 | 改动类型 | 优化 |
 | 端类型 | 全栈 |
-| 状态 | 草稿 |
+| 状态 | 开发中 |
 | 模块 | 快速修复 |
 | 优先级 | P2 |
 | 创建时间 | 2026-09-16 |
 | 负责人 | |
 | 关联需求 | REQ-006 |
-| branch | - |
+| branch | fix/QUICK-007-granularity-axis |
 | issue | - |
 
 ## 生命周期
 
 - [x] 草稿
-- [ ] 方案确认
-- [ ] 开发中
+- [x] 方案确认
+- [x] 开发中
 - [ ] 已完成
 
 ---
@@ -81,20 +81,21 @@ REQ / QUICK / 无文档三层的选择标准只在 `_granularity.md` 定义一�
 | plugins/rd/commands/do.md | 修改 | 规模判定改为引用 |
 | plugins/rd/commands/split.md | 修改 | 阈值改为引用 |
 | plugins/rd/commands/upgrade.md | 修改 | 元信息转换表去重 |
+| plugins/rd/commands/fix.md | 修改 | `/rd:fix` 与 `new-quick` 的分界改为「无需留痕」 |
 
 ### 改动量
 - 预估：小
-- 涉及文件：4 个
+- 涉及文件：5 个
 - 代码行数：约 30 行
 
 ---
 
 ## 验证方式
 
-- [ ] `_granularity.md` 含三层判定表与「他人点头」信号清单；仓库内（历史文档除外）「5 个文件」类阈值数字只出现在该文件
-- [ ] `do.md`、`split.md` 的 REQ / QUICK 判断均为引用，不含独立数字
-- [ ] `upgrade.md` 元信息转换表中「类型」只有端类型一个来源
-- [ ] `python3 scripts/check-layout.py --check` 通过；确认无副作用
+- [x] `_granularity.md` 含三层判定表与「他人点头」信号清单；仓库内（历史文档除外）「5 个文件」类阈值数字只出现在该文件（实测：`_granularity.md` 已无该数字，仅余 `new-quick.md:145`，归 REQ-006 重写时处理）
+- [x] `do.md`、`split.md` 的 REQ / QUICK 判断均为引用，不含独立数字
+- [x] `upgrade.md` 元信息转换表中「类型」只有端类型一个来源
+- [x] `python3 scripts/check-layout.py --check` 通过；确认无副作用（相对链接 92 → 94，为新增的两条 `_granularity.md` 引用）
 
 ---
 
@@ -103,3 +104,5 @@ REQ / QUICK / 无文档三层的选择标准只在 `_granularity.md` 定义一�
 ### 2026-09-16
 - 创建快速需求（讨论 QUICK 流程合理性时发现；生命周期与归档链路的问题另开 REQ-006）
 - 按维护者意见调整分工：`new-quick.md` 细节修正、状态机收口、`upgrade` 状态映射全部并入 REQ-006，本需求只保留阈值换轴与 `upgrade` 元信息去重，与 REQ-006 无共同文件
+- 开发中发现 `fix.md:307` 也以「< 5 个文件」分界 `/rd:fix` 与 `new-quick`，一并纳入（5 个文件，仍与 REQ-006 无交集）；「需他人点头」信号清单加入「权限 / 安全 / 资金」
+- 5 个文件改动完成，验证方式 4 项全部通过；待 PR 合并后 `/rd:done`
