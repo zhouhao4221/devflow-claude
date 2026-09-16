@@ -1,6 +1,6 @@
 # 公共逻辑参考 - 存储与配置
 
-> 此文档定义 settings 文件写入、存储路径、写入规则（无缓存）、需求编号、元信息等共用规则。
+> 此文档定义 settings 文件写入、存储路径、写入规则（无缓存）、双轨状态机、需求编号、元信息等共用规则。
 >
 > 同伴文档（同目录，按需 Read；此处不用链接，避免把整组共享文件拖进上下文）：`_branch.md`（分支策略）、`_issue.md`（Issue 关联）、`_template.md`（模板与状态确认）、`_granularity.md`（需求粒度）、`_claude-md.md`（架构检查）。
 
@@ -77,8 +77,9 @@ modules/      # 模块文档
 specs/        # 规范文档（数据类型、接口契约等，跨仓库共享）
 active/       # 进行中需求
 completed/    # 已完成需求
-INDEX.md      # 索引
 ```
+
+索引不落盘：`/rd:req` 按 `active/`、`completed/` 实时渲染。
 
 **无全局缓存**：需求文档只存在于 primary 仓库的 `requirementsDir`，是唯一事实源。readonly 仓库不复制、不缓存，直接读 primary 仓库目录。
 
@@ -106,6 +107,25 @@ INDEX.md      # 索引
 - **readonly**：禁止一切写操作（创建、编辑、状态更新）。仅读取 `requirementSource.path`。
 
 > **历史说明（v2.x → v3 breaking change）**：v2.x 曾用 `~/.claude-requirements/` 全局缓存 + PostToolUse `sync-cache.sh` 单向同步，readonly 从缓存读。v3 起**移除缓存**：readonly 改为经 `requirementSource.path` 直读主仓，`sync-cache.sh` 不再注册。命令内**不应再有任何缓存读写、cp 到缓存、或全局索引（`~/.claude-requirements/index.json`）操作**。
+
+## 双轨状态机
+
+需求状态只由下表中的命令写入，其它命令不改状态。REQ 与 QUICK 走同一组命令，QUICK 没有评审站。
+
+| 状态 | 写入命令 | REQ | QUICK |
+|------|---------|-----|-------|
+| 草稿 | `/rd:new` / `/rd:new-quick` | ✅ | ✅（方案确认结论写入「开发记录」，不是独立状态） |
+| 待评审 | `/rd:review` | ✅ | — |
+| 评审通过 / 评审驳回 | `/rd:review pass` / `reject` | ✅ | — |
+| 开发中 | `/rd:dev`（首次进入） | ✅ | ✅ |
+| 测试中 | `/rd:test`（完成时） | ✅ | ✅ |
+| 已完成 | `/rd:done`（需 y/n 确认，门槛：测试中） | ✅ | ✅ |
+
+**验证章节按类型选择**（`/rd:test` 的交互验证与 `/rd:done` 的未勾项检查共用）：REQ 读「六、测试要点」，QUICK 读「验证方式」；章节缺失视为无检查项。
+
+**未勾项放行标注**：`- [ ] xxx（待观察：原因）` / `- [ ] xxx（未实测：原因）` 视为已说明，`/rd:done` 放行并在输出中列出；裸 `- [ ]` 要求用户确认。
+
+**一致性守卫**：`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/check-requirements.py --check`（随插件分发，在项目根执行；readonly 仓库自动跳过）校验 `completed/` 内状态为「已完成」、`active/` 内不为「已完成」、状态与生命周期已勾格一致、编号唯一；CI 与 `/rd:release` 发布前置执行。
 
 ## 需求编号生成
 

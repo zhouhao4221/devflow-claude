@@ -6,12 +6,12 @@
 |-----|-----|
 | 编号 | REQ-006 |
 | 类型 | 全栈 |
-| 状态 | 草稿 |
+| 状态 | 开发中 |
 | 模块 | 插件架构 |
 | 优先级 | P2 |
 | 创建日期 | 2026-09-16 |
 | 负责人 | - |
-| branch | - |
+| branch | feat/REQ-006-quick-lifecycle-unified-chain |
 | issue | - |
 
 ## 生命周期
@@ -19,9 +19,9 @@
 <!-- 需求状态流转：草稿 → 待评审 → 评审通过 → 开发中 → 测试中 → 已完成 -->
 
 - [x] 草稿（编写中）
-- [ ] 待评审
-- [ ] 评审通过
-- [ ] 开发中
+- [x] 待评审
+- [x] 评审通过
+- [x] 开发中
 - [ ] 测试中
 - [ ] 已完成
 
@@ -85,18 +85,18 @@ QUICK 的价值是省掉对齐成本（评审），不是省掉验证。让它�
 
 > 列出所有功能点，开发完成后勾选
 
-- [ ] **QUICK 状态机四态**：草稿 → 开发中 → 测试中 → 已完成；「方案确认」不再是状态，确认结果记入「开发记录」；`quick-template.md` 生命周期复选框同步为四项
-- [ ] **状态机单一事实源**：`_storage.md` 新增「双轨状态机」小节，集中定义 REQ 六态与 QUICK 四态及各状态由哪条命令写入；`new-quick.md`、`dev.md`、`upgrade.md`、根 `CLAUDE.md` 改为引用
-- [ ] **new-quick 只创建**：保留编号、模板、方案生成与确认；确认后状态写「草稿」并提示 `/rd:dev QUICK-XXX`；删除步骤 8 的开发引导与步骤 9 的归档
-- [ ] **dev 支持新状态机**：QUICK 前置检查表改为 草稿 / 开发中 / 测试中 允许、已完成 警告；首次进入写「开发中」
-- [ ] **test 支持 QUICK**：验证清单按类型读取——REQ 读「六、测试要点」，QUICK 读「验证方式」；交互验证逐项引导并勾选；完成后状态写「测试中」；回归阶段照旧按 `testing.md`，`--skip-*` 可跳过
-- [ ] **done 门槛统一**：REQ 与 QUICK 均要求「测试中」；未勾项检查按类型选章节；带标注的未勾项（`- [ ] xxx（待观察：…）` / `（未实测：…）`）直接放行并在输出中列出，裸 `- [ ]` 要求确认
-- [ ] **索引与目录一致**：二选一，由评审确定——方案 A（推荐）`/rd:req` 按 `active/`、`completed/` 实时渲染索引，删除 `INDEX.md` 持久化文件与「自动维护」声明，`fix.md` 的关联匹配改为扫描 `active/` 标题行；方案 B `done.md` 与 `new-quick.md` 各补索引写入步骤
-- [ ] **PRD 追踪范围明确**：PRD「需求追踪」仅跟踪 REQ；QUICK 静默跳过且不报错，在 `done.md` 中写明
-- [ ] **status / req 支持 QUICK**：`status.md` 查找路径与输出覆盖 `QUICK-XXX-*.md`（进度栏显示「验证方式」）；`/rd:req` 分组展示包含 QUICK
-- [ ] **upgrade 状态映射随新状态机**：草稿 → 草稿、开发中 → 开发中、测试中 → 测试中、已完成不允许；新 REQ 的评审记录追加「升级自 QUICK-XXX，未经评审」
-- [ ] **需求文档一致性守卫**：新增 `scripts/check-requirements.py`（或并入 `check-layout.py`）：`completed/` 内状态必须为「已完成」且 `active/` 内不得为「已完成」；元信息状态与生命周期复选框一致；编号唯一且两目录不重复；若索引持久化则与目录一致。接入 `check.yml` 与 `/rd:release` 发布前置
-- [ ] **文档同步**：根 `CLAUDE.md` 双轨表与状态流转行、README / 教程三语中 QUICK 生命周期描述、`new-quick.md` 的「与正式需求的区别」表
+- [x] **QUICK 状态机四态**：草稿 → 开发中 → 测试中 → 已完成；「方案确认」不再是状态，确认结果记入「开发记录」；`quick-template.md` 生命周期复选框同步为四项
+- [x] **状态机单一事实源**：`_storage.md` 新增「双轨状态机」小节，集中定义 REQ 六态与 QUICK 四态及各状态由哪条命令写入；`new-quick.md`、`dev.md`、`upgrade.md`、根 `CLAUDE.md` 改为引用
+- [x] **new-quick 只创建**：保留编号、模板、方案生成与确认；确认后状态写「草稿」并提示 `/rd:dev QUICK-XXX`；删除步骤 8 的开发引导与步骤 9 的归档
+- [x] **dev 支持新状态机**：QUICK 前置检查表改为 草稿 / 开发中 / 测试中 允许、已完成 警告；首次进入写「开发中」
+- [x] **test 支持 QUICK**：验证清单按类型读取——REQ 读「六、测试要点」，QUICK 读「验证方式」；交互验证逐项引导并勾选；完成后状态写「测试中」；回归阶段照旧按 `testing.md`，`--skip-*` 可跳过
+- [x] **done 门槛统一**：REQ 与 QUICK 均要求「测试中」；未勾项检查按类型选章节；带标注的未勾项（`- [ ] xxx（待观察：…）` / `（未实测：…）`）直接放行并在输出中列出，裸 `- [ ]` 要求确认
+- [x] **索引与目录一致**：二选一，由评审确定——方案 A（推荐）`/rd:req` 按 `active/`、`completed/` 实时渲染索引，删除 `INDEX.md` 持久化文件与「自动维护」声明，`fix.md` 的关联匹配改为扫描 `active/` 标题行；方案 B `done.md` 与 `new-quick.md` 各补索引写入步骤
+- [x] **PRD 追踪范围明确**：PRD「需求追踪」仅跟踪 REQ；QUICK 静默跳过且不报错，在 `done.md` 中写明
+- [x] **status / req 支持 QUICK**：`status.md` 查找路径与输出覆盖 `QUICK-XXX-*.md`（进度栏显示「验证方式」）；`/rd:req` 分组展示包含 QUICK
+- [x] **upgrade 状态映射随新状态机**：草稿 → 草稿、开发中 → 开发中、测试中 → 测试中、已完成不允许；新 REQ 的评审记录追加「升级自 QUICK-XXX，未经评审」
+- [x] **需求文档一致性守卫**：新增 `scripts/check-requirements.py`（或并入 `check-layout.py`）：`completed/` 内状态必须为「已完成」且 `active/` 内不得为「已完成」；元信息状态与生命周期复选框一致；编号唯一且两目录不重复；若索引持久化则与目录一致。接入 `check.yml` 与 `/rd:release` 发布前置
+- [x] **文档同步**：根 `CLAUDE.md` 双轨表与状态流转行、README / 教程三语中 QUICK 生命周期描述、`new-quick.md` 的「与正式需求的区别」表
 
 ---
 
@@ -247,7 +247,7 @@ stateDiagram-v2
 
 | 日期 | 评审人 | 结论 | 意见 |
 |-----|-------|------|------|
-| - | - | - | - |
+| 2026-09-16 | haiqing | 通过 | 索引方案未另行指定，按文档推荐取方案 A（`/rd:req` 实时渲染，删除 `INDEX.md`） |
 
 ---
 
@@ -256,6 +256,7 @@ stateDiagram-v2
 | 日期 | 变更内容 | 影响范围 |
 |-----|---------|---------|
 | 2026-09-16 | 初始版本 | - |
+| 2026-09-16 | PR #87 原生 `/code-review high` 10 条发现全部修正：存量 QUICK 补「测试中」格、upgrade 归档写已完成、dev 对 QUICK 不生成十一章并勾生命周期、req 分组补齐七态、new-quick 回写方案并回收孤儿草稿、dev-guide / `_template.md` 同步状态机、守卫补绝对路径 / readonly / 编号格式 / 单调勾选并移到 `plugins/rd/scripts/` 随插件分发 | 十一章、涉及文件 |
 | 2026-09-16 | 按维护者意见「测试环节应该是要的」重构范围：QUICK 接入 `test`，状态机改四态，`new-quick` 缩为创建，新增一致性守卫；标题由「需求归档链路补齐 QUICK 与索引维护」改为现名 | 一~七章 |
 
 ---
@@ -276,18 +277,55 @@ stateDiagram-v2
 
 ### 11.1 数据模型
 
-_开发阶段填充_
+> DevFlow 为 CLI 插件，无数据库；此处为状态机与文档结构层面的变更。
+
+| 对象 | 变更 |
+|------|------|
+| QUICK 状态 | 四态：草稿 → 开发中 → 测试中 → 已完成。写入命令：`new-quick` 写草稿，`dev` 写开发中，`test` 写测试中，`done` 写已完成。「方案确认」不再是状态，确认结论记入「开发记录」 |
+| `_storage.md` | 新增「双轨状态机」小节：REQ 六态 / QUICK 四态 / 各状态由哪条命令写入 / 验证章节映射（REQ「六、测试要点」、QUICK「验证方式」）/ 未勾项放行标注格式 `（待观察：…）` `（未实测：…）`。其余文件只引用此节 |
+| `quick-template.md` | 生命周期复选框改四项；「验证方式」下加注释说明放行标注格式 |
+| 索引（方案 A） | 删除 `docs/requirements/INDEX.md` 与 `templates/index-template.md`；`/rd:req` 按目录实时渲染；`_storage.md`、`req.md`、`modules.md`、pm `_common.md` 的目录结构去掉 `INDEX.md`；`check-layout.py` 的 STALE_DOCS 去掉该路径 |
+| PRD 追踪表 | 保留，只跟 REQ |
 
 ### 11.2 API 设计
 
 > 基于第五章接口需求，结合项目代码和 CLAUDE.md API 风格，生成具体技术方案
 
-_开发阶段填充_
+- **`new-quick.md`**：删除步骤 8「确认后进入开发」与步骤 9「开发完成」，改为「确认后状态保持草稿，方案确认结论写入开发记录，输出下一步 `/rd:dev QUICK-XXX`」；「跳过：评审、测试阶段」改为「跳过评审」；子标题编号 5.x、检查移到确认前、末尾对比表改引用 `_granularity.md`；`allowed-tools` 去掉不再需要的 git 相关项
+- **`dev.md`**：QUICK 前置检查表改为 草稿 / 开发中 / 测试中 允许、已完成 警告；首次进入写「开发中」
+- **`test.md`**：前置状态「开发中 / 测试中」两种类型通用；「提取测试要点」改为按类型取验证章节；交互验证逐项勾选写回；完成写「测试中」
+- **`done.md`**：门槛统一「测试中」；未勾项章节按类型；带标注未勾项放行并列出，裸 `- [ ]` 要求确认；PRD 仅 REQ、QUICK 静默跳过；不再更新索引，末尾提示 `/rd:req`；已在 `completed/` 时提示退出
+- **`status.md`**：查找路径覆盖 `QUICK-XXX-*.md`；QUICK 进度栏显示「验证方式（n/m）」；`--brief` 同理
+- **`req.md`**：编号提取 REQ / QUICK；分组增加「测试中」与「已完成（最近 10 条，扫 `completed/`）」；「INDEX.md（自动生成）」改为「索引由本命令实时渲染」
+- **`upgrade.md`**：状态映射 草稿→草稿、开发中→开发中、测试中→测试中、已完成不允许；创建新 REQ 时评审记录追加「升级自 QUICK-XXX，未经评审」
+- **`fix.md`**：关联需求匹配从「读 INDEX.md」改为「扫 `active/*.md` 首行标题 + 模块行」，成本表同步
+- **`modules.md`**：「索引自动更新」小节改为「索引由 `/rd:req` 实时渲染，无持久化文件」
+- **`init.md`**：核对是否复制 `index-template.md`，是则去掉
+- **守卫 `plugins/rd/scripts/check-requirements.py`**（新建，随插件分发，下游 `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/check-requirements.py --check`；仓库根 `scripts/check-requirements.py` 为薄包装供 CI 与发布前置调用）：读 `.devflow/settings.json` 的 `requirementsDir`；规则：`completed/` 内状态必须「已完成」、`active/` 内不得「已完成」、状态与生命周期最后一个已勾格一致、编号唯一且两目录不重复；`--check` 退出 1。接入 `check.yml` 第三步、`release.md` 发布前置、`CLAUDE.md` 维护规则 1
+- **文档同步**：根 `CLAUDE.md` 双轨表与状态流转行、守卫描述；README 三语生命周期行；教程三语核对 QUICK 段落
 
 ### 11.3 文件改动清单
 
-_开发阶段填充_
+| 组 | 文件 | 类型 |
+|----|------|------|
+| A 状态机定义 | `plugins/rd/shared/_storage.md`、`plugins/rd/templates/quick-template.md` | 修改 |
+| B 生命周期命令 | `new-quick.md`、`dev.md`、`test.md`、`done.md`、`upgrade.md` | 修改 |
+| C 查询与索引 | `req.md`、`status.md`、`fix.md`、`modules.md`、`init.md`（核对）、`plugins/pm/shared/_common.md`、`scripts/check-layout.py`（STALE_DOCS） | 修改 |
+| C 删除 | `docs/requirements/INDEX.md`、`plugins/rd/templates/index-template.md` | 删除 |
+| D 守卫 | `scripts/check-requirements.py`（新建）、`.github/workflows/check.yml`、`release.md` | 新建 / 修改 |
+| E 文档 | 根 `CLAUDE.md`、`README.md` / `.en` / `.ko` | 修改 |
+| F 需求文档 | 本文档十一章回写、功能清单勾选 | 修改 |
+
+共 24 个文件（22 改、1 新建、2 删）。
 
 ### 11.4 实现步骤
 
-_开发阶段填充_
+1. **A 状态机定义**（主会话）：先写 `_storage.md` 的状态机小节，作为后续所有引用的契约
+2. **B 生命周期命令**（主会话）：五条命令是契约的首版消费者，不委派；每条改完跑 `check-layout.py --check`
+3. **C 查询与索引**（主会话）：删 INDEX 相关、改 req / status / fix / modules，核对 init
+4. **D 守卫**（委派 `impl-worker`）：规格定到规则级、独立文件、验收命令明确（本仓库 `--check` 通过；人为改坏一处退出 1）；主会话复核 diff 后接 CI 与 release.md。实施记录：`impl-worker` 交付后主会话复核，状态值与生命周期标签均剥前缀 emoji（存量 REQ-003 状态为「🎉 已完成」、`upgrade.md` 模板标签为「✅ 评审通过」），`--root` 参数供下游与负例测试使用
+5. **E 文档同步**（主会话）
+6. **验证**：`check-layout.py`、新守卫、diag 冒烟全部通过；存量 QUICK-006 / QUICK-007 仍为「开发中」，新规则下需先 `/rd:test` 再 `/rd:done`，作为归档时的 dogfooding，不在本 PR 内处理
+7. **收尾**：回写本章、勾功能清单，压成单提交，`/rd:pr`
+
+Changelog 行为变更：`new-quick` 不再自动开发与归档；QUICK 生命周期改四态、下游需 `/rd:update-template quick`；`INDEX.md` 不再生成，已有项目可删除；新增 `check-requirements.py`。

@@ -42,7 +42,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 - **命令同名 skill 镜像**：与 command 落在同一菜单、`description` 一模一样，每条命令重复两遍（`claude plugin details req` 里出现 `do, do`、`pr, pr`），多出的那份 description 还白占 always-on token。原 `scripts/gen-skills.py` 按 `SKIP_MIRROR` 名单派生的 51 个镜像（req 23 · pm 12 · api 6 · uat 6 · diag 4）已整体删除。
 - **共享参考文档放 `commands/`**：`_storage.md` 之类会变出 `/rd:_storage` 等 12 个伪命令。统一放 `plugins/<p>/shared/`（rd 10 · pm 1 · api 1）。
 
-`scripts/check-layout.py` 一次性守住四条：`skills/` 无命令镜像、`commands/` 无非命令文件、所有相对链接可达、插件内无过时引用（`.claude/settings*` 读写 DevFlow 字段、`sync-cache` / 全局缓存、缓存同步类表述、未定义的 `<plugin-path>`；迁移说明与 Claude Code 自身配置项豁免，确需保留加 `stale-ok`）。`--check` 报错退 1（发布前置，`.github/workflows/check.yml` 在每个 PR 上连同 diag 冒烟测试自动跑），不带参数则自动清理可清理的部分。
+`scripts/check-layout.py` 一次性守住四条：`skills/` 无命令镜像、`commands/` 无非命令文件、所有相对链接可达、插件内无过时引用（`.claude/settings*` 读写 DevFlow 字段、`sync-cache` / 全局缓存、缓存同步类表述、未定义的 `<plugin-path>`；迁移说明与 Claude Code 自身配置项豁免，确需保留加 `stale-ok`）。`--check` 报错退 1（发布前置，`.github/workflows/check.yml` 在每个 PR 上连同 diag 冒烟测试自动跑），不带参数则自动清理可清理的部分。`scripts/check-requirements.py --check` 守需求目录：`completed/` 内状态为已完成、`active/` 内不为已完成、状态与生命周期已勾格一致、编号唯一，同样进 CI 与发布前置。
 
 命令 frontmatter：
 
@@ -99,13 +99,13 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 | | REQ（正式需求） | QUICK（快速修复） |
 |---|---|---|
-| 生命周期 | 📝 草稿 → 👀 待评审 → ✅ 评审通过 → 🔨 开发中 → 🧪 测试中 → 🎉 已完成 | 草稿 → 方案确认 → 开发中 → 已完成（跳过评审+测试） |
+| 生命周期 | 📝 草稿 → 👀 待评审 → ✅ 评审通过 → 🔨 开发中 → 🧪 测试中 → 🎉 已完成 | 草稿 → 开发中 → 测试中 → 已完成（只跳过评审） |
 | 入口 | `/rd:new` | `/rd:new-quick` |
 | 模板 | `requirement-template.md`（一~十一章） | `quick-template.md`（问题/方案/验证/记录） |
-| 开发门槛 | `/rd:dev` 拒绝未评审的 REQ | 草稿即可开发 |
+| 开发门槛 | `/rd:dev` 拒绝未评审的 REQ | 草稿即可开发（方案在 `new-quick` 内确认，不是状态） |
 | 编号 | `REQ-XXX` | `QUICK-XXX`（扫描本地需求目录取最大值+1） |
 
-状态流转由命令驱动：`/rd:review pass/reject` · `/rd:dev`（自动） · `/rd:test`（自动）· `/rd:done`（必须 y/n 确认）。`/rd:upgrade <QUICK-XXX>` 将未完成的 QUICK 升级为 REQ（4 阶段扩 6 阶段）。无文档的轻量任务走 `/rd:fix`（修 bug，含根因分析）和 `/rd:do`（优化/重构/升级，AI 选流程）。
+状态流转由命令驱动，REQ 与 QUICK 共用同一组命令：`/rd:review pass/reject`（仅 REQ） · `/rd:dev`（自动） · `/rd:test`（自动，QUICK 按「验证方式」验证）· `/rd:done`（必须 y/n 确认，门槛统一「测试中」）。状态机唯一定义在 `shared/_storage.md`「双轨状态机」；需求索引不落盘，`/rd:req` 实时渲染。`/rd:upgrade <QUICK-XXX>` 将未完成的 QUICK 升级为 REQ（4 阶段扩 6 阶段）。无文档的轻量任务走 `/rd:fix`（修 bug，含根因分析）和 `/rd:do`（优化/重构/升级，AI 选流程）。
 
 ### 存储（无全局缓存）
 
@@ -168,7 +168,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 ## 维护规则与易错点
 
-1. 能力只改 `commands/<name>.md`（及其 `shared/_*.md` 子文件）；发布前跑 `python3 scripts/check-layout.py --check` 守住菜单、链接与过时引用（CI 也会跑）。helper skill 手写，脚本不碰。
+1. 能力只改 `commands/<name>.md`（及其 `shared/_*.md` 子文件）；发布前跑 `python3 scripts/check-layout.py --check` 守住菜单、链接与过时引用，`python3 scripts/check-requirements.py --check` 守住需求目录一致性（CI 都会跑）。helper skill 手写，脚本不碰。
 2. 共享规则改 `_*.md`，勿在每个命令重复。**共享文件之间不要用 Markdown 链接互引**（命令会顺着链接把整组 ~33KB 全读进来），互相提及写纯文本文件名，仅真实依赖用链接。
 3. `requirementRole=readonly` 是贯穿多命令的分支点，新增写命令必须处理跳过。
 4. **`scripts/` 下的 hook 脚本同样受配置约定管辖**：读 `.devflow/settings.json(.local)`、按 `requirementsDir` 解析路径、readonly 走 `requirementSource.path`，不得写死 `docs/requirements` 或回退 `.claude/`。改配置约定时必须连带检查 `hooks.json` 注册的每个脚本——v2.39.1 修的就是它们漏跟 v3 迁移、静默失效整整四个版本。**命令正文、`shared/`、helper skill 同理**：v2.42 之后又查出 req 十余条命令仍读写 `.claude/settings*`、按 v2 缓存同步执行（`branch init` 把配置写到 `.claude/`，其它命令读不到）。这类残留现由 `check-layout.py` 的过时引用检查兜底；约定再变时先改守卫规则，再让它列出遗留。

@@ -19,6 +19,9 @@ jobs:
       - name: 布局、链接与过时引用
         run: python3 scripts/check-layout.py --check
 
+      - name: 需求目录一致性
+        run: python3 scripts/check-requirements.py --check
+
       - name: diag Hook 冒烟测试
         run: |
           python3 -m pip install --quiet pyyaml
