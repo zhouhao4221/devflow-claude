@@ -1,6 +1,7 @@
 ---
 description: 需求测试 - 综合测试验证（回归 + 新建 + 交互验证）
 argument-hint: "[REQ-XXX|QUICK-XXX]"
+model: claude-sonnet-5
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
 

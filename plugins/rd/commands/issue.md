@@ -1,6 +1,7 @@
 ---
 description: Issue 工作流 - 创建/编辑/关闭/列表/查看/评论 issue
 argument-hint: "<new|edit|close|reopen|list|show|comment> [参数...]"
+model: claude-haiku-4-5-20251001
 allowed-tools: Read, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, python3:*, jq:*)
 ---
 

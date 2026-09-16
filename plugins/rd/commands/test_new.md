@@ -1,6 +1,7 @@
 ---
 description: 创建测试 - 为新功能编写自动化测试用例或手动测试用例文档
 argument-hint: "[REQ-XXX] [--type=UT|API|E2E|manual] [--files=a.go,b.go]"
+model: claude-sonnet-5
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
 

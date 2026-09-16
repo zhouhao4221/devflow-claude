@@ -47,9 +47,9 @@ Commands are split into three tiers by required reasoning strength, declared via
 
 | Tier | Purpose | Typical commands |
 |------|---------|------------------|
-| **Haiku** | Pure queries / display / config / status transitions with clear rules | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/pm:standup`, `/api:help` |
-| **Sonnet** | Data aggregation + document drafting | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk` |
-| **Session model** (unspecified) | Analyzing code / plan generation / multi-round requirement discussion | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:pr`, `/api:gen`, `/pm:plan` |
+| **Haiku** | Pure queries / display / config / status transitions with clear rules / CLI wrappers | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/rd:issue`, `/pm:standup`, `/api:help` |
+| **Sonnet** | Data aggregation + document drafting / bounded document editing and template-driven generation | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk`, `/rd:edit`, `/rd:split`, `/rd:test_new`, `/api:gen` |
+| **Session model** (unspecified) | Analyzing code / plan generation / multi-round requirement discussion | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:pr`, `/diag:diagnose`, `/pm:plan` |
 
 Development commands also delegate high-throughput steps — locating code, running tests, digesting large diffs — to subagents, keeping their raw output out of the main session's context.
 

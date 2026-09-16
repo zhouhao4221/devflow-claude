@@ -47,9 +47,9 @@ claude plugins uninstall rd@devflow  # 플러그인 제거
 
 | 단계 | 용도 | 대표 커맨드 |
 |------|------|-------------|
-| **Haiku** | 순수 조회 / 표시 / 설정 / 규칙이 명확한 상태 전환 | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/pm:standup`, `/api:help` |
-| **Sonnet** | 데이터 집계 + 문서화 | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk` |
-| **세션 모델**(미지정) | 코드 분석 / 기획안 생성 / 다회차 요구사항 논의 | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:pr`, `/api:gen`, `/pm:plan` |
+| **Haiku** | 순수 조회 / 표시 / 설정 / 규칙이 명확한 상태 전환 / CLI 래핑 | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/rd:issue`, `/pm:standup`, `/api:help` |
+| **Sonnet** | 데이터 집계 + 문서화 / 범위가 한정된 문서 편집과 템플릿 기반 생성 | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk`, `/rd:edit`, `/rd:split`, `/rd:test_new`, `/api:gen` |
+| **세션 모델**(미지정) | 코드 분석 / 기획안 생성 / 다회차 요구사항 논의 | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:pr`, `/diag:diagnose`, `/pm:plan` |
 
 개발 계열 커맨드는 코드 위치 파악, 테스트 실행, 대형 diff 압축 등 처리량이 큰 단계를 subagent 에 위임하여 원본 출력이 메인 세션 컨텍스트에 들어가지 않도록 합니다.
 

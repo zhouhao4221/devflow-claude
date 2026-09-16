@@ -59,11 +59,12 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 | 策略 | 适用 | 做法 |
 |------|------|------|
-| 显式 haiku | 纯查询/展示/格式化输出/配置/规则明确的状态流转 | `model: claude-haiku-4-5-20251001` |
-| 显式 sonnet | 数据聚合 + 成文类（pm 周报/月报/里程碑/统计/进度/简介/风险扫描）、有界的单元审查 | `model: claude-sonnet-5` |
+| 显式 haiku | 纯查询/展示/格式化输出/配置/规则明确的状态流转/CLI 包装（branch·commit·issue） | `model: claude-haiku-4-5-20251001` |
+| 显式 sonnet | 数据聚合 + 成文类（pm 周报/月报/里程碑/统计/进度/简介/风险扫描）、有界的单元审查、有界的单文档编辑/分析（rd edit·prd-edit·split·new-quick）、模板化的测试与代码生成（rd test·test_new、api gen·map） | `model: claude-sonnet-5` |
 | 不指定 | 分析代码/生成方案/多轮需求讨论/架构理解/自由问答 | 省略 `model` |
 
 > sonnet 一律写 `claude-sonnet-5`（原生 1M 上下文、超 200K 不加价、Pro/Max 不计 extra usage，2026-08 核实）。`pm:plan`/`pm:ask` 需要真实推理，保持省略。
+> 省略档继承会话模型，会话模型是 Fable 5.1（$10/$50）时单价是 sonnet 的 5 倍、haiku 的 10 倍；命令 frontmatter 没有 `effort` 字段（仅 agent 支持），`model` 是命令层唯一的成本杠杆。因此**输入密集型的有界任务**（读文档/读代码为主、产出受模板约束）一律显式指定，省略档只留真正需要会话模型做判断的命令（2026-09 按此把 9 条命令降档）。
 > 模型分级**仅对 `commands/*.md` 命令调用生效**；helper skill 无 `model` 字段，运行在触发它的会话/命令模型下。
 > 边界例外：`done`/`review`/`upgrade`/`release` 虽含写操作，但流程被模板和显式参数高度约束，仍用 haiku。
 
