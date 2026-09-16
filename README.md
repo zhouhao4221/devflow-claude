@@ -47,9 +47,9 @@ claude plugins uninstall rd@devflow  # 卸载插件
 
 | 档位 | 定位 | 典型命令 |
 |------|------|---------|
-| **Haiku** | 纯查询 / 展示 / 配置 / 规则明确的状态流转 | `/rd:req`、`/rd:status`、`/rd:show`、`/rd:commit`、`/pm:standup`、`/api:help` |
-| **Sonnet** | 数据聚合 + 成文 | `/pm:weekly`、`/pm:monthly`、`/pm:stats`、`/pm:risk` |
-| **会话模型**（不指定） | 分析代码 / 生成方案 / 多轮需求讨论 | `/rd:new`、`/rd:dev`、`/rd:fix`、`/rd:do`、`/rd:pr`、`/api:gen`、`/pm:plan` |
+| **Haiku** | 纯查询 / 展示 / 配置 / 规则明确的状态流转 / CLI 包装 | `/rd:req`、`/rd:status`、`/rd:show`、`/rd:commit`、`/rd:issue`、`/pm:standup`、`/api:help` |
+| **Sonnet** | 数据聚合 + 成文 / 有界的文档编辑与模板化生成 | `/pm:weekly`、`/pm:monthly`、`/pm:stats`、`/pm:risk`、`/rd:edit`、`/rd:split`、`/rd:test_new`、`/api:gen` |
+| **会话模型**（不指定） | 分析代码 / 生成方案 / 多轮需求讨论 | `/rd:new`、`/rd:dev`、`/rd:fix`、`/rd:do`、`/rd:pr`、`/diag:diagnose`、`/pm:plan` |
 
 开发类命令还会把定位代码、跑测试、压缩大 diff 等高吞吐步骤委派给 subagent，原始输出不进主会话上下文。
 
