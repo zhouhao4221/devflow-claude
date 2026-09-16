@@ -133,13 +133,13 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 **何时用**：纯读取、列表展示、机械操作、帮助信息类命令。
 
-**做法**：在 frontmatter 加 `model: claude-haiku-4-5-20251001`。Haiku 比 Sonnet 便宜 ~10x、快 ~3x。
+**做法**：在 frontmatter 加 `model: claude-haiku-4-5-20251001`。Haiku 4.5 比 Sonnet 5 便宜 2 倍（$1/$5 vs $2/$10 每百万 token，2026-09 核实），主要收益是快，价差已不大。
 
 **已应用**：33 个命令，以 `grep -l "^model:" plugins/*/commands/*.md` 为准，不在此维护清单。
 
 **禁忌**：需要复杂推理、代码生成、深度分析的命令（如 `/rd:dev`、`/rd:do`）不要降级。
 
-**中间档 Sonnet**：数据聚合 + 成文类命令（`/pm:weekly`、`monthly`、`milestone`、`stats`、`progress`、`brief`、`risk`）用 `model: claude-sonnet-5`——比会话模型（Fable/Opus）便宜 2~3 倍，写报告绰绰有余。Sonnet 5 原生 1M 上下文且超 200K 不加价、订阅制不计 extra usage（2026-08 核实），旧的「sonnet[1m] 付费墙」顾虑已不存在。`/pm:plan`、`/pm:ask` 需要真实推理，保持省略。
+**中间档 Sonnet**：数据聚合 + 成文类命令（`/pm:weekly`、`monthly`、`milestone`、`stats`、`progress`、`brief`、`risk`）用 `model: claude-sonnet-5`——比会话模型便宜 2.5～5 倍（Opus 5 $5/$25、Fable 5.1 $10/$50），写报告绰绰有余。Sonnet 5 原生 1M 上下文且超 200K 不加价、订阅制不计 extra usage（2026-08 核实），旧的「sonnet[1m] 付费墙」顾虑已不存在。`/pm:plan`、`/pm:ask` 需要真实推理，保持省略。
 
 ### 4.4 收紧 `allowed-tools` 预授权
 
