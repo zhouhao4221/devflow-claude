@@ -150,7 +150,6 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 ### 7. 更新关联
 
 - 更新模块文档的「相关需求」
-- 更新 INDEX.md 索引
 
 ### 8. 输出结果
 

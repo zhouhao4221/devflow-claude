@@ -20,7 +20,7 @@ pm 是 rd 数据的**只读消费者**：不修改任何需求文档；没有 rd
 - `primary`：本仓 `requirementsDir`
 - `readonly`：`requirementSource.path` + **主仓**的 `requirementsDir`（读主仓 `.devflow/settings.json`，缺省同上）。未配置 `requirementSource` → 提示先 `/rd:use <primary-repo-path>` 绑定，本次降级为仅 Git 指标
 
-`ROOT` 下：`active/`、`completed/`、`modules/`、`PRD.md`、`INDEX.md`。
+`ROOT` 下：`active/`、`completed/`、`modules/`、`PRD.md`（无索引文件，需求列表按目录扫描）。
 
 ## collect_requirements()
 

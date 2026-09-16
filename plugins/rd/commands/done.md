@@ -1,6 +1,6 @@
 ---
 description: 完成需求 - 标记完成并归档
-argument-hint: "[REQ-XXX]"
+argument-hint: "[REQ-XXX|QUICK-XXX]"
 allowed-tools: Read, Write, Edit, Glob, Bash(git:*, mv:*, gh:*, tea:*, curl:*)
 model: claude-haiku-4-5-20251001
 ---
@@ -16,7 +16,7 @@ model: claude-haiku-4-5-20251001
 ## 命令格式
 
 ```
-/rd:done [REQ-XXX]
+/rd:done [REQ-XXX|QUICK-XXX]
 ```
 
 - 省略编号时自动选择「测试中」的需求
@@ -33,21 +33,22 @@ model: claude-haiku-4-5-20251001
 
 ### 2. 前置检查
 
-- 读取需求文档 YAML 元信息 + 「测试要点」章节
-- 状态必须为「测试中」，否则报错退出
-- 若测试要点中存在未勾选项（`- [ ]`），展示警告并要求用户确认继续
+- 读取需求文档元信息，按类型取验证章节：REQ「六、测试要点」/ QUICK「验证方式」（见 `_storage.md`「双轨状态机」）
+- 文档已在 `completed/` → 提示「已归档」退出
+- 状态必须为「测试中」（REQ 与 QUICK 相同；QUICK 未经 `/rd:test` 时提示先执行），否则报错退出
+- 未勾选项：带「（待观察：…）」「（未实测：…）」标注的放行，在步骤 6 输出中列出；裸 `- [ ]` 展示警告并要求用户确认继续
 
 ### 3. 更新需求文档
 
-修改 YAML 元信息：
-- `status: 已完成`
-- `completedAt: YYYY-MM-DD`（今日）
+修改元信息：
+- 状态：已完成
+- 完成日期：YYYY-MM-DD（今日；元信息表无此行时追加）
 
 勾选生命周期「已完成」对应的复选框。
 
 ### 4. 更新 PRD 索引
 
-定位 `docs/requirements/PRD.md` 的「需求追踪」章节（`grep -n "需求追踪"`），更新对应需求所在行的「状态」和「完成日期」两列。PRD 不存在或无该章节时跳过。
+仅 REQ：定位 `docs/requirements/PRD.md` 的「需求追踪」章节（`grep -n "需求追踪"`），更新对应需求所在行的「状态」和「完成日期」两列。PRD 不存在、无该章节或需求为 QUICK 时静默跳过。
 
 ### 5. 归档文档
 
@@ -58,7 +59,13 @@ model: claude-haiku-4-5-20251001
 ```
 REQ-XXX <标题> 已完成
    归档至 docs/requirements/completed/REQ-XXX-<slug>.md
+   放行的未勾项（已标注）：
+   - <项>（待观察：<原因>）      ← 有则列出
+
+查看列表：/rd:req（索引由该命令实时渲染，无需维护文件）
 ```
+
+QUICK 同样格式，编号与路径换成 `QUICK-XXX`。
 
 ### 7. 分支合并提醒
 

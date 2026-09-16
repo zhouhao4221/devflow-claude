@@ -211,7 +211,7 @@ For small bugs or small features — a lighter flow:
 /rd:new-quick Fix points calculation precision loss
 ```
 
-The QUICK template is shorter: problem statement → plan → verification.
+The QUICK template is shorter: problem statement → plan → verification. Its lifecycle only skips review: after confirming the plan, run `/rd:dev` → `/rd:test` (walks the verification list) → `/rd:done`, the same commands as a formal requirement.
 
 ### 2.3 Granularity suggestions
 

@@ -60,7 +60,7 @@ STALE_DOCS = [
     "README.md", "README.en.md", "README.ko.md",
     "docs/tutorial.md", "docs/tutorial.en.md", "docs/tutorial.ko.md",
     "CLAUDE.md", "docs/design", "docs/prompt",
-    "docs/requirements/PRD.md", "docs/requirements/INDEX.md", "docs/requirements/modules",
+    "docs/requirements/PRD.md", "docs/requirements/modules",
     "docs/requirements/templates",
 ]
 # 命中行本身或前 STALE_CONTEXT 行出现即视为合法提及（迁移提示、jq 读 Claude Code 配置常跨多行）

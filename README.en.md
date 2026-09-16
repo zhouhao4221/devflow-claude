@@ -175,7 +175,7 @@ Then the daily workflow:
 
 ```
 Formal (REQ):   Draft → In Review → Approved → In Development → In Testing → Done
-Quick fix (QUICK): Draft → Plan confirmed → In Development → Done
+Quick fix (QUICK): Draft → In Development → In Testing → Done (only skips review)
 ```
 
 ### Document structure

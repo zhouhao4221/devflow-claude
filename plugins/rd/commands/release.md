@@ -13,7 +13,7 @@ model: claude-haiku-4-5-20251001
 > readonly 仓库可用。
 > CLI 优先：GitHub → `gh`；Gitea → 检测 `tea`，不支持的接口回退 curl。详见 [`_gitea_cli.md`](../shared/_gitea_cli.md)。
 > 设计原理和边界情况详见 [`release-rationale.md`](../shared/release-rationale.md)。
-> **发布前置**：先运行 `python3 scripts/check-layout.py --check` 校验插件布局（`skills/` 无命令镜像、`commands/` 无非命令文件、相对链接全部可达、无过时引用）；报错则运行 `python3 scripts/check-layout.py` 清理可清理的部分，其余手工修完再纳入本次发布。
+> **发布前置**：先运行 `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/check-requirements.py --check` 校验需求目录一致性（状态与目录 / 生命周期 / 编号；本仓库用 `scripts/check-requirements.py` 薄包装），再运行 `python3 scripts/check-layout.py --check` 校验插件布局（`skills/` 无命令镜像、`commands/` 无非命令文件、相对链接全部可达、无过时引用）；报错则运行 `python3 scripts/check-layout.py` 清理可清理的部分，其余手工修完再纳入本次发布。
 
 ## 参数
 

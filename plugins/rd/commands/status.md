@@ -1,6 +1,6 @@
 ---
 description: 查看需求状态 - 详细状态和进度
-argument-hint: "[REQ-XXX]"
+argument-hint: "[REQ-XXX|QUICK-XXX]"
 allowed-tools: Read, Glob, Grep, Bash(git:*)
 model: claude-haiku-4-5-20251001
 ---
@@ -12,7 +12,7 @@ model: claude-haiku-4-5-20251001
 ## 命令格式
 
 ```
-/rd:status [REQ-XXX]
+/rd:status [REQ-XXX|QUICK-XXX]
 ```
 
 **说明**：编号可选，省略时自动选择最近活跃的需求。
@@ -38,8 +38,10 @@ model: claude-haiku-4-5-20251001
 ### 2. 查找需求文档（按角色）
 
 两种角色搜索顺序相同（无缓存，readonly 的 `ROOT` 即主仓目录）：
-1. `$ACTIVE/REQ-XXX-*.md`
-2. `$COMPLETED/REQ-XXX-*.md`
+1. `$ACTIVE/<编号>-*.md`
+2. `$COMPLETED/<编号>-*.md`
+
+编号为 `REQ-XXX` 或 `QUICK-XXX`，两者同样处理。
 
 如果未找到：
 ```
@@ -55,10 +57,10 @@ model: claude-haiku-4-5-20251001
 提取关键信息：
 - 元信息
 - 生命周期状态
-- 功能清单进度
-- 测试要点进度
-- 文件改动清单
-- 变更记录
+- 功能清单进度（REQ）
+- 验证进度：REQ 读「六、测试要点」，QUICK 读「验证方式」（见 `_storage.md`「双轨状态机」）
+- 文件改动清单（REQ）/ 涉及文件（QUICK）
+- 变更记录（REQ）/ 开发记录（QUICK）
 
 ### 4. 输出详细状态
 
@@ -153,6 +155,8 @@ docs/swagger/docs.go
 REQ-001 部门渠道关联
 状态：开发中 | 功能：4/6 | 测试：0/8
 ```
+
+QUICK 输出 `状态：开发中 | 验证：1/3`。
 
 ---
 

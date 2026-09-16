@@ -64,9 +64,11 @@ model: claude-haiku-4-5-20251001
 | QUICK 状态 | REQ 状态 |
 |-----------|---------|
 | 草稿 | 草稿 |
-| 方案确认 | 评审通过 |
 | 开发中 | 开发中 |
+| 测试中 | 测试中 |
 | 已完成 | ❌ 不允许升级 |
+
+QUICK 未经评审，升级不补评审站：状态原样带过，在新 REQ 的「八、评审记录」追加一行「升级自 QUICK-XXX，未经评审」作为记录。`/rd:review` 只接受草稿 / 评审驳回 / 待评审，升级后处于开发中 / 测试中的 REQ 不再走评审；确需评审的，在 QUICK 仍是草稿时升级。
 
 #### 4.2 生命周期转换
 
@@ -131,11 +133,11 @@ model: claude-haiku-4-5-20251001
 
 #### 6.1 创建新 REQ 文件
 
-使用 requirement-template.md 模板，填充转换后的内容，写入 `docs/requirements/active/<NEW_REQ_ID>-<title>.md`。
+使用 requirement-template.md 模板，填充转换后的内容，写入 `docs/requirements/active/<NEW_REQ_ID>-<title>.md`；「八、评审记录」追加「升级自 QUICK-XXX，未经评审」。
 
 #### 6.2 处理原 QUICK 文件
 
-**归档**：在原文件末尾追加升级标记（含日期和新编号），移动到 completed/。
+**归档**：状态改「已完成」并勾选生命周期「已完成」（守卫要求 `completed/` 内均为已完成），「开发记录」追加「已升级为 REQ-XXX（日期）」，再移动到 completed/。
 **删除**：直接删除源文件。
 
 ### 7. 触发需求完善
