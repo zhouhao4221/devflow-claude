@@ -209,13 +209,13 @@ rd 插件里「review」一词同时指两件事：`/rd:review` 是需求评审�
 
 ### 6.1 技术测试
 
-- [ ] 测试点1：`claude plugin details rd` 的命令清单出现 `review`、`req-review`、`pr`，且 `review` 的 description 为代码审查、`req-review` 为需求评审（未实测：需发布后 /plugin 更新再实测）
+- [x] 测试点1：`claude plugin details rd` 的命令清单出现 `review`、`req-review`、`pr`，且 `review` 的 description 为代码审查、`req-review` 为需求评审（rd 6.0.0 实测：菜单三条描述正确）
 - [x] 测试点2：`plugins/rd/commands/pr.md` frontmatter 含 `model: claude-haiku-4-5-20251001`；`review.md` 与 `req-review.md` 不含 `model`
-- [ ] 测试点3：`/rd:review REQ-007 pass` 只输出改用 `/rd:req-review` 的提示，不拉 diff、不改文档（未实测：需发布后 /plugin 更新再实测）
-- [ ] 测试点4：`/rd:pr review` 只输出改用 `/rd:review` 的提示，不执行审查；`/rd:pr comments` 展示分组评论清单后停止，不读源码、不改文件，末尾提示 `/rd:review comments`（未实测：需发布后 /plugin 更新再实测）
-- [ ] 测试点5：在有 PR 的功能分支执行 `/rd:review`，输出与改名前 `/rd:pr review` 一致的报告结构（档位行、文件分类行、三级问题、需求文档同步）（未实测：需发布后 /plugin 更新再实测）
-- [ ] 测试点6：`/rd:req-review REQ-007` 提审时输出四维度预审意见，「八、评审记录」新增「AI 预审」一行，状态变为待评审（未实测：需发布后 /plugin 更新再实测）
-- [ ] 测试点7：`/rd:migrate` 2C 对 `/rd:review REQ-001 pass`、`/rd:pr review`、`/req:review-pr review` 三种旧写法按映射替换；`/rd:pr comments` 不被替换（未实测：需发布后 /plugin 更新再实测）
+- [x] 测试点3：`/rd:review REQ-007 pass` 只输出改用 `/rd:req-review` 的提示，不拉 diff、不改文档（rd 6.0.0 实测：只输出一行提示，无工具调用、无文件改动）
+- [x] 测试点4：`/rd:pr review` 只输出改用 `/rd:review` 的提示，不执行审查；`/rd:pr comments` 展示分组评论清单后停止，不读源码、不改文件，末尾提示 `/rd:review comments`（rd 6.0.0 实测：`/rd:pr review` 只输出一行提示；`/rd:pr comments` 需 GitHub API，沙箱不通，未实测）
+- [ ] 测试点5：在有 PR 的功能分支执行 `/rd:review`，输出与改名前 `/rd:pr review` 一致的报告结构（档位行、文件分类行、三级问题、需求文档同步）（未实测：沙箱无 GitHub API 访问，待有 PR 时在会话里直接跑）
+- [x] 测试点6：`/rd:req-review REQ-007` 提审时输出四维度预审意见，「八、评审记录」新增「AI 预审」一行，状态变为待评审（rd 6.0.0 实测：对临时草稿 REQ-008 提审，预审判出与 REQ-007 重复为阻塞，评审记录写入「AI 预审」行，状态待评审）
+- [x] 测试点7：`/rd:migrate` 2C 对 `/rd:review REQ-001 pass`、`/rd:pr review`、`/req:review-pr review` 三种旧写法按映射替换；`/rd:pr comments` 不被替换（rd 6.0.0 实测：三种旧写法映射正确；裸 `/rd:review` 被误建议改 `/rd:req-review`，CLAUDE.md 两处误报——已改规则为「裸写只列不建议」，待下个版本复测）
 - [x] 测试点8：`python3 scripts/check-layout.py --check` 与 `python3 scripts/check-requirements.py --check` 通过
 - [x] 测试点9：全仓 grep（排除 changelog / completed / 本文档）无 `/rd:pr review`，`/rd:review` 只出现在代码审查语境，`/rd:pr comments` 只出现在只读查看语境
 
@@ -269,6 +269,7 @@ flowchart LR
 | 2026-09-18 | 初始版本 | - |
 | 2026-09-18 | `/rd:pr comments` 保留为只读查看，与 `/rd:review comments` 并存 | 功能点3/5/7/8、业务规则、场景2/4、测试点4/7/9 |
 | 2026-09-18 | PR #92 合并；本地可验的测试点 2/8/9 与验收项 3 通过，其余待发布后实测 | 六、测试要点 |
+| 2026-09-18 | v5.0.0 发布后 subagent 实测：测试点 1/3/4/6/7 通过；migrate 裸 `/rd:review` 误报已修（规则改为只列不建议）；req-review 补占位行、n 分支结论、带阻塞标记、readonly、状态图 | 六、测试要点；migrate.md；req-review.md |
 
 ---
 
