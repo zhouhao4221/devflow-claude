@@ -128,8 +128,9 @@ claude plugins install rd@devflow
 - `/rd:migrate` 会列出本项目 `CLAUDE.md`、`docs/prompt/`、需求模板、`.claude/skills/` 中残留的旧前缀引用，逐处确认后替换
 - 无需改动：`.devflow/` 配置、需求文档（`REQ-XXX`）、`.claude/.req-*` 本地开关
 - 项目级 `.claude/settings.json` 的 `enabledPlugins` 若写了 `"req@devflow": true`，需改为 `rd@devflow`（`/rd:migrate` 会检测并在确认后替换，改完请提交），否则拉代码的成员仍启用旧插件
-- 旧的 PR 审查命令已并入 `/rd:pr`：`review-pr review` → `/rd:pr review`，`review-pr merge` → `/rd:pr merge`，`review-pr fetch-comments` → `/rd:pr comments`，单独的 `review-pr` → `/rd:pr status`
+- 旧的 PR 审查命令已并入 `/rd:pr`：`review-pr review` → `/rd:review`，`review-pr merge` → `/rd:pr merge`，`review-pr fetch-comments` → `/rd:pr comments`，单独的 `review-pr` → `/rd:pr status`
 - 注意：`/rd:pr` 不带参数是**创建 PR**（旧的 `review-pr` 不带参数是查看状态）
+- 审查类命令已按模型档位拆分：需求评审 `/rd:review` → `/rd:req-review`（提审时增加 AI 预审）；AI 代码审查 `/rd:pr review` → `/rd:review`；`/rd:pr comments` 改为只读查看，按评论改代码用 `/rd:review comments`。`/rd:migrate` 会一并替换旧写法
 
 > 旧插件 req 已从 marketplace 移除；若更新后 `/req:*` 命令全部消失，按上面三步改装 rd 即可。
 
@@ -263,7 +264,7 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
 ### 3.1 提交评审
 
 ```
-/rd:review
+/rd:req-review
 ```
 
 状态从「草稿」变为「待评审」。
@@ -271,8 +272,8 @@ AI 会分析粒度并建议拆分方案（只读，不创建文档）。
 ### 3.2 评审决议
 
 ```
-/rd:review pass     # 通过，进入「评审通过」
-/rd:review reject   # 驳回，回到「草稿」
+/rd:req-review pass     # 通过，进入「评审通过」
+/rd:req-review reject   # 驳回，回到「草稿」
 ```
 
 驳回后需要 `/rd:edit` 修改再重新提审。
@@ -362,8 +363,9 @@ PR 创建后，使用 AI 代码审查和合并：
 
 ```
 /rd:pr status       # 查看 PR 状态
-/rd:pr review       # AI 代码审查
-/rd:pr comments     # 拉取 PR 评论，AI 生成修改清单并应用
+/rd:review          # AI 代码审查
+/rd:pr comments     # 拉取 PR 评论（只读）
+/rd:review comments # 按评论改代码
 /rd:pr merge        # 合并 PR
 ```
 
@@ -610,12 +612,12 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
                ┌─────────────┐
                │   📝 草稿    │ ← /rd:edit 修改
                └──────┬──────┘
-                      │ /rd:review
+                      │ /rd:req-review
                       ▼
                ┌─────────────┐
                │  👀 待评审   │
                └──────┬──────┘
-                      │ /rd:review pass
+                      │ /rd:req-review pass
                       ▼
                ┌─────────────┐
                │ ✅ 评审通过  │
@@ -625,7 +627,7 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
                ┌─────────────┐
                │  🔨 开发中   │ ← /rd:commit 提交代码
                │             │ ← /rd:pr 创建 PR
-               │             │ ← /rd:pr review 审查
+               │             │ ← /rd:review 审查
                │             │ ← /rd:pr merge 合并
                └──────┬──────┘
                       │ /rd:test
@@ -672,8 +674,8 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 ```
 开始开发025                   → /rd:dev REQ-025
 025 开始测试                  → /rd:test REQ-025
-025 评审通过 / 通过评审 025    → /rd:review pass
-025 评审驳回                  → /rd:review reject
+025 评审通过 / 通过评审 025    → /rd:req-review pass
+025 评审驳回                  → /rd:req-review reject
 完成025 / 025 做完了           → /rd:done REQ-025
 ```
 
@@ -682,8 +684,9 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 ```
 规范提交                      → /rd:commit
 创建 PR / 提 PR                → /rd:pr
-审查 PR / review PR           → /rd:pr review
+审查 PR / review PR           → /rd:review
 拉 PR 评论                    → /rd:pr comments
+按评论改代码                  → /rd:review comments
 合并 PR                       → /rd:pr merge
 ```
 
@@ -692,7 +695,7 @@ QUICK 做到一半发现范围变大，可以升级为正式需求：
 ```
 修复 owner/repo/issues/169    → /rd:fix --from-issue=#169
 创建需求 owner/repo/issues/12  → /rd:new --from-issue=#12
-审查 owner/repo/pulls/158     → /rd:pr review（需先切到 PR 对应分支）
+审查 owner/repo/pulls/158     → /rd:review（需先切到 PR 对应分支）
 ```
 
 单独粘贴 URL（不带动词）时，会展示选项让你选操作。
@@ -775,18 +778,18 @@ AI：🧠 识别：/rd:fix Excel 导出中文乱码 --auto
 
 ### 13.3 其他支持 `--auto` 的命令
 
-**`/rd:pr review --auto`** — 跳过"是否上传评审评论"的询问
+**`/rd:review --auto`** — 跳过"是否上传评审评论"的询问
 
 默认情况下（不带 `--auto`），AI 代码审查完成后会展示**精简版评论预览**并询问 `y/n`，避免审查结果直接对外发布。传入 `--auto` 跳过询问，直接上传。
 
 ```
-/rd:pr review               # 展示预览 → 等待 y/n 确认
-/rd:pr review --auto        # 直接上传精简版评论
+/rd:review                 # 展示预览 → 等待 y/n 确认
+/rd:review --auto          # 直接上传精简版评论
 ```
 
 自然语言触发：`一键审查`、`自动审查`、`审查并提交`、`审完直接评论`、`别问我`。
 
-> **只影响 `review` 子命令的上传询问**。`/rd:pr merge` 的合并后分支清理询问由 `branchStrategy.deleteBranchAfterMerge` 控制；`/rd:pr comments` 的"是否应用修改"询问保留，避免 AI 误改代码。
+> **只影响 `/rd:review` 的上传询问**。`/rd:pr merge` 的合并后分支清理询问由 `branchStrategy.deleteBranchAfterMerge` 控制；`/rd:review comments` 的"是否应用修改"询问保留，避免 AI 误改代码。
 
 ---
 
@@ -800,14 +803,15 @@ AI：🧠 识别：/rd:fix Excel 导出中文乱码 --auto
 | 轻量修复（无文档） | `/rd:fix 问题描述` |
 | 智能开发（优化/重构） | `/rd:do 描述` |
 | 编辑需求 | `/rd:edit` |
-| 提交评审 | `/rd:review` |
-| 通过评审 | `/rd:review pass` |
+| 提交评审 | `/rd:req-review` |
+| 通过评审 | `/rd:req-review pass` |
 | 启动开发 | `/rd:dev` |
 | 提交代码 | `/rd:commit` |
 | 创建 PR | `/rd:pr` |
 | 查看 PR 状态 | `/rd:pr status` |
-| AI 代码审查 | `/rd:pr review` |
-| 处理 PR 评论 | `/rd:pr comments` |
+| AI 代码审查 | `/rd:review` |
+| 查看 PR 评论 | `/rd:pr comments` |
+| 按评论改代码 | `/rd:review comments` |
 | 合并 PR | `/rd:pr merge` |
 | 运行测试 | `/rd:test` |
 | 完成归档 | `/rd:done` |

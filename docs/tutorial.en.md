@@ -127,8 +127,9 @@ claude plugins install rd@devflow
 - `/rd:migrate` lists old prefix references left in the project's `CLAUDE.md`, `docs/prompt/`, requirement templates, and `.claude/skills/`, and replaces each one after you confirm it
 - No changes needed: `.devflow/` config, requirement docs (`REQ-XXX`), `.claude/.req-*` local switches
 - If the project-level `.claude/settings.json` has `"req@devflow": true` under `enabledPlugins`, it must become `rd@devflow` (`/rd:migrate` detects it and replaces it after you confirm — commit the change); otherwise teammates who pull the repo still enable the old plugin
-- The legacy PR review command was merged into `/rd:pr`: `review-pr review` → `/rd:pr review`, `review-pr merge` → `/rd:pr merge`, `review-pr fetch-comments` → `/rd:pr comments`, bare `review-pr` → `/rd:pr status`
+- The legacy PR review command was merged into `/rd:pr`: `review-pr review` → `/rd:review`, `review-pr merge` → `/rd:pr merge`, `review-pr fetch-comments` → `/rd:pr comments`, bare `review-pr` → `/rd:pr status`
 - Note: `/rd:pr` with no arguments now **creates a PR** (the legacy `review-pr` with no arguments showed PR status)
+- Review commands were split by model tier: requirement review `/rd:review` → `/rd:req-review` (submission now runs an AI pre-review); AI code review `/rd:pr review` → `/rd:review`; `/rd:pr comments` is now read-only, use `/rd:review comments` to apply reviewer comments to the code. `/rd:migrate` rewrites the old forms
 
 > The legacy req plugin has been removed from the marketplace; if all `/req:*` commands disappear after updating, follow the three steps above to switch to rd.
 
@@ -262,7 +263,7 @@ When linked to an issue, the whole chain carries the issue number:
 ### 3.1 Submit for review
 
 ```
-/rd:review
+/rd:req-review
 ```
 
 Status transitions Draft → In Review.
@@ -270,8 +271,8 @@ Status transitions Draft → In Review.
 ### 3.2 Review decision
 
 ```
-/rd:review pass     # Approve → Approved
-/rd:review reject   # Reject → back to Draft
+/rd:req-review pass     # Approve → Approved
+/rd:req-review reject   # Reject → back to Draft
 ```
 
 After rejection, use `/rd:edit` to revise and resubmit.
@@ -361,8 +362,9 @@ Use AI review and merge:
 
 ```
 /rd:pr status       # PR status
-/rd:pr review       # AI code review
-/rd:pr comments     # Fetch PR comments and apply AI-suggested fixes
+/rd:review          # AI code review
+/rd:pr comments     # Fetch PR comments (read-only)
+/rd:review comments # Apply reviewer comments to the code
 /rd:pr merge        # Merge the PR
 ```
 
@@ -609,12 +611,12 @@ Typical uses:
                ┌─────────────┐
                │ 📝 Draft    │ ← /rd:edit
                └──────┬──────┘
-                      │ /rd:review
+                      │ /rd:req-review
                       ▼
                ┌─────────────┐
                │ 👀 In Review│
                └──────┬──────┘
-                      │ /rd:review pass
+                      │ /rd:req-review pass
                       ▼
                ┌─────────────┐
                │ ✅ Approved │
@@ -624,7 +626,7 @@ Typical uses:
                ┌─────────────┐
                │ 🔨 In Dev   │ ← /rd:commit
                │             │ ← /rd:pr
-               │             │ ← /rd:pr review
+               │             │ ← /rd:review
                │             │ ← /rd:pr merge
                └──────┬──────┘
                       │ /rd:test
@@ -671,8 +673,8 @@ quick change to the pagination default          → /rd:new-quick pagination def
 ```
 start developing 025                            → /rd:dev REQ-025
 start testing 025                               → /rd:test REQ-025
-025 approved / approve 025                      → /rd:review pass
-025 rejected                                    → /rd:review reject
+025 approved / approve 025                      → /rd:req-review pass
+025 rejected                                    → /rd:req-review reject
 done 025 / close 025                            → /rd:done REQ-025
 ```
 
@@ -681,8 +683,9 @@ done 025 / close 025                            → /rd:done REQ-025
 ```
 commit                                          → /rd:commit
 create PR / open PR                             → /rd:pr
-review PR                                       → /rd:pr review
+review PR                                       → /rd:review
 pull PR comments                                → /rd:pr comments
+apply PR comments                               → /rd:review comments
 merge PR                                        → /rd:pr merge
 ```
 
@@ -691,7 +694,7 @@ merge PR                                        → /rd:pr merge
 ```
 fix owner/repo/issues/169                       → /rd:fix --from-issue=#169
 create a requirement from owner/repo/issues/12  → /rd:new --from-issue=#12
-review owner/repo/pulls/158                     → /rd:pr review (switch to PR branch first)
+review owner/repo/pulls/158                     → /rd:review (switch to PR branch first)
 ```
 
 Pasting a URL without a verb shows a menu to pick the action.
@@ -774,18 +777,18 @@ Diagnose → edit code → git commit → git push → open PR
 
 ### 13.3 Other commands that support `--auto`
 
-**`/rd:pr review --auto`** — skip the "upload review comment?" confirmation
+**`/rd:review --auto`** — skip the "upload review comment?" confirmation
 
 By default (without `--auto`), after the AI review completes, the command prints a **condensed preview** of the comment that would be uploaded and waits for `y/n`, so the review doesn't go public unreviewed by you. Passing `--auto` skips the prompt and uploads directly.
 
 ```
-/rd:pr review               # Show preview → wait for y/n
-/rd:pr review --auto        # Upload the condensed comment directly
+/rd:review                 # Show preview → wait for y/n
+/rd:review --auto          # Upload the condensed comment directly
 ```
 
 Natural-language triggers: `one-shot review`, `auto review`, `review and submit`, `post the review`, `don't ask me`.
 
-> **Only affects the `review` subcommand's upload prompt.** `/rd:pr merge` post-merge branch cleanup is controlled by `branchStrategy.deleteBranchAfterMerge`; `/rd:pr comments` keeps its "apply changes?" prompt so AI doesn't silently edit code.
+> **Only affects the upload prompt of `/rd:review`.** `/rd:pr merge` post-merge branch cleanup is controlled by `branchStrategy.deleteBranchAfterMerge`; `/rd:review comments` keeps its "apply changes?" prompt so AI doesn't silently edit code.
 
 ---
 
@@ -799,14 +802,15 @@ Natural-language triggers: `one-shot review`, `auto review`, `review and submit`
 | Lightweight fix (no doc) | `/rd:fix <description>` |
 | Smart dev (optimize/refactor) | `/rd:do <description>` |
 | Edit | `/rd:edit` |
-| Submit for review | `/rd:review` |
-| Approve | `/rd:review pass` |
+| Submit for review | `/rd:req-review` |
+| Approve | `/rd:req-review pass` |
 | Start development | `/rd:dev` |
 | Commit | `/rd:commit` |
 | Create PR | `/rd:pr` |
 | PR status | `/rd:pr status` |
-| AI review | `/rd:pr review` |
-| Handle PR comments | `/rd:pr comments` |
+| AI review | `/rd:review` |
+| View PR comments | `/rd:pr comments` |
+| Apply PR comments | `/rd:review comments` |
 | Merge PR | `/rd:pr merge` |
 | Run tests | `/rd:test` |
 | Archive | `/rd:done` |

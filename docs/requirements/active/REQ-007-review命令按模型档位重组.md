@@ -6,7 +6,7 @@
 |-----|-----|
 | 编号 | REQ-007 |
 | 类型 | 全栈 |
-| 状态 | 评审通过 |
+| 状态 | 开发中 |
 | 模块 | 插件架构 |
 | 优先级 | P2 |
 | 创建日期 | 2026-09-18 |
@@ -21,7 +21,7 @@
 - [x] 草稿（编写中）
 - [x] 待评审
 - [x] 评审通过
-- [ ] 开发中
+- [x] 开发中
 - [ ] 测试中
 - [ ] 已完成
 
@@ -93,16 +93,16 @@ rd 插件里「review」一词同时指两件事：`/rd:review` 是需求评审�
 
 > 列出所有功能点，开发完成后勾选
 
-- [ ] **功能点1 req-review 命令**：新建 `commands/req-review.md`，frontmatter 省略 `model`，`argument-hint` 为 `[REQ-XXX] [pass|reject] [--comment=评审意见]`，三个场景（提审 / 通过 / 驳回）与原 `review.md` 一致。
-- [ ] **功能点2 AI 预审**：提审场景在完整性检查之后增加「AI 预审」步骤：读全文，输出方案合理性、粒度（是否该 `/rd:split`）、与 `active/` `completed/` 已有需求的冲突或重叠、风险与遗漏四个维度的意见，分「阻塞 / 建议 / 信息」三级；有阻塞项时询问是否仍提审；无论是否提审，预审意见以「AI 预审」一行写入「八、评审记录」，供评审人 pass / reject 时参考。
-- [ ] **功能点3 review 命令重写**：`commands/review.md` 改为代码审查：无子命令 = AI 审查（原 `pr-ops.md` review 节 1–7 步原样迁入），`comments` 子命令 = 按 `pr-ops.md` comments 节拉取 / 过滤 / 展示，再逐条读引用源码 ±20 行、判断可执行 / 需讨论、生成修改方案、用户确认后执行（原 comments 节第 3 步的分析与修改部分迁入本文）；通用前置（定位 PR、gh 可用性判定）在本文内保留一份；`allowed-tools` 含 `Bash(git:*, gh:*, tea:*, curl:*)`、`Agent`、`Skill`；省略 `model`。
-- [ ] **功能点4 review 参数守卫**：参数含 `pass` / `reject`，或形如 `REQ-XXX pass` → 输出「需求评审已改为 /rd:req-review REQ-XXX pass」并退出，不进代码审查。
-- [ ] **功能点5 pr 降档**：`commands/pr.md` 加 `model: claude-haiku-4-5-20251001`；子命令表留 status / comments / merge，`review` 命中时输出「已改为 /rd:review」并退出；`comments`（含 `fetch-comments`）收窄为只读：拉取、过滤、按整体 / 行内分组展示清单，末尾提示「要按评论改代码：/rd:review comments」，不读源码、不生成方案；`pr-ops.md` 删除 review 节，comments 节只保留拉取 / 过滤 / 展示（去掉分析与修改），首行说明改为「status / comments / merge」；`allowed-tools` 去掉 `Skill`（不再转调 `/code-review`），`Agent` 按 merge / status 是否委派决定。
-- [ ] **功能点6 下一步提示同步**：`/rd:pr` 创建成功输出、`/rd:fix --auto` 结束提示、`/rd:done` 建 PR 提示中的 `/rd:pr review` 改为 `/rd:review`；`/rd:new` `/rd:edit` `/rd:dev` `/rd:req` 中的 `/rd:review` 改为 `/rd:req-review`。
-- [ ] **功能点7 migrate 映射**：`/rd:migrate` 2C 新增：`/rd:review`（任意参数，旧语义只有需求评审）→ `/rd:req-review`；`/rd:pr review` → `/rd:review`；原 `/req:review-pr review` → `/rd:review`（替换掉现有映射到 `/rd:pr review` 的一条）；`/req:review` → `/rd:req-review`。`/rd:pr comments` / `/req:review-pr fetch-comments` 保持映射到 `/rd:pr comments`（命令仍在，只是变只读），不新增映射。
-- [ ] **功能点8 自然语言调度**：`natural-language-dispatcher` 三、四两节改映射：评审通过 / 驳回 + 编号 → `/rd:req-review pass|reject`，新增「提审 / 提交评审」+ 编号 → `/rd:req-review`；审 PR → `/rd:review`；「看看 PR 评论」「拉 PR 评论」→ `/rd:pr comments`，「处理 PR 反馈」「按评论改」→ `/rd:review comments`；`--auto` 触发词说明改指 `/rd:review`。
-- [ ] **功能点9 文档与守则同步**：README 三语命令表与快速开始、tutorial 三语（含流程图、自然语言映射表、13.3 `--auto` 章节、命令速查表）、CLAUDE.md（模型分级表：haiku 边界例外去掉 `review` 加 `pr`；「大 PR 代码质量审查」段与「状态流转」段改命令名；插件全景不变）、`shared/_storage.md` 双轨状态机表、`_template.md`、`_delegate.md`、`_verify.md`、`templates/prompt-snippets/pr-review.md` 与 `prompt-craft.md`、`schemas/prompt-schema.md`、`docs/design/token-optimization.md`。
-- [ ] **功能点10 布局与一致性守卫通过**：`scripts/check-layout.py --check` 与 `scripts/check-requirements.py --check` 通过；全仓（排除 `docs/changelogs/`、`docs/requirements/completed/`、本文档）不再出现 `/rd:pr review`、需求评审语义的 `/rd:review`；`/rd:pr comments` 的出现处语义均为只读查看。
+- [x] **功能点1 req-review 命令**：新建 `commands/req-review.md`，frontmatter 省略 `model`，`argument-hint` 为 `[REQ-XXX] [pass|reject] [--comment=评审意见]`，三个场景（提审 / 通过 / 驳回）与原 `review.md` 一致。
+- [x] **功能点2 AI 预审**：提审场景在完整性检查之后增加「AI 预审」步骤：读全文，输出方案合理性、粒度（是否该 `/rd:split`）、与 `active/` `completed/` 已有需求的冲突或重叠、风险与遗漏四个维度的意见，分「阻塞 / 建议 / 信息」三级；有阻塞项时询问是否仍提审；无论是否提审，预审意见以「AI 预审」一行写入「八、评审记录」，供评审人 pass / reject 时参考。
+- [x] **功能点3 review 命令重写**：`commands/review.md` 改为代码审查：无子命令 = AI 审查（原 `pr-ops.md` review 节 1–7 步原样迁入），`comments` 子命令 = 按 `pr-ops.md` comments 节拉取 / 过滤 / 展示，再逐条读引用源码 ±20 行、判断可执行 / 需讨论、生成修改方案、用户确认后执行（原 comments 节第 3 步的分析与修改部分迁入本文）；通用前置（定位 PR、gh 可用性判定）在本文内保留一份；`allowed-tools` 含 `Bash(git:*, gh:*, tea:*, curl:*)`、`Agent`、`Skill`；省略 `model`。
+- [x] **功能点4 review 参数守卫**：参数含 `pass` / `reject`，或形如 `REQ-XXX pass` → 输出「需求评审已改为 /rd:req-review REQ-XXX pass」并退出，不进代码审查。
+- [x] **功能点5 pr 降档**：`commands/pr.md` 加 `model: claude-haiku-4-5-20251001`；子命令表留 status / comments / merge，`review` 命中时输出「已改为 /rd:review」并退出；`comments`（含 `fetch-comments`）收窄为只读：拉取、过滤、按整体 / 行内分组展示清单，末尾提示「要按评论改代码：/rd:review comments」，不读源码、不生成方案；`pr-ops.md` 删除 review 节，comments 节只保留拉取 / 过滤 / 展示（去掉分析与修改），首行说明改为「status / comments / merge」；`allowed-tools` 去掉 `Skill`（不再转调 `/code-review`），`Agent` 按 merge / status 是否委派决定。
+- [x] **功能点6 下一步提示同步**：`/rd:pr` 创建成功输出、`/rd:fix --auto` 结束提示、`/rd:done` 建 PR 提示中的 `/rd:pr review` 改为 `/rd:review`；`/rd:new` `/rd:edit` `/rd:dev` `/rd:req` 中的 `/rd:review` 改为 `/rd:req-review`。
+- [x] **功能点7 migrate 映射**：`/rd:migrate` 2C 新增：`/rd:review`（任意参数，旧语义只有需求评审）→ `/rd:req-review`；`/rd:pr review` → `/rd:review`；原 `/req:review-pr review` → `/rd:review`（替换掉现有映射到 `/rd:pr review` 的一条）；`/req:review` → `/rd:req-review`。`/rd:pr comments` / `/req:review-pr fetch-comments` 保持映射到 `/rd:pr comments`（命令仍在，只是变只读），不新增映射。
+- [x] **功能点8 自然语言调度**：`natural-language-dispatcher` 三、四两节改映射：评审通过 / 驳回 + 编号 → `/rd:req-review pass|reject`，新增「提审 / 提交评审」+ 编号 → `/rd:req-review`；审 PR → `/rd:review`；「看看 PR 评论」「拉 PR 评论」→ `/rd:pr comments`，「处理 PR 反馈」「按评论改」→ `/rd:review comments`；`--auto` 触发词说明改指 `/rd:review`。
+- [x] **功能点9 文档与守则同步**：README 三语命令表与快速开始、tutorial 三语（含流程图、自然语言映射表、13.3 `--auto` 章节、命令速查表）、CLAUDE.md（模型分级表：haiku 边界例外去掉 `review` 加 `pr`；「大 PR 代码质量审查」段与「状态流转」段改命令名；插件全景不变）、`shared/_storage.md` 双轨状态机表、`_template.md`、`_delegate.md`、`_verify.md`、`templates/prompt-snippets/pr-review.md` 与 `prompt-craft.md`、`schemas/prompt-schema.md`、`docs/design/token-optimization.md`。
+- [x] **功能点10 布局与一致性守卫通过**：`scripts/check-layout.py --check` 与 `scripts/check-requirements.py --check` 通过；全仓（排除 `docs/changelogs/`、`docs/requirements/completed/`、本文档）不再出现 `/rd:pr review`、需求评审语义的 `/rd:review`；`/rd:pr comments` 的出现处语义均为只读查看。
 
 ---
 
@@ -209,14 +209,14 @@ rd 插件里「review」一词同时指两件事：`/rd:review` 是需求评审�
 ### 6.1 技术测试
 
 - [ ] 测试点1：`claude plugin details rd` 的命令清单出现 `review`、`req-review`、`pr`，且 `review` 的 description 为代码审查、`req-review` 为需求评审
-- [ ] 测试点2：`plugins/rd/commands/pr.md` frontmatter 含 `model: claude-haiku-4-5-20251001`；`review.md` 与 `req-review.md` 不含 `model`
+- [x] 测试点2：`plugins/rd/commands/pr.md` frontmatter 含 `model: claude-haiku-4-5-20251001`；`review.md` 与 `req-review.md` 不含 `model`
 - [ ] 测试点3：`/rd:review REQ-007 pass` 只输出改用 `/rd:req-review` 的提示，不拉 diff、不改文档
 - [ ] 测试点4：`/rd:pr review` 只输出改用 `/rd:review` 的提示，不执行审查；`/rd:pr comments` 展示分组评论清单后停止，不读源码、不改文件，末尾提示 `/rd:review comments`
 - [ ] 测试点5：在有 PR 的功能分支执行 `/rd:review`，输出与改名前 `/rd:pr review` 一致的报告结构（档位行、文件分类行、三级问题、需求文档同步）
 - [ ] 测试点6：`/rd:req-review REQ-007` 提审时输出四维度预审意见，「八、评审记录」新增「AI 预审」一行，状态变为待评审
 - [ ] 测试点7：`/rd:migrate` 2C 对 `/rd:review REQ-001 pass`、`/rd:pr review`、`/req:review-pr review` 三种旧写法按映射替换；`/rd:pr comments` 不被替换
-- [ ] 测试点8：`python3 scripts/check-layout.py --check` 与 `python3 scripts/check-requirements.py --check` 通过
-- [ ] 测试点9：全仓 grep（排除 changelog / completed / 本文档）无 `/rd:pr review`，`/rd:review` 只出现在代码审查语境，`/rd:pr comments` 只出现在只读查看语境
+- [x] 测试点8：`python3 scripts/check-layout.py --check` 与 `python3 scripts/check-requirements.py --check` 通过
+- [x] 测试点9：全仓 grep（排除 changelog / completed / 本文档）无 `/rd:pr review`，`/rd:review` 只出现在代码审查语境，`/rd:pr comments` 只出现在只读查看语境
 
 ### 6.2 验收标准
 
@@ -289,18 +289,41 @@ flowchart LR
 
 ### 11.1 数据模型
 
-_开发阶段填充_
+无新增数据结构。唯一的文档约定：`/rd:req-review` 提审时在「八、评审记录」追加一行，评审人固定 `AI 预审`、结论固定 `提审`、意见为预审摘要（≤ 200 字，阻塞项优先）。人工 pass / reject 仍各追加一行，不覆盖预审行。
 
 ### 11.2 API 设计
 
-> 基于第五章接口需求，结合项目代码和 CLAUDE.md API 风格，生成具体技术方案
-
-_开发阶段填充_
+| 命令 | frontmatter | 参数与守卫 |
+|------|-------------|-----------|
+| `/rd:req-review` | `model` 省略；`allowed-tools: Read, Write, Edit, Glob, Grep` | `[REQ-XXX] [pass\|reject] [--comment=]`。场景一在完整性检查后插入「AI 预审」：读需求全文 + `active/` `completed/` 标题与功能清单，输出合理性 / 粒度 / 冲突 / 风险四维度、阻塞 / 建议 / 信息三级；有阻塞 → 询问是否仍提审 |
+| `/rd:review` | `model` 省略；`allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent, Skill` | `[PR-ID\|REQ-XXX] [--level=] [--auto]` = AI 审查；`comments [PR-ID]` = 拉评论并改代码。守卫：参数含 `pass` / `reject` → 提示 `/rd:req-review` 后退出 |
+| `/rd:pr` | 加 `model: claude-haiku-4-5-20251001`；`allowed-tools` 去 `Skill` | 子命令 `status` / `comments` / `merge`；`review` → 提示 `/rd:review` 后退出；`comments`（含 `fetch-comments`）只读展示，末尾提示 `/rd:review comments` |
 
 ### 11.3 文件改动清单
 
-_开发阶段填充_
+| 文件 | 改动 |
+|------|------|
+| `plugins/rd/commands/req-review.md` | **新建**：原 `review.md` 三场景 + 场景一「AI 预审」步骤；命令名全部改 `/rd:req-review`；省略 `model` |
+| `plugins/rd/commands/review.md` | **重写**：代码审查。通用前置（定位 PR、gh 可用性）+ AI 审查 1–7 步（自 `pr-ops.md` 迁入）+ `comments` 子命令（拉取过滤引用 `pr-ops.md`，分析修改在本文）+ `pass` / `reject` 守卫 |
+| `plugins/rd/shared/pr-ops.md` | 删 review 节；comments 节只留拉取 / 过滤 / 分组展示，末尾提示 `/rd:review comments`；首行说明改「status / comments / merge」 |
+| `plugins/rd/commands/pr.md` | 加 haiku；子命令表改；`review` 守卫；成功输出下一步改 `/rd:review`；`allowed-tools` 去 `Skill` |
+| `plugins/rd/commands/migrate.md` | 2C 映射：`/req:review-pr review` → `/rd:review`；新增 `/rd:pr review` → `/rd:review`、`/rd:review` → `/rd:req-review`、`/req:review` → `/rd:req-review` |
+| `plugins/rd/skills/natural-language-dispatcher/SKILL.md` | 三、四节映射；PR URL 选项文案 |
+| `plugins/rd/commands/dev.md` `new.md` `edit.md` `req.md` | `/rd:review` → `/rd:req-review` |
+| `plugins/rd/commands/fix.md` `done.md` | `/rd:pr review` → `/rd:review` |
+| `plugins/rd/shared/_storage.md` `_template.md` `_delegate.md` `_verify.md` | 命令名替换 |
+| `plugins/rd/templates/prompt-snippets/pr-review.md` `prompt-craft.md`、`plugins/rd/schemas/prompt-schema.md` | `/rd:pr review` → `/rd:review` |
+| `CLAUDE.md` | 模型分级边界例外：去 `review` 加 `pr`，补 `req-review` 省略档说明；「大 PR」段与「状态流转」段命令名 |
+| `docs/design/token-optimization.md` | 命令名 |
+| `README.md` `README.en.md` `README.ko.md` | 三档表典型命令、快速开始、命令表两处 |
+| `docs/tutorial.md` `tutorial.en.md` `tutorial.ko.md` | 1.6 迁移说明、3.1/3.2、PR 章节、流程图、自然语言映射、13.3、速查表 |
 
 ### 11.4 实现步骤
 
-_开发阶段填充_
+1. 新建 `req-review.md`，在原 `review.md` 基础上加 AI 预审，改命令名。
+2. 从 `pr-ops.md` 抽出 review 节与 comments 的分析修改步骤，重写 `review.md`；`pr-ops.md` 收窄。
+3. `pr.md` 降档、改路由与守卫、改成功提示。
+4. `migrate.md` 与 dispatcher 改映射。
+5. 插件内其余引用、CLAUDE.md、设计文档批量替换。
+6. README 三语、tutorial 三语替换。
+7. `check-layout.py --check`、`check-requirements.py --check`、全仓 grep 复核。

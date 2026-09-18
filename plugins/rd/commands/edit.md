@@ -170,7 +170,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 下一步：
 - /rd:edit REQ-XXX - 继续编辑
-- /rd:review - 提交评审
+- /rd:req-review - 提交评审
 ```
 
 ---

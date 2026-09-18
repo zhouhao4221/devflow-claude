@@ -47,9 +47,9 @@ claude plugins uninstall rd@devflow  # 플러그인 제거
 
 | 단계 | 용도 | 대표 커맨드 |
 |------|------|-------------|
-| **Haiku** | 순수 조회 / 표시 / 설정 / 규칙이 명확한 상태 전환 / CLI 래핑 | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/rd:issue`, `/pm:standup`, `/api:help` |
+| **Haiku** | 순수 조회 / 표시 / 설정 / 규칙이 명확한 상태 전환 / CLI 래핑 | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/rd:issue`, `/rd:pr`, `/pm:standup`, `/api:help` |
 | **Sonnet** | 데이터 집계 + 문서화 / 범위가 한정된 문서 편집과 템플릿 기반 생성 | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk`, `/rd:edit`, `/rd:split`, `/rd:test_new`, `/api:gen` |
-| **세션 모델**(미지정) | 코드 분석 / 기획안 생성 / 다회차 요구사항 논의 | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:pr`, `/diag:diagnose`, `/pm:plan` |
+| **세션 모델**(미지정) | 코드 분석 / 기획안 생성 / 다회차 요구사항 논의 | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:review`, `/rd:req-review`, `/diag:diagnose`, `/pm:plan` |
 
 개발 계열 커맨드는 코드 위치 파악, 테스트 실행, 대형 diff 압축 등 처리량이 큰 단계를 subagent 에 위임하여 원본 출력이 메인 세션 컨텍스트에 들어가지 않도록 합니다.
 
@@ -98,7 +98,7 @@ claude plugins uninstall rd@devflow  # 플러그인 제거
 /rd:new 사용자 포인트 시스템
 
 # 4. 리뷰
-/rd:review pass
+/rd:req-review pass
 
 # 5. 개발 (AI 가 구현 플랜을 생성하고 계층별로 안내)
 /rd:dev
@@ -124,7 +124,7 @@ claude plugins uninstall rd@devflow  # 플러그인 제거
 | `/rd:edit [REQ-XXX]` | 요구사항 편집 |
 | `/rd:show [REQ-XXX]` | 요구사항 상세 보기 (읽기 전용) |
 | `/rd:status [REQ-XXX]` | 요구사항 상태 조회 |
-| `/rd:review [pass\|reject]` | 리뷰 제출 / 승인 / 반려 |
+| `/rd:req-review [pass\|reject]` | 리뷰 제출 (AI 사전 리뷰 포함) / 승인 / 반려 |
 | `/rd:dev [REQ-XXX]` | 개발 시작 또는 계속 |
 | `/rd:test [REQ-XXX]` | 종합 테스트 |
 | `/rd:test_regression` | 기존 자동화 테스트 실행 |
@@ -139,8 +139,9 @@ claude plugins uninstall rd@devflow  # 플러그인 제거
 |--------|------|
 | `/rd:pr [REQ-XXX]` | PR 생성 (GitHub / Gitea 자동 감지) |
 | `/rd:pr status` | PR 상태 조회 |
-| `/rd:pr review` | AI 코드 리뷰, 코멘트 제출 |
-| `/rd:pr comments` | PR 코멘트를 가져와 수정 목록 생성 후 적용 |
+| `/rd:review` | AI 코드 리뷰, 코멘트 제출 |
+| `/rd:pr comments` | PR 코멘트 조회 (읽기 전용) |
+| `/rd:review comments` | 리뷰 코멘트에 따라 코드 수정 |
 | `/rd:pr merge` | PR 머지 (merge/squash/rebase 지원) |
 
 #### 문서 관리

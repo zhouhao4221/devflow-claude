@@ -22,7 +22,7 @@ model: claude-haiku-4-5-20251001
 | (空) | 列出所有需求 | `/rd:req` |
 | `new` | 创建新需求 | `/rd:new 用户积分系统` |
 | `edit` | 编辑需求 | `/rd:edit REQ-001` |
-| `review` | 评审需求 | `/rd:review REQ-001` |
+| `review` | 评审需求 | `/rd:req-review REQ-001` |
 | `dev` | 开发需求 | `/rd:dev REQ-001` |
 | `test` | 测试需求 | `/rd:test REQ-001` |
 | `done` | 完成需求 | `/rd:done REQ-001` |
@@ -157,7 +157,7 @@ templates/     # 需求模板
 - 无参数 → 列表模式
 - new → /rd:new
 - edit REQ-XXX → /rd:edit REQ-XXX
-- review REQ-XXX → /rd:review REQ-XXX
+- review REQ-XXX → /rd:req-review REQ-XXX
 - dev REQ-XXX → /rd:dev REQ-XXX
 - test REQ-XXX → /rd:test REQ-XXX
 - done REQ-XXX → /rd:done REQ-XXX

@@ -59,14 +59,15 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 | 策略 | 适用 | 做法 |
 |------|------|------|
-| 显式 haiku | 纯查询/展示/格式化输出/配置/规则明确的状态流转/CLI 包装（branch·commit·issue） | `model: claude-haiku-4-5-20251001` |
+| 显式 haiku | 纯查询/展示/格式化输出/配置/规则明确的状态流转/CLI 包装（branch·commit·issue·pr） | `model: claude-haiku-4-5-20251001` |
 | 显式 sonnet | 数据聚合 + 成文类（pm 周报/月报/里程碑/统计/进度/简介/风险扫描）、有界的单元审查、有界的单文档编辑/分析（rd edit·prd-edit·split·new-quick）、模板化的测试与代码生成（rd test·test_new、api gen·map） | `model: claude-sonnet-5` |
-| 不指定 | 分析代码/生成方案/多轮需求讨论/架构理解/自由问答 | 省略 `model` |
+| 不指定 | 分析代码/生成方案/多轮需求讨论/架构理解/自由问答/需求评审预审（rd req-review）/代码审查（rd review） | 省略 `model` |
 
 > sonnet 一律写 `claude-sonnet-5`（原生 1M 上下文、超 200K 不加价、Pro/Max 不计 extra usage，2026-08 核实）。`pm:plan`/`pm:ask` 需要真实推理，保持省略。
 > 省略档继承会话模型，会话模型是 Fable 5.1（$10/$50）时单价是 sonnet 的 5 倍、haiku 的 10 倍；命令 frontmatter 没有 `effort` 字段（仅 agent 支持），`model` 是命令层唯一的成本杠杆。因此**输入密集型的有界任务**（读文档/读代码为主、产出受模板约束）一律显式指定，省略档只留真正需要会话模型做判断的命令（2026-09 按此把 9 条命令降档）。
 > 模型分级**仅对 `commands/*.md` 命令调用生效**；helper skill 无 `model` 字段，运行在触发它的会话/命令模型下。
-> 边界例外：`done`/`review`/`upgrade`/`release` 虽含写操作，但流程被模板和显式参数高度约束，仍用 haiku。
+> 边界例外：`done`/`upgrade`/`release` 虽含写操作，但流程被模板和显式参数高度约束，仍用 haiku。反向例外：`req-review` 的 pass/reject 本是状态流转，但与提审的 AI 预审共用一条命令，随命令走省略档（REQ-007）。
+> 按档位切命令：一条命令只能钉一档，子命令推理强度差异大时拆成两条命令，而不是整条抬档——`/rd:pr`（create/status/comments/merge，haiku）与 `/rd:review`（AI 审查 / 按评论改代码，省略档）就是这样分的；`/rd:pr comments` 只读展示、`/rd:review comments` 才改代码。
 
 **子任务委派**（命令内粒度，与整条命令的模型分级正交）：**会话模型专注判断，执行外包给 subagent**——主会话做方案设计、跨文件一致性、闸门交互、验收复核，其余派给 `plugins/rd/agents/` 的 5 个 agent，原始输出不进主上下文。
 
@@ -80,7 +81,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 **委派写操作有准入门槛**（`impl-worker`，见 `_delegate.md` 的「委派实施」）：方案已确认到文件级 + 单元互不依赖 + 契约已定死 + 有验收命令，四条全满足才派；新建抽象、跨层契约变更、方案仍在演化的首版实现一律主会话自己写。验收复核的是 `git diff` 实际内容，不是 subagent 的自述。**降档不是委派的理由**——委派是为了上下文隔离（避免开发中途触发压缩、让已确认方案被摘要化），不是为了把推理换成便宜模型。
 
-**大 PR 代码质量审查不自研**：`/rd:pr review` 直接调原生 `/code-review`（多 agent 并行 + 逐条验证），档位按 PR 复杂度自动选。原 `file-reviewer` agent 已删：实测自研路径要主会话把 diff 抄进每个 prompt，「diff 不进主会话」不成立，还有误报。
+**大 PR 代码质量审查不自研**：`/rd:review` 直接调原生 `/code-review`（多 agent 并行 + 逐条验证），档位按 PR 复杂度自动选。原 `file-reviewer` agent 已删：实测自研路径要主会话把 diff 抄进每个 prompt，「diff 不进主会话」不成立，还有误报。
 
 **两条已知失败模式**（dogfooding 实测踩过）：① prompt 只给素材的磁盘路径而不内联正文 → subagent 把轮次耗在自己找文件上；② 一个 subagent 塞多个文件 → 撞 `maxTurns` 交出半成品。切分要细、素材要内联。
 
@@ -106,7 +107,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 | 开发门槛 | `/rd:dev` 拒绝未评审的 REQ | 草稿即可开发（方案在 `new-quick` 内确认，不是状态） |
 | 编号 | `REQ-XXX` | `QUICK-XXX`（扫描本地需求目录取最大值+1） |
 
-状态流转由命令驱动，REQ 与 QUICK 共用同一组命令：`/rd:review pass/reject`（仅 REQ） · `/rd:dev`（自动） · `/rd:test`（自动，QUICK 按「验证方式」验证）· `/rd:done`（必须 y/n 确认，门槛统一「测试中」）。状态机唯一定义在 `shared/_storage.md`「双轨状态机」；需求索引不落盘，`/rd:req` 实时渲染。`/rd:upgrade <QUICK-XXX>` 将未完成的 QUICK 升级为 REQ（4 阶段扩 6 阶段）。无文档的轻量任务走 `/rd:fix`（修 bug，含根因分析）和 `/rd:do`（优化/重构/升级，AI 选流程）。
+状态流转由命令驱动，REQ 与 QUICK 共用同一组命令：`/rd:req-review`（提审含 AI 预审）→ `pass/reject`（仅 REQ） · `/rd:dev`（自动） · `/rd:test`（自动，QUICK 按「验证方式」验证）· `/rd:done`（必须 y/n 确认，门槛统一「测试中」）。状态机唯一定义在 `shared/_storage.md`「双轨状态机」；需求索引不落盘，`/rd:req` 实时渲染。`/rd:upgrade <QUICK-XXX>` 将未完成的 QUICK 升级为 REQ（4 阶段扩 6 阶段）。无文档的轻量任务走 `/rd:fix`（修 bug，含根因分析）和 `/rd:do`（优化/重构/升级，AI 选流程）。
 
 ### 存储（无全局缓存）
 
