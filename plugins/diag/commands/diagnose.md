@@ -1,6 +1,7 @@
 ---
 description: 生产报错定位 - SSH 拉日志 → AI 解析堆栈 → 本地代码关联 → 修复建议
 argument-hint: "<报错描述> [--service=<name>] [--lines=2000] [--pattern=<regex>]"
+model: best
 allowed-tools: Bash(bash:*, ssh:*), Read, Grep, Glob, Agent
 ---
 

@@ -1,6 +1,7 @@
 ---
 description: 代码审查 - AI 审查 PR 并提交评论，或按人工审查评论修改代码
 argument-hint: "[comments] [PR-ID|REQ-XXX] [--level=low|medium|high] [--auto]"
+model: best
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent, Skill
 ---
 
@@ -94,7 +95,7 @@ PR 元数据按平台取（GitHub `gh pr view`，Gitea `/pulls/{N}`），diff �
 | 小 PR | 主会话基于第 1 步读入的 diff 内联审查：正确性、安全性、错误处理、需求匹配、测试覆盖 |
 | 大 PR | 调用原生 `/code-review`（Skill 工具），主会话不看 diff 原文，只接收已验证的问题清单 |
 
-> 大 PR 不再自研逐文件委派：原生审查多 agent 并行 + 逐条验证去重，实测无误报且跨文件问题自己追完；而自研路径要主会话把 diff 再抄进每个 prompt，「diff 不进主会话」并不成立。它的 fork 跑在**会话模型**上，成本随会话模型走，一次 medium 约 6 分钟。
+> 大 PR 不再自研逐文件委派：原生审查多 agent 并行 + 逐条验证去重，实测无误报且跨文件问题自己追完；而自研路径要主会话把 diff 再抄进每个 prompt，「diff 不进主会话」并不成立。一次 medium 约 6 分钟（2026-09 实测）。
 
 **4.1 档位**：`--level=` 显式指定优先；否则按下表打分自动选，并在输出里打印 `档位：<level>（命中：<信号列表>）` 与 `文件分类：逻辑 n / 展示 n / 非代码 n`，便于事后调阈值。信号全部来自第 1 步的 `git diff --numstat`、文件分类与 `diff-digest` 返回的结构性改动清单，不额外读文件内容。
 

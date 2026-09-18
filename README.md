@@ -43,13 +43,16 @@ claude plugins uninstall rd@devflow  # 卸载插件
 
 ## 智能模型分级
 
-命令按推理强度分三档，通过 frontmatter 的 `model` 字段声明，平衡响应速度与推理质量：
+命令按推理强度分四档，通过 frontmatter 的 `model` 字段声明，平衡响应速度、推理质量与成本：
 
 | 档位 | 定位 | 典型命令 |
 |------|------|---------|
 | **Haiku** | 纯查询 / 展示 / 配置 / 规则明确的状态流转 / CLI 包装 | `/rd:req`、`/rd:status`、`/rd:show`、`/rd:commit`、`/rd:issue`、`/rd:pr`、`/pm:standup`、`/api:help` |
 | **Sonnet** | 数据聚合 + 成文 / 有界的文档编辑与模板化生成 | `/pm:weekly`、`/pm:monthly`、`/pm:stats`、`/pm:risk`、`/rd:edit`、`/rd:split`、`/rd:test_new`、`/api:gen` |
-| **会话模型**（不指定） | 分析代码 / 生成方案 / 多轮需求讨论 | `/rd:new`、`/rd:dev`、`/rd:fix`、`/rd:do`、`/rd:review`、`/rd:req-review`、`/diag:diagnose`、`/pm:plan` |
+| **会话模型**（不指定） | 多轮需求讨论 / 需求预审 / 架构归纳 / 项目问答与方案 | `/rd:new`、`/rd:req-review`、`/rd:init`、`/pm:plan`、`/pm:ask` |
+| **Fable** | 实现方案设计 / 根因分析 / 代码审查 | `/rd:dev`、`/rd:do`、`/rd:fix`、`/rd:review`、`/diag:diagnose` |
+
+会话模型建议用 Opus 5 或 Sonnet 5，Fable 5.1 只在 Fable 档命令的当轮调用（你回复后即回到会话模型，如 `/rd:dev` 用 Fable 出方案、确认后的实施跑会话模型）。部分套餐下 Fable 按 usage credits 计费，首次会弹确认；Fable 不可用时（组织禁用、云厂商未上架）这些命令自动改用 Opus。
 
 开发类命令还会把定位代码、跑测试、压缩大 diff 等高吞吐步骤委派给 subagent，原始输出不进主会话上下文。
 
