@@ -127,8 +127,9 @@ claude plugins install rd@devflow
 - `/rd:migrate` 는 프로젝트의 `CLAUDE.md`, `docs/prompt/`, 요구사항 템플릿, `.claude/skills/` 에 남은 기존 접두사 참조를 나열하고, 항목별로 확인한 뒤 교체합니다
 - 변경 불필요: `.devflow/` 설정, 요구사항 문서 (`REQ-XXX`), `.claude/.req-*` 로컬 스위치
 - 프로젝트 `.claude/settings.json` 의 `enabledPlugins` 에 `"req@devflow": true` 가 있으면 `rd@devflow` 로 바꿔야 합니다 (`/rd:migrate` 가 감지해 확인 후 교체하며, 변경 후 커밋하세요). 그렇지 않으면 저장소를 받은 팀원은 여전히 기존 플러그인을 활성화합니다
-- 기존(legacy) PR 리뷰 커맨드는 `/rd:pr` 로 통합되었습니다: `review-pr review` → `/rd:pr review`, `review-pr merge` → `/rd:pr merge`, `review-pr fetch-comments` → `/rd:pr comments`, 단독 `review-pr` → `/rd:pr status`
+- 기존(legacy) PR 리뷰 커맨드는 `/rd:pr` 로 통합되었습니다: `review-pr review` → `/rd:review`, `review-pr merge` → `/rd:pr merge`, `review-pr fetch-comments` → `/rd:pr comments`, 단독 `review-pr` → `/rd:pr status`
 - 주의: `/rd:pr` 를 인자 없이 실행하면 **PR 을 생성**합니다 (legacy `review-pr` 는 인자 없이 실행하면 상태 조회)
+- 리뷰 커맨드는 모델 등급에 따라 분리되었습니다: 요구사항 리뷰 `/rd:review` → `/rd:req-review` (제출 시 AI 사전 리뷰 추가); AI 코드 리뷰 `/rd:pr review` → `/rd:review`; `/rd:pr comments` 는 읽기 전용이 되었고, 코멘트대로 코드를 수정하려면 `/rd:review comments`. `/rd:migrate` 가 옛 표기를 함께 치환합니다
 
 > legacy req 플러그인은 marketplace 에서 제거되었습니다. 업데이트 후 `/req:*` 커맨드가 모두 사라졌다면 위 세 단계로 rd 로 전환하세요.
 
@@ -262,7 +263,7 @@ issue 가 연결되면 전체 체인이 자동으로 issue 번호를 담고 갑�
 ### 3.1 리뷰 제출
 
 ```
-/rd:review
+/rd:req-review
 ```
 
 상태가 초안 → 리뷰 대기 로 전환됩니다.
@@ -270,8 +271,8 @@ issue 가 연결되면 전체 체인이 자동으로 issue 번호를 담고 갑�
 ### 3.2 리뷰 결정
 
 ```
-/rd:review pass     # 승인 → 리뷰 통과
-/rd:review reject   # 반려 → 초안으로 복귀
+/rd:req-review pass     # 승인 → 리뷰 통과
+/rd:req-review reject   # 반려 → 초안으로 복귀
 ```
 
 반려 후 `/rd:edit` 로 수정 후 재제출합니다.
@@ -361,8 +362,9 @@ AI 코드 리뷰와 머지 사용:
 
 ```
 /rd:pr status       # PR 상태 확인
-/rd:pr review       # AI 코드 리뷰
-/rd:pr comments     # PR 코멘트를 가져와 수정 목록 생성 후 적용
+/rd:review          # AI 코드 리뷰
+/rd:pr comments     # PR 코멘트 조회 (읽기 전용)
+/rd:review comments # 코멘트대로 코드 수정
 /rd:pr merge        # PR 머지
 ```
 
@@ -609,12 +611,12 @@ QUICK 진행 중 범위가 커지면 정식 요구사항으로 승격:
                ┌─────────────┐
                │  📝 초안     │ ← /rd:edit
                └──────┬──────┘
-                      │ /rd:review
+                      │ /rd:req-review
                       ▼
                ┌─────────────┐
                │ 👀 리뷰 대기 │
                └──────┬──────┘
-                      │ /rd:review pass
+                      │ /rd:req-review pass
                       ▼
                ┌─────────────┐
                │ ✅ 리뷰 통과 │
@@ -624,7 +626,7 @@ QUICK 진행 중 범위가 커지면 정식 요구사항으로 승격:
                ┌─────────────┐
                │  🔨 개발 중  │ ← /rd:commit
                │             │ ← /rd:pr
-               │             │ ← /rd:pr review
+               │             │ ← /rd:review
                │             │ ← /rd:pr merge
                └──────┬──────┘
                       │ /rd:test
@@ -671,8 +673,8 @@ Go 1.23 으로 업그레이드                       → /rd:do Go 1.23 으로 �
 ```
 025 개발 시작                                 → /rd:dev REQ-025
 025 테스트 시작                               → /rd:test REQ-025
-025 리뷰 통과                                 → /rd:review pass
-025 리뷰 반려                                 → /rd:review reject
+025 리뷰 통과                                 → /rd:req-review pass
+025 리뷰 반려                                 → /rd:req-review reject
 025 완료 / 025 끝났어                          → /rd:done REQ-025
 ```
 
@@ -681,8 +683,9 @@ Go 1.23 으로 업그레이드                       → /rd:do Go 1.23 으로 �
 ```
 규범 커밋                                     → /rd:commit
 PR 생성                                       → /rd:pr
-PR 리뷰                                       → /rd:pr review
+PR 리뷰                                       → /rd:review
 PR 코멘트 조회                                → /rd:pr comments
+코멘트대로 수정                               → /rd:review comments
 PR 머지                                       → /rd:pr merge
 ```
 
@@ -691,7 +694,7 @@ PR 머지                                       → /rd:pr merge
 ```
 owner/repo/issues/169 수정                    → /rd:fix --from-issue=#169
 owner/repo/issues/12 로 요구사항 생성         → /rd:new --from-issue=#12
-owner/repo/pulls/158 리뷰                     → /rd:pr review (PR 브랜치로 먼저 전환 필요)
+owner/repo/pulls/158 리뷰                     → /rd:review (PR 브랜치로 먼저 전환 필요)
 ```
 
 동사 없이 URL 만 붙여넣으면 작업 선택 메뉴가 표시됩니다.
@@ -774,18 +777,18 @@ AI:    🧠 인식: /rd:fix Excel 내보내기 인코딩 --auto
 
 ### 13.3 `--auto` 를 지원하는 다른 커맨드
 
-**`/rd:pr review --auto`** — "리뷰 코멘트 업로드 여부" 확인 건너뛰기
+**`/rd:review --auto`** — "리뷰 코멘트 업로드 여부" 확인 건너뛰기
 
 기본 (—auto 없음) 은 AI 코드 리뷰 완료 후 **축약된 코멘트 프리뷰**를 표시하고 `y/n` 을 기다립니다. 리뷰 결과가 확인 없이 외부에 공개되는 것을 방지하기 위함입니다. `--auto` 를 전달하면 질문을 건너뛰고 바로 업로드합니다.
 
 ```
-/rd:pr review               # 프리뷰 표시 → y/n 확인 대기
-/rd:pr review --auto        # 축약 코멘트 바로 업로드
+/rd:review                 # 프리뷰 표시 → y/n 확인 대기
+/rd:review --auto          # 축약 코멘트 바로 업로드
 ```
 
 자연어 트리거: `원클릭 리뷰`, `자동 리뷰`, `리뷰 후 바로 코멘트`, `묻지 마`.
 
-> **`review` 서브커맨드의 업로드 확인에만 영향.** `/rd:pr merge` 의 머지 후 브랜치 정리 확인은 `branchStrategy.deleteBranchAfterMerge` 로 제어되고, `/rd:pr comments` 의 "수정 적용 여부" 확인은 AI 가 코드를 임의로 수정하지 않도록 유지됩니다.
+> **`/rd:review` 의 업로드 확인에만 영향.** `/rd:pr merge` 의 머지 후 브랜치 정리 확인은 `branchStrategy.deleteBranchAfterMerge` 로 제어되고, `/rd:review comments` 의 "수정 적용 여부" 확인은 AI 가 코드를 임의로 수정하지 않도록 유지됩니다.
 
 ---
 
@@ -799,14 +802,15 @@ AI:    🧠 인식: /rd:fix Excel 내보내기 인코딩 --auto
 | 라이트 수정 (문서 없음) | `/rd:fix <설명>` |
 | 스마트 개발 (최적화/리팩토링) | `/rd:do <설명>` |
 | 편집 | `/rd:edit` |
-| 리뷰 제출 | `/rd:review` |
-| 리뷰 승인 | `/rd:review pass` |
+| 리뷰 제출 | `/rd:req-review` |
+| 리뷰 승인 | `/rd:req-review pass` |
 | 개발 시작 | `/rd:dev` |
 | 커밋 | `/rd:commit` |
 | PR 생성 | `/rd:pr` |
 | PR 상태 조회 | `/rd:pr status` |
-| AI 코드 리뷰 | `/rd:pr review` |
-| PR 코멘트 처리 | `/rd:pr comments` |
+| AI 코드 리뷰 | `/rd:review` |
+| PR 코멘트 조회 | `/rd:pr comments` |
+| 코멘트대로 코드 수정 | `/rd:review comments` |
 | PR 머지 | `/rd:pr merge` |
 | 테스트 실행 | `/rd:test` |
 | 아카이브 | `/rd:done` |

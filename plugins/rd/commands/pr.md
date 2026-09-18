@@ -1,12 +1,13 @@
 ---
-description: PR 全流程 - 创建、查看状态、AI 审查、处理评论、合并
-argument-hint: "[status|review|comments|merge] [REQ-XXX|PR-ID] [--title=] [--base=] [--level=low|medium|high] [--auto]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent, Skill
+description: PR 操作 - 创建、查看状态、查看评论、合并（AI 审查用 /rd:review）
+argument-hint: "[status|comments|merge] [REQ-XXX|PR-ID] [--title=] [--base=]"
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent
+model: claude-haiku-4-5-20251001
 ---
 
 # Pull Request
 
-PR 全流程入口：默认按分支策略中的仓库类型推送分支并创建 PR；带子命令时查看状态、AI 审查、处理评论或合并。
+PR 的 CLI 操作入口：默认按分支策略中的仓库类型推送分支并创建 PR；带子命令时查看状态、查看评论或合并。AI 代码审查与按评论改代码在 `/rd:review`。
 
 > **Audience:** Engineer
 > 不受仓库角色限制，readonly 也可执行。
@@ -27,8 +28,8 @@ PR 全流程入口：默认按分支策略中的仓库类型推送分支并创�
 | 首个参数 | 功能 | 示例 |
 |---------|------|------|
 | `status` | 查看 PR 状态 | `/rd:pr status` |
-| `review` | AI 代码审查（`--level=` 指定 `/code-review` 档位，省略则按 PR 复杂度自动选；`--auto` 跳过提交确认） | `/rd:pr review` |
-| `comments` | 拉取 PR 评论，AI 生成修改清单并应用（`fetch-comments` 视同 `comments`） | `/rd:pr comments` |
+| `comments` | 拉取 PR 评论并分组展示，只读（`fetch-comments` 视同 `comments`）；要按评论改代码用 `/rd:review comments` | `/rd:pr comments` |
+| `review` | **不执行**，只提示：`AI 代码审查已改为 /rd:review` | — |
 | `merge` | 合并 PR | `/rd:pr merge` |
 | 其他 / 无参数 | 创建 PR，执行下方「执行流程（创建 PR）」 | `/rd:pr REQ-001` |
 
@@ -161,7 +162,7 @@ PR 创建成功或复用已有 open PR 时输出；github 的 `gh` 不可用、�
 ✅ PR 已创建
    <url>
 已请求审核：@user1, @user2     ← reviewers 非空时输出
-改动 <N> 文件 <M> 行 → 建议 /rd:pr review（<小 PR：主会话内联审查 | 大 PR：将调用原生 /code-review，档位自动选>）
+改动 <N> 文件 <M> 行 → 建议 /rd:review（<小 PR：主会话内联审查 | 大 PR：将调用原生 /code-review，档位自动选>）
 合并后 /rd:pr merge，或 /rd:done 归档
 ```
 

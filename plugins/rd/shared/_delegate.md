@@ -44,7 +44,7 @@
 
 命令的 frontmatter `allowed-tools` **必须包含 `Agent`**（`allowed-tools` 是免确认预授权而非白名单：缺失时仍能派生，但每次派生都弹确认，打断流程）。
 
-代码质量审查不在此列：`/rd:pr review` 大 PR 直接调原生 `/code-review`（Skill 工具，`allowed-tools` 需列 `Skill`），规则见该命令。
+代码质量审查不在此列：`/rd:review` 大 PR 直接调原生 `/code-review`（Skill 工具，`allowed-tools` 需列 `Skill`），规则见该命令。
 
 ## 委派实施（impl-worker）的准入条件
 

@@ -51,7 +51,7 @@ model: claude-haiku-4-5-20251001
 **扫描范围**（只扫这些，其余不动）：`CLAUDE.md`、`docs/prompt/**/*.md`、`<requirementsDir>/templates/*.md`、`.claude/skills/**/*.md`。需求文档（`active/`、`completed/`）与 `docs/changelogs/` 是历史记录，不扫。
 
 **识别规则**（旧前缀 → 新前缀，按顺序匹配）：
-- 旧 PR 审查命令先单独映射（已并入 `/rd:pr` 子命令）：`/req:review-pr review` → `/rd:pr review`、`/req:review-pr merge` → `/rd:pr merge`、`/req:review-pr fetch-comments` → `/rd:pr comments`、单独的 `/req:review-pr` → `/rd:pr status`
+- 审查类命令先单独映射（顺序敏感，先长后短）：`/req:review-pr review` → `/rd:review`、`/req:review-pr merge` → `/rd:pr merge`、`/req:review-pr fetch-comments` → `/rd:pr comments`、单独的 `/req:review-pr` → `/rd:pr status`；`/rd:pr review` → `/rd:review`；`/req:review` 与 `/rd:review`（旧语义只有需求评审，后面跟 `REQ-XXX` / `pass` / `reject` 或无参数）→ `/rd:req-review`。`/rd:pr comments` 不动（命令仍在，改为只读查看）
 - `/req:<命令>` → `/rd:<命令>`
 - 单独出现的 `/req`（入口命令：后面不是字母、`/`、`:`、`-`、`_`）→ `/rd:req`
 - 不是命令的一律不碰：`docs/requirements`、`.claude/.req-auto`、`REQ-XXX`

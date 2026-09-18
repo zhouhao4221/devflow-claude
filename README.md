@@ -47,9 +47,9 @@ claude plugins uninstall rd@devflow  # 卸载插件
 
 | 档位 | 定位 | 典型命令 |
 |------|------|---------|
-| **Haiku** | 纯查询 / 展示 / 配置 / 规则明确的状态流转 / CLI 包装 | `/rd:req`、`/rd:status`、`/rd:show`、`/rd:commit`、`/rd:issue`、`/pm:standup`、`/api:help` |
+| **Haiku** | 纯查询 / 展示 / 配置 / 规则明确的状态流转 / CLI 包装 | `/rd:req`、`/rd:status`、`/rd:show`、`/rd:commit`、`/rd:issue`、`/rd:pr`、`/pm:standup`、`/api:help` |
 | **Sonnet** | 数据聚合 + 成文 / 有界的文档编辑与模板化生成 | `/pm:weekly`、`/pm:monthly`、`/pm:stats`、`/pm:risk`、`/rd:edit`、`/rd:split`、`/rd:test_new`、`/api:gen` |
-| **会话模型**（不指定） | 分析代码 / 生成方案 / 多轮需求讨论 | `/rd:new`、`/rd:dev`、`/rd:fix`、`/rd:do`、`/rd:pr`、`/diag:diagnose`、`/pm:plan` |
+| **会话模型**（不指定） | 分析代码 / 生成方案 / 多轮需求讨论 | `/rd:new`、`/rd:dev`、`/rd:fix`、`/rd:do`、`/rd:review`、`/rd:req-review`、`/diag:diagnose`、`/pm:plan` |
 
 开发类命令还会把定位代码、跑测试、压缩大 diff 等高吞吐步骤委派给 subagent，原始输出不进主会话上下文。
 
@@ -98,7 +98,7 @@ claude plugins uninstall rd@devflow  # 卸载插件
 /rd:new 用户积分系统
 
 # 4. 评审
-/rd:review pass
+/rd:req-review pass
 
 # 5. 开发（AI 生成实现方案，按分层架构引导）
 /rd:dev
@@ -124,7 +124,7 @@ claude plugins uninstall rd@devflow  # 卸载插件
 | `/rd:edit [REQ-XXX]` | 编辑需求文档 |
 | `/rd:show [REQ-XXX]` | 查看需求详情（只读） |
 | `/rd:status [REQ-XXX]` | 查看需求状态 |
-| `/rd:review [pass\|reject]` | 提交 / 通过 / 驳回评审 |
+| `/rd:req-review [pass\|reject]` | 提交（含 AI 预审）/ 通过 / 驳回评审 |
 | `/rd:dev [REQ-XXX]` | 启动或继续开发 |
 | `/rd:test [REQ-XXX]` | 综合测试验证 |
 | `/rd:test_regression` | 运行已有自动化测试 |
@@ -139,8 +139,9 @@ claude plugins uninstall rd@devflow  # 卸载插件
 |------|------|
 | `/rd:pr [REQ-XXX]` | 创建 PR（自动适配 GitHub / Gitea） |
 | `/rd:pr status` | 查看 PR 状态 |
-| `/rd:pr review` | AI 代码审查，提交评论 |
-| `/rd:pr comments` | 拉取 PR 评论，AI 生成修改清单并应用 |
+| `/rd:review` | AI 代码审查，提交评论 |
+| `/rd:pr comments` | 拉取 PR 评论并展示（只读） |
+| `/rd:review comments` | 按人工审查评论修改代码 |
 | `/rd:pr merge` | 合并 PR（支持 merge/squash/rebase） |
 
 #### 文档管理

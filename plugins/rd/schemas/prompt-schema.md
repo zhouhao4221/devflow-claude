@@ -65,7 +65,7 @@
 | `refactoring.md` | 重构规范（行为不变） | `/rd:do` |
 | `test-generation.md` | 测试用例生成规范 | `/rd:test_new` |
 | `error-diagnosis.md` | 错误根因分析规范 | `/rd:fix` |
-| `pr-review.md` | PR 评审关注点 | `/rd:pr review` |
+| `pr-review.md` | PR 评审关注点 | `/rd:review` |
 | `requirement-structuring.md` | 模糊需求结构化规范 | `/rd:new`、`/rd:edit` |
 | `prompt-craft.md` | Prompt 文件自身的格式规范（不被命令读取，供团队维护参考） | — |
 

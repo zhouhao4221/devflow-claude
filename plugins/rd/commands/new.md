@@ -161,7 +161,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 
 下一步：
 - /rd:edit REQ-XXX - 继续完善
-- /rd:review REQ-XXX - 提交评审
+- /rd:req-review REQ-XXX - 提交评审
 ```
 
 ---

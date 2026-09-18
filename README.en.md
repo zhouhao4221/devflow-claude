@@ -47,9 +47,9 @@ Commands are split into three tiers by required reasoning strength, declared via
 
 | Tier | Purpose | Typical commands |
 |------|---------|------------------|
-| **Haiku** | Pure queries / display / config / status transitions with clear rules / CLI wrappers | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/rd:issue`, `/pm:standup`, `/api:help` |
+| **Haiku** | Pure queries / display / config / status transitions with clear rules / CLI wrappers | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/rd:issue`, `/rd:pr`, `/pm:standup`, `/api:help` |
 | **Sonnet** | Data aggregation + document drafting / bounded document editing and template-driven generation | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk`, `/rd:edit`, `/rd:split`, `/rd:test_new`, `/api:gen` |
-| **Session model** (unspecified) | Analyzing code / plan generation / multi-round requirement discussion | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:pr`, `/diag:diagnose`, `/pm:plan` |
+| **Session model** (unspecified) | Analyzing code / plan generation / multi-round requirement discussion | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:review`, `/rd:req-review`, `/diag:diagnose`, `/pm:plan` |
 
 Development commands also delegate high-throughput steps — locating code, running tests, digesting large diffs — to subagents, keeping their raw output out of the main session's context.
 
@@ -98,7 +98,7 @@ Then the daily workflow:
 /rd:new user points system
 
 # 4. Review
-/rd:review pass
+/rd:req-review pass
 
 # 5. Develop (AI generates a plan and guides you layer by layer)
 /rd:dev
@@ -124,7 +124,7 @@ Then the daily workflow:
 | `/rd:edit [REQ-XXX]` | Edit a requirement |
 | `/rd:show [REQ-XXX]` | Show requirement details (read-only) |
 | `/rd:status [REQ-XXX]` | Show requirement status |
-| `/rd:review [pass\|reject]` | Submit / approve / reject review |
+| `/rd:req-review [pass\|reject]` | Submit (with AI pre-review) / approve / reject review |
 | `/rd:dev [REQ-XXX]` | Start or continue development |
 | `/rd:test [REQ-XXX]` | Full test verification |
 | `/rd:test_regression` | Run existing automated tests |
@@ -139,8 +139,9 @@ Then the daily workflow:
 |---------|-------------|
 | `/rd:pr [REQ-XXX]` | Create PR (auto-detects GitHub / Gitea) |
 | `/rd:pr status` | Show PR status |
-| `/rd:pr review` | AI code review, submit comments |
-| `/rd:pr comments` | Fetch PR comments and apply AI-suggested fixes |
+| `/rd:review` | AI code review, submit comments |
+| `/rd:pr comments` | Fetch and list PR comments (read-only) |
+| `/rd:review comments` | Apply reviewer comments to the code |
 | `/rd:pr merge` | Merge PR (supports merge/squash/rebase) |
 
 #### Document management
