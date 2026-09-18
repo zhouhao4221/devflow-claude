@@ -65,7 +65,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 从 `templates/prompt-snippets/` **复制**到 `docs/prompt/`（逐文件检查，已存在则跳过，`--reinit` 保护已有）：
 `code-generation.md`、`refactoring.md`、`test-generation.md`、`testing.md`、`error-diagnosis.md`、`pr-review.md`、`requirement-structuring.md`、`prompt-craft.md`。
 
-> 用复制而非现场生成，确保各项目骨架结构一致（统一 5 节：什么时候用 / 必备输入 / 触发方式 / 优质输出标准 / 常见失败模式）。骨架节内容为占位注释，供用户按项目填充；消费命令（`/rd:dev`、`/rd:do`、`/rd:fix`、`/rd:pr review` 等）在运行时按需 Read 对应文件，缺失即降级为通用行为。
+> 用复制而非现场生成，确保各项目骨架结构一致（统一 5 节：什么时候用 / 必备输入 / 触发方式 / 优质输出标准 / 常见失败模式）。骨架节内容为占位注释，供用户按项目填充；消费命令（`/rd:dev`、`/rd:do`、`/rd:fix`、`/rd:review` 等）在运行时按需 Read 对应文件，缺失即降级为通用行为。
 
 ### 9. 生成 release.md
 

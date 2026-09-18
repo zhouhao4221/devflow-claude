@@ -6,10 +6,11 @@
 |-----|-----|
 | 编号 | REQ-007 |
 | 类型 | 全栈 |
-| 状态 | 开发中 |
+| 状态 | 已完成 |
 | 模块 | 插件架构 |
 | 优先级 | P2 |
 | 创建日期 | 2026-09-18 |
+| 完成日期 | 2026-09-18 |
 | 负责人 | - |
 | branch | feat/REQ-007-review-model-tier-split |
 | issue | - |
@@ -22,8 +23,8 @@
 - [x] 待评审
 - [x] 评审通过
 - [x] 开发中
-- [ ] 测试中
-- [ ] 已完成
+- [x] 测试中
+- [x] 已完成
 
 ---
 
@@ -208,13 +209,13 @@ rd 插件里「review」一词同时指两件事：`/rd:review` 是需求评审�
 
 ### 6.1 技术测试
 
-- [ ] 测试点1：`claude plugin details rd` 的命令清单出现 `review`、`req-review`、`pr`，且 `review` 的 description 为代码审查、`req-review` 为需求评审
+- [ ] 测试点1：`claude plugin details rd` 的命令清单出现 `review`、`req-review`、`pr`，且 `review` 的 description 为代码审查、`req-review` 为需求评审（未实测：需发布后 /plugin 更新再实测）
 - [x] 测试点2：`plugins/rd/commands/pr.md` frontmatter 含 `model: claude-haiku-4-5-20251001`；`review.md` 与 `req-review.md` 不含 `model`
-- [ ] 测试点3：`/rd:review REQ-007 pass` 只输出改用 `/rd:req-review` 的提示，不拉 diff、不改文档
-- [ ] 测试点4：`/rd:pr review` 只输出改用 `/rd:review` 的提示，不执行审查；`/rd:pr comments` 展示分组评论清单后停止，不读源码、不改文件，末尾提示 `/rd:review comments`
-- [ ] 测试点5：在有 PR 的功能分支执行 `/rd:review`，输出与改名前 `/rd:pr review` 一致的报告结构（档位行、文件分类行、三级问题、需求文档同步）
-- [ ] 测试点6：`/rd:req-review REQ-007` 提审时输出四维度预审意见，「八、评审记录」新增「AI 预审」一行，状态变为待评审
-- [ ] 测试点7：`/rd:migrate` 2C 对 `/rd:review REQ-001 pass`、`/rd:pr review`、`/req:review-pr review` 三种旧写法按映射替换；`/rd:pr comments` 不被替换
+- [ ] 测试点3：`/rd:review REQ-007 pass` 只输出改用 `/rd:req-review` 的提示，不拉 diff、不改文档（未实测：需发布后 /plugin 更新再实测）
+- [ ] 测试点4：`/rd:pr review` 只输出改用 `/rd:review` 的提示，不执行审查；`/rd:pr comments` 展示分组评论清单后停止，不读源码、不改文件，末尾提示 `/rd:review comments`（未实测：需发布后 /plugin 更新再实测）
+- [ ] 测试点5：在有 PR 的功能分支执行 `/rd:review`，输出与改名前 `/rd:pr review` 一致的报告结构（档位行、文件分类行、三级问题、需求文档同步）（未实测：需发布后 /plugin 更新再实测）
+- [ ] 测试点6：`/rd:req-review REQ-007` 提审时输出四维度预审意见，「八、评审记录」新增「AI 预审」一行，状态变为待评审（未实测：需发布后 /plugin 更新再实测）
+- [ ] 测试点7：`/rd:migrate` 2C 对 `/rd:review REQ-001 pass`、`/rd:pr review`、`/req:review-pr review` 三种旧写法按映射替换；`/rd:pr comments` 不被替换（未实测：需发布后 /plugin 更新再实测）
 - [x] 测试点8：`python3 scripts/check-layout.py --check` 与 `python3 scripts/check-requirements.py --check` 通过
 - [x] 测试点9：全仓 grep（排除 changelog / completed / 本文档）无 `/rd:pr review`，`/rd:review` 只出现在代码审查语境，`/rd:pr comments` 只出现在只读查看语境
 
@@ -222,10 +223,10 @@ rd 插件里「review」一词同时指两件事：`/rd:review` 是需求评审�
 
 > 产品/业务方验收时的确认项，描述可观测的业务结果
 
-- [ ] 验收项1：在一个功能分支上依次执行 `/rd:pr`、`/rd:review`、`/rd:pr comments`、`/rd:review comments`、`/rd:pr merge`，PR 创建 / 审查 / 看评论 / 按评论改 / 合并全链路走通，`/rd:pr` 成功提示的下一步为 `/rd:review`
-- [ ] 验收项2：对本需求执行 `/rd:req-review REQ-007` → `pass`，预审意见可读、评审记录有「AI 预审」与人工「通过」两行
-- [ ] 验收项3：README 三语、tutorial 三语的命令表与流程图中 review / req-review / pr 三条命令职责与本文一致
-- [ ] 验收项4：说「审一下这个 PR」映射 `/rd:review`，说「看看 PR 评论」映射 `/rd:pr comments`，说「按评论改一下」映射 `/rd:review comments`，说「REQ-007 评审通过」映射 `/rd:req-review REQ-007 pass`，说「提审 REQ-007」映射 `/rd:req-review REQ-007`
+- [ ] 验收项1：在一个功能分支上依次执行 `/rd:pr`、`/rd:review`、`/rd:pr comments`、`/rd:review comments`、`/rd:pr merge`，PR 创建 / 审查 / 看评论 / 按评论改 / 合并全链路走通，`/rd:pr` 成功提示的下一步为 `/rd:review`（未实测：需发布后 /plugin 更新再实测）
+- [ ] 验收项2：对本需求执行 `/rd:req-review REQ-007` → `pass`，预审意见可读、评审记录有「AI 预审」与人工「通过」两行（未实测：需发布后 /plugin 更新再实测）
+- [x] 验收项3：README 三语、tutorial 三语的命令表与流程图中 review / req-review / pr 三条命令职责与本文一致
+- [ ] 验收项4：说「审一下这个 PR」映射 `/rd:review`，说「看看 PR 评论」映射 `/rd:pr comments`，说「按评论改一下」映射 `/rd:review comments`，说「REQ-007 评审通过」映射 `/rd:req-review REQ-007 pass`，说「提审 REQ-007」映射 `/rd:req-review REQ-007`（未实测：需发布后 /plugin 更新再实测）
 
 ---
 
@@ -267,6 +268,7 @@ flowchart LR
 |-----|---------|---------|
 | 2026-09-18 | 初始版本 | - |
 | 2026-09-18 | `/rd:pr comments` 保留为只读查看，与 `/rd:review comments` 并存 | 功能点3/5/7/8、业务规则、场景2/4、测试点4/7/9 |
+| 2026-09-18 | PR #92 合并；本地可验的测试点 2/8/9 与验收项 3 通过，其余待发布后实测 | 六、测试要点 |
 
 ---
 
