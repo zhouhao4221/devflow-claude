@@ -1,7 +1,7 @@
 ---
 description: 需求评审 - 提交（含 AI 预审）或记录评审结果
 argument-hint: "[REQ-XXX] [pass|reject] [--comment=评审意见]"
-allowed-tools: Read, Write, Edit, Glob, Grep
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git config:*)
 ---
 
 # 需求评审
@@ -11,6 +11,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 > **Audience:** Product Manager
 > 存储路径规则见 [_storage.md](../shared/_storage.md)
 > 仅对 REQ 生效；QUICK 没有评审站，草稿即可 `/rd:dev`。
+> `readonly` 仓库：预审意见只展示，不写评审记录、不改状态（写操作规则同 `_storage.md`）。
 
 ## 命令格式
 
@@ -63,7 +64,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 ### 2. AI 预审
 
-读需求全文，再读 `active/` 与 `completed/` 下其它需求的标题、功能清单与范围（只读这几节，不读全文），从四个维度给意见：
+读需求全文，再读 `active/` 与 `completed/` 下其它需求的标题、功能清单与范围（只读这几节，不读全文；QUICK 文档没有这两节，只取标题与「问题描述」），从四个维度给意见：
 
 | 维度 | 看什么 |
 |------|-------|
@@ -78,7 +79,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 - 有阻塞项 → 询问「预审有 N 项阻塞，仍要提审吗？(y/n)」。n → 保持当前状态，提示 `/rd:edit REQ-XXX`，退出；y → 继续
 - 无阻塞项 → 直接继续
 
-无论是否提审成功，都在「八、评审记录」追加一行：日期、评审人 `AI 预审`、结论 `提审`、意见为精简摘要（≤ 200 字，阻塞项优先，无问题写「无阻塞项」）。
+无论是否提审成功，都在「八、评审记录」追加一行：日期、评审人 `AI 预审`、结论（继续提审写 `提审`，用户选 n 写 `预审未提审`）、意见为精简摘要（≤ 200 字，阻塞项优先，无问题写「无阻塞项」）。表里只有占位行 `| - | - | - | - |` 时用首条记录替换它（只动本表，其它章节的同形占位行不碰）。
 
 > 预审只产出意见，不改一~六章的任何内容与结构（Memory 隔离约束同 `requirement-analyzer`）。
 
@@ -107,6 +108,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 - 阻塞 0 · 建议 2 · 信息 1（详见评审记录）
 ```
 
+带阻塞项仍提审时，本节改为 `- ⚠️ 带 N 项阻塞提审 · 建议 n · 信息 n`，并在下方结尾提示第一行同样标出。
+
 ### 4. 更新状态
 
 - 修改元信息状态为「待评审」
@@ -115,7 +118,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 ### 5. 提示
 
 ```
-✅ 需求已提交评审
+✅ 需求已提交评审（⚠️ 带 1 项阻塞，见评审记录）   ← 无阻塞时不带括号
 
 REQ-001 部门渠道关联
 状态：待评审
@@ -205,11 +208,14 @@ REQ-001 部门渠道关联
 ## 状态流转图
 
 ```
-草稿 ──提审──▶ 待评审 ──pass──▶ 评审通过 ──▶ /rd:dev
-  ▲              │
-  │            reject
-  └── /rd:edit ◀─┘（评审驳回）
+草稿 ────提审────▶ 待评审 ──pass──▶ 评审通过 ──▶ /rd:dev
+                     │  ▲
+                 reject │ 重新提审（/rd:edit 后）
+                     ▼  │
+                   评审驳回
 ```
+
+驳回后状态停在「评审驳回」，不回草稿；修改后再提审直接进「待评审」。
 
 ## 用户输入
 
