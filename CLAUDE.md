@@ -66,6 +66,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 > **会话模型按非 Fable 设计**（2026-09-19 起）：假定会话默认是 Opus 5 / Sonnet 5，Fable 5.1（$10/$50，Opus 5 的 2 倍、sonnet 的 5 倍）只由 fable 档命令显式调用。省略档是「会话模型够用」档而非「最强档」：新命令按「会话模型做错的代价」定档，代价高才钉 fable，不因流程重要就抬档。会话模型本身是 Fable 时省略档也跑 Fable，只是贵，不影响正确性。
 > fable 覆盖**只到当轮**（用户下一句起回到会话模型，官方文档 2026-09-19 核实）：dev/do/fix 的方案在命令轮用 Fable 定，确认后的实施跑会话模型；多轮讨论型命令钉 fable 只管得到第一轮，所以 `/rd:new` 留省略档。
+> **fable 档的确认闸门必须结束当轮**：展示方案后结束回复、等用户下一条消息，不用 Plan Mode（ExitPlanMode）或 AskUserQuestion——它们在同轮内返回，确认后写代码会继续跑 Fable。反过来，**出方案之前不设闸门**，否则方案本身落到会话模型：dev 的分支名随方案一起确认、多候选/多分支时请用户指定后重跑；do 的规模提示并入方案；diag diagnose 服务不明时请用户带 `--service` 重跑。`fix --auto` 无闸门，全程 Fable，接受。
 > fable 档写别名 `model: best`，不写完整 ID（与 sonnet 相反）：`best` 在 Fable 可用时解析为 Fable 5.1，不可用（allowlist 排除、云厂商未上架）时退到 Opus 而不是可能更弱的会话模型，且按 provider 解析 ID；这一档要的是「当前最强」，不钉版本。
 > sonnet 一律写 `claude-sonnet-5`（原生 1M 上下文、超 200K 不加价、Pro/Max 不计 extra usage，2026-08 核实）。`pm:plan`/`pm:ask` 需要真实推理，保持省略。
 > `model` 是命令层的主成本杠杆。**输入密集型的有界任务**（读文档/读代码为主、产出受模板约束）一律显式 haiku/sonnet（2026-09 按此把 9 条命令降档）；fable 档只收推理密集的，读得多不是抬档理由。命令 frontmatter 与 skill 同源（除 `name`/`paths`），也能写 `effort`（2026-09-19 查文档，此前误记为仅 agent 支持），本仓库尚未启用。

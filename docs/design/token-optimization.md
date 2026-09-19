@@ -145,7 +145,7 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 **会话模型不再假定是 Fable，高推理命令显式钉 Fable**（2026-09-19）：会话默认改用 Opus 5 / Sonnet 5 后，省略档变成「会话模型够用」档；需要高度思考、做错会写进代码或带偏修复方向的命令显式 `model: best`（Fable 可用时解析为 Fable 5.1，否则退到 Opus）：`/rd:dev`、`do`（实现方案设计）、`/rd:fix`、`/diag:diagnose`（根因分析）、`/rd:review`（代码审查）。省略档留 `/rd:new`、`req-review`、`init`、`/pm:plan`、`ask`（`/rd:pr` 已随 REQ-007 降 haiku）。依据（官方文档 2026-09-19 核实）：
 
-1. **覆盖只到当轮**：命令的 `model`「applies for the rest of the current turn … The session model resumes when you send your next prompt」。dev/do/fix 的方案在命令轮里用 Fable 定，用户确认后的实施回到会话模型——只在想方案时付 Fable 的钱；反过来，多轮讨论型命令（`/rd:new`）钉 Fable 只管得到第一轮。
+1. **覆盖只到当轮**：命令的 `model`「applies for the rest of the current turn … The session model resumes when you send your next prompt」。dev/do/fix 的方案在命令轮里用 Fable 定，用户确认后的实施回到会话模型——只在想方案时付 Fable 的钱；反过来，多轮讨论型命令（`/rd:new`）钉 Fable 只管得到第一轮。前提是闸门落在轮与轮之间：确认点必须「展示后结束本轮、等用户下一条消息」（Plan Mode 的 ExitPlanMode、AskUserQuestion 都在同轮内返回，确认后写代码仍跑 Fable），且出方案之前不能先停下等回复（v5.0.1 的 dev 先确认分支名、do 先问规模，方案反而落到会话模型，随后修正）。
 2. **不可用时退到 Opus**：写别名 `best` 而非完整 ID——`best`「Uses the model the `fable` alias resolves to where Fable is available to you, otherwise the same model as `opus`」。写 `claude-fable-5-1` 时，allowlist 排除 Fable 会让 override 被忽略、退回会话模型（可能是 Sonnet）；`best` 退到 Opus，且按 provider 解析 ID（Bedrock/Vertex 不用另配）。
 3. **计费**：部分套餐/席位下 Fable 按 usage credits 计费、不占套餐额度，交互会话首次弹同意提示（`-p` / Agent SDK 不弹，直接计费）。
 
