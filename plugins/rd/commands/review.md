@@ -1,7 +1,6 @@
 ---
 description: 代码审查 - AI 审查 PR 并提交评论，或按人工审查评论修改代码
 argument-hint: "[comments] [PR-ID|REQ-XXX] [--level=low|medium|high] [--auto]"
-model: best
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent, Skill
 ---
 
@@ -92,10 +91,12 @@ PR 元数据按平台取（GitHub `gh pr view`，Gitea `/pulls/{N}`），diff �
 
 | PR 规模 | 方式 |
 |---------|------|
-| 小 PR | 主会话基于第 1 步读入的 diff 内联审查：正确性、安全性、错误处理、需求匹配、测试覆盖 |
+| 小 PR | 交给 `planner`（Fable）审查：正确性、安全性、错误处理、需求匹配、测试覆盖（见下） |
 | 大 PR | 调用原生 `/code-review`（Skill 工具），主会话不看 diff 原文，只接收已验证的问题清单 |
 
 > 大 PR 不再自研逐文件委派：原生审查多 agent 并行 + 逐条验证去重，实测无误报且跨文件问题自己追完；而自研路径要主会话把 diff 再抄进每个 prompt，「diff 不进主会话」并不成立。一次 medium 约 6 分钟（2026-09 实测）。
+
+**小 PR 审查交给 `planner`**：prompt 内联任务类型 `review 小 PR`、第 1 步读入的 diff、第 2 步审查依据摘要（含 pr-review.md 维度）、问题清单骨架（阻塞 / 建议 / 信息，每条带 file:line）；主会话复核后并入第 5 步报告。**planner 失败**（Agent 返回 API 错误，如 Fable 额度用尽、未开通、云厂商未上架；或超轮仍无结论）→ 不重试，主会话用当前模型按同一骨架自己基于 diff 内联审查，首行注明 `⚠️ Fable 不可用，本审查由当前模型生成`。
 
 **4.1 档位**：`--level=` 显式指定优先；否则按下表打分自动选，并在输出里打印 `档位：<level>（命中：<信号列表>）` 与 `文件分类：逻辑 n / 展示 n / 非代码 n`，便于事后调阈值。信号全部来自第 1 步的 `git diff --numstat`、文件分类与 `diff-digest` 返回的结构性改动清单，不额外读文件内容。
 
@@ -115,7 +116,7 @@ PR 元数据按平台取（GitHub `gh pr view`，Gitea `/pulls/{N}`），diff �
 
 **4.3 结果映射**：Important → 阻塞；Nit → 建议；Pre-existing → 信息，并标注「非本 PR 引入」。原生结果已验证与去重，主会话不逐条复审，只核对与第 3 步「需求文档同步」是否重复。
 
-**4.4 不可用时**：`/code-review` 不在可用技能列表（旧版本或被 `skillOverrides` 锁为仅用户可调用）→ 退回小 PR 的内联方式审查，并在报告首行注明「原生审查不可用，已内联审查」。
+**4.4 不可用时**：`/code-review` 不在可用技能列表（旧版本或被 `skillOverrides` 锁为仅用户可调用）→ 退回小 PR 的审查方式（`planner`，失败再内联），并在报告首行注明「原生审查不可用，已按小 PR 方式审查」。
 
 ### 5. 输出审查报告
 
@@ -164,7 +165,7 @@ PR 元数据按平台取（GitHub `gh pr view`，Gitea `/pulls/{N}`），diff �
   判定：需讨论 —— 与需求文档「五、接口需求」的分页约定冲突，建议先回复确认
 ```
 
-展示方案后**结束本轮回复**，等用户确认（不用 AskUserQuestion；本命令 `model: best` 只作用于当轮：同轮内确认会让后续写代码也跑 Fable，结束本轮后回到会话模型）。用户确认后按方案修改「可执行」项；「需讨论」项只列出，不改代码，可用 `/rd:issue comment` 或 PR 评论回复。修改完成后提示 `/rd:commit`。
+用户确认后按方案修改「可执行」项；「需讨论」项只列出，不改代码，可用 `/rd:issue comment` 或 PR 评论回复。修改完成后提示 `/rd:commit`。
 
 > `--auto` 不作用于本子命令：「是否应用修改」的确认保留，避免 AI 误改代码。
 
