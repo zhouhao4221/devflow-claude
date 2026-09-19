@@ -1,6 +1,7 @@
 ---
 description: 需求开发 - 启动或继续开发
 argument-hint: "[REQ-XXX]"
+model: best
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), Agent
 ---
 

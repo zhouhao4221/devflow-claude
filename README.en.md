@@ -43,13 +43,16 @@ claude plugins uninstall rd@devflow  # Uninstall a plugin
 
 ## Smart Model Tiering
 
-Commands are split into three tiers by required reasoning strength, declared via the `model` field in frontmatter, balancing speed and reasoning depth:
+Commands are split into four tiers by required reasoning strength, declared via the `model` field in frontmatter, balancing speed, reasoning depth and cost:
 
 | Tier | Purpose | Typical commands |
 |------|---------|------------------|
 | **Haiku** | Pure queries / display / config / status transitions with clear rules / CLI wrappers | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/rd:issue`, `/rd:pr`, `/pm:standup`, `/api:help` |
 | **Sonnet** | Data aggregation + document drafting / bounded document editing and template-driven generation | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk`, `/rd:edit`, `/rd:split`, `/rd:test_new`, `/api:gen` |
-| **Session model** (unspecified) | Analyzing code / plan generation / multi-round requirement discussion | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:review`, `/rd:req-review`, `/diag:diagnose`, `/pm:plan` |
+| **Session model** (unspecified) | Multi-round requirement discussion / requirement pre-review / architecture summary / project Q&A and planning | `/rd:new`, `/rd:req-review`, `/rd:init`, `/pm:plan`, `/pm:ask` |
+| **Fable** | Implementation design / root-cause analysis / code review | `/rd:dev`, `/rd:do`, `/rd:fix`, `/rd:review`, `/diag:diagnose` |
+
+Use Opus 5 or Sonnet 5 as your session model; Fable 5.1 is only invoked for the turn in which a Fable-tier command runs (your next reply returns to the session model — e.g. `/rd:dev` drafts the plan on Fable, and the implementation after you confirm runs on the session model). On some plans Fable bills to usage credits and asks for consent the first time; where Fable isn't available (disabled by your organization or not offered by your cloud provider), these commands use Opus instead.
 
 Development commands also delegate high-throughput steps — locating code, running tests, digesting large diffs — to subagents, keeping their raw output out of the main session's context.
 

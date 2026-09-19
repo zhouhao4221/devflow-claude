@@ -1,6 +1,7 @@
 ---
 description: 轻量修复 - 无文档的 bug 修复流程，AI 辅助定位问题
 argument-hint: "<问题描述> [--from-issue=#编号] [--auto]"
+model: best
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, mkdir:*, touch:*, rm:*), Agent
 ---
 
