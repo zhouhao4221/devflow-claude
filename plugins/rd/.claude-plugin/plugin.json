@@ -1,6 +1,6 @@
 {
   "name": "rd",
-  "version": "6.0.1",
+  "version": "6.0.2",
   "description": "rd（R&D 研发）工作流：需求分析→评审→开发→测试→归档 + 分支/PR/issue/版本；原 req 插件更名而来",
   "author": {
     "name": "Haiqing"
