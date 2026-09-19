@@ -43,16 +43,15 @@ claude plugins uninstall rd@devflow  # 플러그인 제거
 
 ## 스마트 모델 분기
 
-커맨드는 추론 강도에 따라 네 단계로 나뉘며, frontmatter 의 `model` 필드로 선언해 응답 속도, 추론 품질, 비용의 균형을 맞춥니다:
+커맨드는 추론 강도에 따라 세 단계로 나뉘며, frontmatter 의 `model` 필드로 선언해 응답 속도, 추론 품질, 비용의 균형을 맞춥니다:
 
 | 단계 | 용도 | 대표 커맨드 |
 |------|------|-------------|
 | **Haiku** | 순수 조회 / 표시 / 설정 / 규칙이 명확한 상태 전환 / CLI 래핑 | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/rd:issue`, `/rd:pr`, `/pm:standup`, `/api:help` |
 | **Sonnet** | 데이터 집계 + 문서화 / 범위가 한정된 문서 편집과 템플릿 기반 생성 | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk`, `/rd:edit`, `/rd:split`, `/rd:test_new`, `/api:gen` |
-| **세션 모델**(미지정) | 다회차 요구사항 논의 / 요구사항 사전 검토 / 아키텍처 정리 / 프로젝트 질의응답과 기획 | `/rd:new`, `/rd:req-review`, `/rd:init`, `/pm:plan`, `/pm:ask` |
-| **Fable** | 구현 방안 설계 / 근본 원인 분석 / 코드 리뷰 | `/rd:dev`, `/rd:do`, `/rd:fix`, `/rd:review`, `/diag:diagnose` |
+| **세션 모델**(미지정) | 코드 분석 / 기획안 생성 / 다회차 요구사항 논의 / 코드 리뷰 / 운영 진단 | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:review`, `/rd:req-review`, `/diag:diagnose`, `/pm:plan` |
 
-세션 모델은 Opus 5 또는 Sonnet 5 를 권장합니다. Fable 5.1 은 Fable 단계 커맨드가 실행되는 턴에만 호출되며, 다음 답변부터는 세션 모델로 돌아갑니다(예: `/rd:dev` 는 Fable 로 방안을 만들고, 확인 후 구현은 세션 모델로 진행). 일부 요금제에서는 Fable 이 usage credits 로 과금되며 처음에 동의 확인이 표시됩니다. Fable 을 쓸 수 없는 경우(조직에서 비활성화했거나 클라우드 제공자가 지원하지 않는 경우) 이 커맨드들은 Opus 로 실행됩니다.
+커맨드는 현재 세션 모델로 실행되며, 추론이 가장 필요한 단계만 Fable 서브에이전트에 맡깁니다: `/rd:dev`·`/rd:do` 의 구현 방안, `/rd:fix` 의 근본 원인과 수정 방안, `/rd:review` 의 소형 PR 리뷰, `/diag:diagnose` 의 근본 원인 판단. Fable 을 쓸 수 없는 경우(크레딧 소진, 미개통, 클라우드 제공자 미지원) 세션 모델이 자동으로 이어받고 출력 첫 줄에 "⚠️ Fable 사용 불가"를 표시합니다. 일부 요금제에서는 Fable 이 usage credits 로 과금되며, 대화형 세션에서는 처음에 동의 확인이 표시됩니다.
 
 개발 계열 커맨드는 코드 위치 파악, 테스트 실행, 대형 diff 압축 등 처리량이 큰 단계를 subagent 에 위임하여 원본 출력이 메인 세션 컨텍스트에 들어가지 않도록 합니다.
 

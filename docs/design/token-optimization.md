@@ -143,13 +143,13 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 **省略档要收窄**（2026-09）：会话模型升到 Fable 5.1 后，省略档相对 sonnet 的价差从 2.5 倍拉到 5 倍。Anthropic 的建议是先试 Fable 低 effort 再换便宜模型，当时误以为命令 frontmatter 没有 `effort` 字段（2026-09-19 查文档：命令与 skill 同源，也支持 `effort`，本仓库尚未启用）；且这类命令输入密集（读文档、读代码），输入按单价计费，effort 也降不下来。因此**有界的单文档编辑/分析**（`/rd:edit`、`prd-edit`、`split`、`new-quick`）与**模板化的测试/代码生成**（`/rd:test`、`test_new`、`/api:gen`、`map`）显式 `claude-sonnet-5`，CLI 包装类（`/rd:issue`，与 `branch`/`commit` 同类）显式 haiku。省略档只留真正需要会话模型做判断的：`/rd:dev`、`do`、`fix`、`new`、`pr`、`init`（一次性、要归纳架构）、`/pm:plan`、`ask`、`/diag:diagnose`。
 
-**会话模型不再假定是 Fable，高推理命令显式钉 Fable**（2026-09-19）：会话默认改用 Opus 5 / Sonnet 5 后，省略档变成「会话模型够用」档；需要高度思考、做错会写进代码或带偏修复方向的命令显式 `model: best`（Fable 可用时解析为 Fable 5.1，否则退到 Opus）：`/rd:dev`、`do`（实现方案设计）、`/rd:fix`、`/diag:diagnose`（根因分析）、`/rd:review`（代码审查）。省略档留 `/rd:new`、`req-review`、`init`、`/pm:plan`、`ask`（`/rd:pr` 已随 REQ-007 降 haiku）。依据（官方文档 2026-09-19 核实）：
+**会话模型不再假定是 Fable，「想」交给 Fable 子代理**（2026-09-19，v5.1.0）：命令默认跑当前会话模型；`/rd:dev`、`do`（实现方案）、`/rd:fix`（根因 + 修复）、`/rd:review`（小 PR 审查）派 `planner`，`/diag:diagnose`（根因）派 `root-cause`，两者 `model: fable`。子代理失败（Fable 额度用尽 / 不可用）时错误回到主会话，主会话用当前模型接手。中间走过两步弯路（v5.0.1–v5.0.2 给命令钉 `model: best`），教训如下（官方文档 2026-09-19 核实）：
 
-1. **覆盖只到当轮**：命令的 `model`「applies for the rest of the current turn … The session model resumes when you send your next prompt」。dev/do/fix 的方案在命令轮里用 Fable 定，用户确认后的实施回到会话模型——只在想方案时付 Fable 的钱；反过来，多轮讨论型命令（`/rd:new`）钉 Fable 只管得到第一轮。前提是闸门落在轮与轮之间：确认点必须「展示后结束本轮、等用户下一条消息」（Plan Mode 的 ExitPlanMode、AskUserQuestion 都在同轮内返回，确认后写代码仍跑 Fable），且出方案之前不能先停下等回复（v5.0.1 的 dev 先确认分支名、do 先问规模，方案反而落到会话模型，随后修正）。
-2. **不可用时退到 Opus**：写别名 `best` 而非完整 ID——`best`「Uses the model the `fable` alias resolves to where Fable is available to you, otherwise the same model as `opus`」。写 `claude-fable-5-1` 时，allowlist 排除 Fable 会让 override 被忽略、退回会话模型（可能是 Sonnet）；`best` 退到 Opus，且按 provider 解析 ID（Bedrock/Vertex 不用另配）。
-3. **计费**：部分套餐/席位下 Fable 按 usage credits 计费、不占套餐额度，交互会话首次弹同意提示（`-p` / Agent SDK 不弹，直接计费）。
+1. **命令级覆盖只到当轮**：命令的 `model`「applies for the rest of the current turn … The session model resumes when you send your next prompt」。靠它区分「想」和「写」时，闸门必须落在轮与轮之间：Plan Mode 的 ExitPlanMode、AskUserQuestion 都在同轮内返回，确认后写代码仍跑钉的模型；出方案之前先停下等回复，方案又落到会话模型（v5.0.1 的 dev 两头都中，v5.0.2 硬改闸门位置，代价是多处「请用户重跑」）。子代理方案与闸门位置无关，v5.1.0 已撤回这些限制。
+2. **命令级覆盖不会降级**：`best` 只在 Fable「不可用」（allowlist 排除、云厂商未上架）时退 Opus；额度用尽不算不可用，钉了 `best` 的 `/rd:fix` 直接报「You're out of usage credits. Run /usage-credits to keep using Fable 5.1 or /model to switch models」，命令锁死。`fallbackModel` 链也明确不处理计费 / 限流错误（「Authentication, billing, rate-limit … never trigger a switch」）。
+3. **子代理失败可接手**：同样额度用尽时，`model: fable` 的子代理返回 `Agent terminated early due to an API error: You're out of usage credits…`（HTTP 429），主会话照常继续，可按同一骨架自己做。部分套餐 / 席位下 Fable 按 usage credits 计费、不占套餐额度，交互会话首次弹同意提示（`-p` / Agent SDK 不弹，直接计费）。
 
-**代价**：缓存按模型隔离，长会话中途调 fable 档命令，整段历史按 Fable 单价无缓存重算；改动大时在新会话里起 `/rd:dev` 更省。
+**代价**：子代理只拿到主会话内联的素材，不继承会话历史，所以不存在「整段历史按 Fable 单价重算」的问题；代价是素材要内联充分（规则见 `_delegate.md`「思考委派」），方案回来还要主会话复核一遍。
 
 ### 4.4 收紧 `allowed-tools` 预授权
 
@@ -198,7 +198,7 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 
 **收益**：两层。① 机械步骤跑在 haiku 上（`test-runner`）；② **上下文隔离**——原始输出留在 subagent，主会话之后每一轮都不再为它付费，这一层通常比单价差更大。
 
-**禁忌**：小任务不委派（任务说明 + 回传本身有开销，经验阈值 > 1 万 token 才划算）；不要把需要主会话上下文的推理（方案设计、跨文件改动）拆出去——planner/executor 割裂后返工更贵。整条命令的 `model` 仍按 §4.3 分 haiku / sonnet / 省略 / fable 四档，委派不是降档的理由。
+**禁忌**：小任务不委派（任务说明 + 回传本身有开销，经验阈值 > 1 万 token 才划算）；不要把需要主会话上下文的推理（方案设计、跨文件改动）拆出去——planner/executor 割裂后返工更贵。整条命令的 `model` 仍按 §4.3 分 haiku / sonnet / 省略三档，委派不是降档的理由。
 
 **已应用**：`/rd:test` 阶段一~三回归运行（`test-runner`，haiku）· `/rd:dev` §4 / `/rd:fix` §1.2 / `/rd:do` §2 代码定位（`code-scout`，haiku，主会话只精读返回的 file:line）· `/rd:review` 大 PR 需求比对用 `diff-digest` 摘要；代码质量审查改调原生 `/code-review`（自研 `file-reviewer` 已删，实测自研需主会话把 diff 抄进每个 prompt，隔离不成立）。
 
@@ -224,7 +224,7 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 - [ ] 命令文件大小 < 30 KB？超过先想是否能拆 rationale
 - [ ] frontmatter `description` ≤ 50 字符？
 - [ ] frontmatter `allowed-tools` 是否最小集？
-- [ ] 是否纯读取/列表？是 → 加 `model: claude-haiku-4-5-20251001`；是数据聚合成文？→ `model: claude-sonnet-5`；是方案设计/根因分析/代码审查？→ `model: best`（Fable）
+- [ ] 是否纯读取/列表？是 → 加 `model: claude-haiku-4-5-20251001`；是数据聚合成文？→ `model: claude-sonnet-5`；需要深度推理的一步（方案设计/根因分析/小 PR 审查）？→ 不抬命令档，派 `planner`（Fable，失败降级当前模型）
 - [ ] 有没有会灌入大量原始输出的步骤（跑测试、大 diff）？有 → 委派 subagent（§4.8），`allowed-tools` 加 `Agent`
 - [ ] 引用 `_common.md` 的具体章节？引用越具体越省（模型可能只 Read 一次而非反复）
 - [ ] 长伪代码（> 50 行）能否下沉到脚本？

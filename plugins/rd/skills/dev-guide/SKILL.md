@@ -112,7 +112,7 @@ primary 扫描本仓 `<requirementsDir>/specs/`，readonly 直读主仓 `<requir
 
 ## 四、生成实现方案
 
-> 根据项目类型选择方案生成流程。不进 Plan Mode：方案展示后结束本轮等用户确认（`/rd:dev` 步骤 4 的确认闸门）。
+> 根据项目类型选择方案生成流程。方案交给 `planner`（Fable）出，下面各节即它的骨架；planner 失败时主会话按同一骨架自己出（`/rd:dev` 步骤 4）。
 
 ### 后端项目
 
