@@ -36,6 +36,9 @@ import sys
 PLUGINS = ["rd", "api", "pm", "diag"]
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+# 命令不得钉 Fable：额度用尽时命令级 model 覆盖直接报错、整条命令锁死，
+# fallbackModel 也不处理计费/限流错误。思考走 planner / root-cause agent。
+BANNED_MODELS = {"fable", "best", "claude-fable-5-1", "claude-fable-5"}
 
 STALE_RULES = [
     # (模式, 说明, 是否也扫描 STALE_DOCS 仓库文档, 豁免的相对路径前缀)
@@ -129,6 +132,10 @@ def check_commands(plugins):
             elif not fm.get("description"):
                 bad.append(f"{p}/commands/{fn}: frontmatter 缺 description")
             else:
+                if fm.get("model", "").lower() in BANNED_MODELS:
+                    bad.append(
+                        f"{p}/commands/{fn}: model={fm['model']} —— 不给命令钉 Fable，"
+                        f"思考派 planner / root-cause agent（额度用尽时命令会直接报错）")
                 commands.append(f"{p}/{fn[:-3]}")
     return bad, commands
 

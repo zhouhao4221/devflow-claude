@@ -42,7 +42,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 - **命令同名 skill 镜像**：与 command 落在同一菜单、`description` 一模一样，每条命令重复两遍（`claude plugin details req` 里出现 `do, do`、`pr, pr`），多出的那份 description 还白占 always-on token。原 `scripts/gen-skills.py` 按 `SKIP_MIRROR` 名单派生的 51 个镜像（req 23 · pm 12 · api 6 · uat 6 · diag 4）已整体删除。
 - **共享参考文档放 `commands/`**：`_storage.md` 之类会变出 `/rd:_storage` 等 12 个伪命令。统一放 `plugins/<p>/shared/`（rd 10 · pm 1 · api 1）。
 
-`scripts/check-layout.py` 一次性守住四条：`skills/` 无命令镜像、`commands/` 无非命令文件、所有相对链接可达、插件内无过时引用（`.claude/settings*` 读写 DevFlow 字段、`sync-cache` / 全局缓存、缓存同步类表述、未定义的 `<plugin-path>`；迁移说明与 Claude Code 自身配置项豁免，确需保留加 `stale-ok`）。`--check` 报错退 1（发布前置，`.github/workflows/check.yml` 在每个 PR 上连同 diag 冒烟测试自动跑），不带参数则自动清理可清理的部分。`scripts/check-requirements.py --check` 守需求目录：`completed/` 内状态为已完成、`active/` 内不为已完成、状态与生命周期已勾格一致、编号唯一，同样进 CI 与发布前置。
+`scripts/check-layout.py` 一次性守住五条：`skills/` 无命令镜像、`commands/` 无非命令文件、命令未钉 Fable（`model` 不得为 `fable`/`best`/`claude-fable-5*`）、所有相对链接可达、插件内无过时引用（`.claude/settings*` 读写 DevFlow 字段、`sync-cache` / 全局缓存、缓存同步类表述、未定义的 `<plugin-path>`；迁移说明与 Claude Code 自身配置项豁免，确需保留加 `stale-ok`）。`--check` 报错退 1（发布前置，`.github/workflows/check.yml` 在每个 PR 上连同 diag 冒烟测试自动跑），不带参数则自动清理可清理的部分。`scripts/check-requirements.py --check` 守需求目录：`completed/` 内状态为已完成、`active/` 内不为已完成、状态与生命周期已勾格一致、编号唯一，同样进 CI 与发布前置。
 
 命令 frontmatter：
 
@@ -64,7 +64,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 | 不指定 | 需要会话模型做判断：分析代码/生成方案/多轮需求讨论/架构归纳/自由问答/需求评审预审（rd req-review）/代码审查（rd review）/生产诊断（diag diagnose）；其中方案设计、根因分析、小 PR 审查再派 Fable agent（见下） | 省略 `model` |
 
 > **思考交给 Fable，失败降级当前模型**（2026-09-19）：命令默认跑当前会话模型（按非 Fable 设计）；dev/do/fix/review 把方案设计、根因 + 修复、小 PR 审查派给 rd 的 `planner`，diag diagnose 把根因判断派给 diag 的 `root-cause`，两者 `model: fable`、只读。Fable 不可用时 agent 失败、错误回到主会话，主会话用当前模型按同一骨架接手并标注 `⚠️ Fable 不可用`（实测额度用尽时返回 `Agent terminated early due to an API error: You're out of usage credits…`，主会话不受影响）。会话模型本身是 Fable 时照常工作，只是贵。
-> **不要给命令钉 Fable**：命令级 `model` 覆盖（含 `best`）在 Fable 额度用尽时直接报错、命令锁死（v5.0.1–v5.0.2 实测，`best` 只在 Fable「不可用」时退 Opus，额度用尽不算），`fallbackModel` 也明确不处理计费 / 限流错误；只有子代理失败能回到主会话降级。
+> **不要给命令钉 Fable**：命令级 `model` 覆盖（含 `best`）在 Fable 额度用尽时直接报错、命令锁死（v5.0.1–v5.0.2 实测，`best` 只在 Fable「不可用」时退 Opus，额度用尽不算），`fallbackModel` 也明确不处理计费 / 限流错误；只有子代理失败能回到主会话降级；`check-layout.py` 会拦下钉 Fable 的命令 frontmatter。
 > sonnet 一律写 `claude-sonnet-5`（原生 1M 上下文、超 200K 不加价、Pro/Max 不计 extra usage，2026-08 核实）。`pm:plan`/`pm:ask` 需要真实推理，保持省略。
 > `model` 是命令层的主成本杠杆。**输入密集型的有界任务**（读文档/读代码为主、产出受模板约束）一律显式 haiku/sonnet（2026-09 按此把 9 条命令降档）。命令 frontmatter 与 skill 同源（除 `name`/`paths`），也能写 `effort`（2026-09-19 查文档，此前误记为仅 agent 支持），本仓库尚未启用。
 > 模型分级**仅对 `commands/*.md` 命令调用生效**；helper skill 无 `model` 字段，运行在触发它的会话/命令模型下。
