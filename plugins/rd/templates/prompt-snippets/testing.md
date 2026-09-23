@@ -24,7 +24,7 @@
 - 依赖的环境变量 / 测试数据库 / 容器
 - E2E 运行命令（headless）：`npx playwright test`
 - 前端地址（baseURL）：`http://localhost:3000`
-- 登录配方：登录页 `/login` → 填账号密码 → 点「登录」；账号取 `E2E_USER` / `E2E_PASSWORD` 环境变量（只写变量名，不写密钥）
+- 登录配方：登录页 `/login` → 填账号密码 → 点「登录」；账号取 `E2E_USER` / `E2E_PASSWORD` 环境变量（只写变量名，不写密钥）。变量要让 E2E 命令读得到：启动 Claude Code 前 export，或把 E2E 命令写成 `set -a && . ./.env.test && set +a && npx playwright test`（`.env.test` 加入 .gitignore）
 - 产物目录：`test-results/acceptance/`（截图与 aria 快照，需在 .gitignore 中）
 - 服务启动与探活：后端 `<启动命令>`、前端 `npm run dev`，就绪 URL `http://localhost:3000`
 -->

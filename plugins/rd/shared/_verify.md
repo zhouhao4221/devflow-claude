@@ -47,7 +47,7 @@
 
 非 UI 的可执行验证（调 HTTP 接口、跑 CLI）主会话直接跑，不派 agent。
 
-**派发**：一项一个 `ui-verifier`，同一页面的 ≤3 项合并成一个；互不相关的项一批并行。prompt 内联 agent 定义列出的全部输入：登录配方只给步骤与 env 变量名；探针目录 REQ / QUICK 用编号，do / fix 用当前分支 slug（无分支用 `adhoc-<YYYYMMDD>`）；产物目录取 testing.md，缺省 `test-results/acceptance/`；候选前端文件取自改动清单，≤5 个。
+**派发**：一项一个 `ui-verifier`，同一页面的 ≤3 项合并成一个；互不相关的项一批并行。prompt 内联 agent 定义列出的全部输入：登录配方只给步骤与 env 变量名——变量值必须在 agent 的 Bash 里可用：要么启动 Claude Code 前已 export，要么 testing.md 的 E2E 命令自己加载 `.env.test`（不入 git），两者都没有时对应项 BLOCKED；探针目录 REQ / QUICK 用编号，do / fix 用当前分支 slug（无分支用 `adhoc-<YYYYMMDD>`）；产物目录取 testing.md，缺省 `test-results/acceptance/`；候选前端文件取自改动清单，≤5 个。
 
 **主会话纪律**：不 Read 任何 png / aria 产物；FAIL 项把证据与产物路径交给用户自己看；不因 FAIL 重派（agent 已自修过一次）；BLOCKED 原因是 testing.md 缺项时提示补哪一项。
 

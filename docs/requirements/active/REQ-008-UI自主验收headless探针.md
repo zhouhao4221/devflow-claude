@@ -11,7 +11,7 @@
 | 优先级 | P2 |
 | 创建日期 | 2026-09-23 |
 | 负责人 | - |
-| branch | feat/REQ-008-ui-auto-acceptance |
+| branch | feat/REQ-008-ui-auto-acceptance,feat/REQ-008-acceptance-fixes |
 | issue | - |
 
 ## 生命周期
@@ -40,7 +40,7 @@
 ### 1.2 目标
 
 - **功能目标**：UI 可观察的验收项由 AI 写成 headless Playwright 验收探针自行运行并判定，只有无法自动化的项留给人；探针保留为 E2E 回归资产。
-- **效果目标**：主会话每个验收项的开销控制在约 300 token 委派 prompt + 约 80 token 回传；截图与 aria 快照不进主会话；单项 `ui-verifier` 子代理总消耗（输入 + 输出）预期 ≤ 3 万 token（script 类不读图时更低），以「单项总消耗」而非只看主会话衡量节约效果；可脚本化 / 视觉类验收项不再需要人工打开浏览器。
+- **效果目标**：主会话每个验收项的开销控制在约 300 token 委派 prompt + 约 80 token 回传；截图与 aria 快照不进主会话；每个 `ui-verifier` 子代理新增内容（读入文件、命令输出、截图、写出的探针）≤ 3 万 token、折合 ≤ $0.25（固定上下文约 1.5 万 token 每轮走缓存重读，不计入），以「每个子代理的花费」而非只看主会话衡量节约效果；可脚本化 / 视觉类验收项不再需要人工打开浏览器。
 
 ### 1.3 客户场景
 
@@ -110,7 +110,7 @@
 | 自修上限 | 选择器超时允许修正重跑 1 次；仍失败为 FAIL；主会话不因 FAIL 重派 | 避免反复烧 token |
 | 回写 | PASS → `[x] 原文（自动验收：<spec 路径>）`；FAIL、BLOCKED → 保持裸 `[ ]`，报告写期望 vs 实际或阻塞原因；manual → 引导用户手动验证，通过则勾选，**用户明确选择暂缓**才标 `（未实测：原因）`，否则保持裸 `[ ]` | AI 不自动打「未实测 / 待观察」标注——带标注的项会被 `/rd:done` 放行（REQ-006），只能由人决定暂缓；裸 `[ ]` 由 `/rd:done` 闸门拦下要求确认；readonly 仓库不写回，只在报告列出 |
 | 探针留存 | 探针默认保留在 `<E2E 目录>/acceptance/<REQ/QUICK 编号或分支 slug>/`，列入修改文件，是否提交由用户在 commit 时定 | 下次 `/rd:test` 阶段三一并回归 |
-| 非功能约束 | 主会话每项 ≈300 token prompt + ≈80 token 回传；单项子代理总消耗预期 ≤ 3 万 token（超出时记录原因，作为是否调整 effort / 合并策略的依据）；`ui-verifier` 为 `model: inherit`、`effort: high`；账号只写 env 变量名，不写密钥 | 产物目录缺省 `test-results/acceptance/` |
+| 非功能约束 | 主会话每项 ≈300 token prompt + ≈80 token 回传；每个子代理新增内容 ≤ 3 万 token、折合 ≤ $0.25（超出时记录原因，作为是否调整 effort / 合并策略的依据；同页合并摊薄固定开销）；`ui-verifier` 为 `model: inherit`、`effort: high`；账号只写 env 变量名，不写密钥 | 产物目录缺省 `test-results/acceptance/` |
 
 ---
 
@@ -206,7 +206,7 @@
 - [ ] 验收项6：对一个前端 bug 执行 `/rd:fix`，完成提示中 UI 项显示 `[x]（自动验收：<spec>）`
 - [ ] 验收项7：再次执行 `/rd:test`，阶段三回归包含 `acceptance/` 下的探针
 - [ ] 验收项8：一个需求同时含 script、visual、manual 三类验收项且其中 2–3 项在同一页面时，同页项合并为一个 `ui-verifier`，manual 项进入手动引导而不派子代理；用户不验证也不选择暂缓的 manual 项保持裸 `[ ]`，`/rd:done` 要求确认
-- [ ] 验收项9：单项 `ui-verifier` 子代理总消耗（从会话记录统计）≤ 3 万 token
+- [ ] 验收项9：每个 `ui-verifier` 子代理新增内容 ≤ 3 万 token、折合 ≤ $0.25（从会话记录统计 input + cache_creation 与按价折算）
 
 ---
 
@@ -272,6 +272,7 @@ stateDiagram-v2
 | 2026-09-23 | 初始版本（基于 /rd:do 分析与 planner 方案；探针保留、首版仅 Playwright、账号仅写 env 变量名三点已确认） | - |
 | 2026-09-23 | 按 AI 预审修改：manual / BLOCKED 不再自动标「未实测」（用户决定暂缓才标）；效果目标加单项子代理总消耗 ≤ 3 万 token；风险项加 Write / Bash 权限；关联补 QUICK-003、REQ-006；6.1 加 git status 检查，6.2 加验收项 8、9 | 三、四、五、六、十章 |
 | 2026-09-23 | `ui-verifier` effort medium → high：需自主找选择器、写探针过验收，结论直接勾选需求文档，误判 PASS 代价高；与 code-scout / impl-worker 同档 | 三、十章 |
+| 2026-09-23 | 示例项目实测后修正：预算口径由「单项总消耗 ≤ 3 万」改为「每个子代理新增内容 ≤ 3 万 token / ≤ $0.25」（固定上下文约 1.5 万每轮缓存重读，累计输入必然 6–12 万）；ui-verifier 补 visual 项可 DOM 判定部分仍须断言、账号 env 未注入 → BLOCKED、回报用相对路径；testing.md 模板与 _verify.md 写明账号 env 注入方式 | 一、三、六章 |
 
 ---
 
