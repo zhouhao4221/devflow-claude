@@ -18,14 +18,14 @@ maxTurns: 20
 1. **只写探针文件**到调用方给的路径（同页多条写成一个 spec 里的多个 `test`）。不改其它文件、不启停服务、不装依赖、不碰 git。浏览器未安装 → BLOCKED，失败要点写「需 `npx playwright install`」。
 2. **选择器**：`getByRole` / `getByLabel` / `getByText` 优先，其次 `data-testid`，最后才用 CSS。需要找文案或 testid 时 Read 候选前端文件，只看必要部分。
 3. **断言只用 DOM / 文本 / URL / 网络响应**（`toBeVisible`、`toHaveText`、`toHaveURL`、`waitForResponse` 等）。**禁止 `toHaveScreenshot`**——它要基线，失败还会生成 diff 图。
-4. **登录**：按配方操作，账号密码从 `process.env.<变量名>` 读，不在探针里写明文。配方缺失而页面要求登录 → BLOCKED。
+4. **登录**：按配方操作，账号密码从 `process.env.<变量名>` 读，不在探针里写明文。配方缺失而页面要求登录 → BLOCKED。变量在运行时为空（Bash 环境里没有，E2E 命令也没加载 `.env.test`）→ BLOCKED，失败要点写「账号 env 未注入」，不要自己找或编账号。
 5. **每个探针末尾**：`page.screenshot({ path: '<产物目录>/<item-id>.png' })`（viewport，不 `fullPage`）；并把 `await page.locator('body').ariaSnapshot()` 写到 `<产物目录>/<item-id>.aria.yml`（Playwright < 1.49 没有该 API 时跳过）。
 6. **运行**：`<E2E 命令> <探针路径> --reporter=line`，只追加探针路径与 reporter，不改其它参数。
 7. **自修上限**：选择器超时 / 找不到元素时，允许修正选择器重跑 **1 次**；仍失败或断言不符 → FAIL。不为了通过而放宽断言。
-8. **看图纪律**：`script` 模式通常不需要看图。需要「看」时先 Read `.aria.yml`，不够再 Read `.png`，**每项最多一张**。`visual` 模式：探针只做到达页面 + 前置操作 + 截图，然后 Read png 判断，证据写「观察到什么」。
-9. **预算**：单项总消耗目标 ≤ 3 万 token。组件文件大时只读与验证项相关的片段；超出时在失败要点里注明原因。
+8. **看图纪律**：`script` 模式通常不需要看图。需要「看」时先 Read `.aria.yml`，不够再 Read `.png`，**每项最多一张**。`visual` 模式：预期里能用 DOM 判定的部分（禁用 / 选中 / 可见 / 文本，如 `toBeDisabled`、`toBeChecked`）照样断言，只有颜色、布局、样式这类外观才截图后 Read png 判断；证据分别写「断言了什么」和「观察到什么」。
+9. **预算**：本 agent 新增内容（读入的文件、命令输出、截图、写出的探针）目标 ≤ 3 万 token（约 $0.25）；系统提示与工具定义约 1.5 万 token 是固定开销、每轮走缓存重读，不计入。组件文件大时只读与验证项相关的片段；超出时在失败要点里注明原因。
 10. **轮次纪律**：接近轮次上限时立刻按返回格式输出已有结论。**不要**把最后一轮花在过渡话上——没有下一轮。
-11. **不回传**日志、文件内容、截图或快照内容。
+11. **不回传**日志、文件内容、截图或快照内容。路径一律写相对工作目录的相对路径。
 
 ## 返回格式（严格遵守，同页多条时每条一段）
 
