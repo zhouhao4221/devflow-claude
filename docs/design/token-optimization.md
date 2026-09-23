@@ -139,7 +139,7 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 **禁忌**：需要复杂推理、代码生成、深度分析的命令（如 `/rd:dev`、`/rd:do`）不要降级。
 
-**中间档 Sonnet**：数据聚合 + 成文类命令（`/pm:weekly`、`monthly`、`milestone`、`stats`、`progress`、`brief`、`risk`）用 `model: claude-sonnet-5`——比会话模型便宜 2.5～5 倍（Opus 5 $5/$25、Fable 5.1 $10/$50），写报告绰绰有余。Sonnet 5 原生 1M 上下文且超 200K 不加价、订阅制不计 extra usage（2026-08 核实），旧的「sonnet[1m] 付费墙」顾虑已不存在。`/pm:plan`、`/pm:ask` 需要真实推理，保持省略。
+**中间档 Sonnet**：数据聚合 + 成文类命令（`/pm:weekly`、`monthly`、`milestone`、`stats`、`progress`、`brief`、`risk`）用 `model: claude-sonnet-5`——比会话模型便宜 2～5 倍（Opus 5.5 $4/$20、Fable 5.1 $10/$50，2026-09 核实），写报告绰绰有余。Sonnet 5 原生 1M 上下文且超 200K 不加价、订阅制不计 extra usage（2026-08 核实），旧的「sonnet[1m] 付费墙」顾虑已不存在。`/pm:plan`、`/pm:ask` 需要真实推理，保持省略。
 
 **省略档要收窄**（2026-09）：会话模型升到 Fable 5.1 后，省略档相对 sonnet 的价差从 2.5 倍拉到 5 倍。Anthropic 的建议是先试 Fable 低 effort 再换便宜模型，当时误以为命令 frontmatter 没有 `effort` 字段（2026-09-19 查文档：命令与 skill 同源，也支持 `effort`，本仓库尚未启用）；且这类命令输入密集（读文档、读代码），输入按单价计费，effort 也降不下来。因此**有界的单文档编辑/分析**（`/rd:edit`、`prd-edit`、`split`、`new-quick`）与**模板化的测试/代码生成**（`/rd:test`、`test_new`、`/api:gen`、`map`）显式 `claude-sonnet-5`，CLI 包装类（`/rd:issue`，与 `branch`/`commit` 同类）显式 haiku。省略档只留真正需要会话模型做判断的：`/rd:dev`、`do`、`fix`、`new`、`pr`、`init`（一次性、要归纳架构）、`/pm:plan`、`ask`、`/diag:diagnose`。
 

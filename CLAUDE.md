@@ -44,17 +44,6 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 
 `scripts/check-layout.py` 一次性守住五条：`skills/` 无命令镜像、`commands/` 无非命令文件、命令未钉 Fable（`model` 不得为 `fable`/`best`/`claude-fable-5*`）、所有相对链接可达、插件内无过时引用（`.claude/settings*` 读写 DevFlow 字段、`sync-cache` / 全局缓存、缓存同步类表述、未定义的 `<plugin-path>`；迁移说明与 Claude Code 自身配置项豁免，确需保留加 `stale-ok`）。`--check` 报错退 1（发布前置，`.github/workflows/check.yml` 在每个 PR 上连同 diag 冒烟测试自动跑），不带参数则自动清理可清理的部分。`scripts/check-requirements.py --check` 守需求目录：`completed/` 内状态为已完成、`active/` 内不为已完成、状态与生命周期已勾格一致、编号唯一，同样进 CI 与发布前置。
 
-命令 frontmatter：
-
-```yaml
----
-description: 命令简介
-argument-hint: "[参数] [--选项=值]"
-allowed-tools: Read, Glob, Grep
-model: claude-haiku-4-5-20251001   # 省略则继承会话模型
----
-```
-
 **模型分级**（三档，README 三语版的三档表与本节保持一致）：
 
 | 策略 | 适用 | 做法 |
@@ -72,13 +61,6 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 > 按档位切命令：一条命令只能钉一档，子命令推理强度差异大时拆成两条命令，而不是整条抬档——`/rd:pr`（create/status/comments/merge，haiku）与 `/rd:review`（AI 审查 / 按评论改代码，省略档）就是这样分的；`/rd:pr comments` 只读展示、`/rd:review comments` 才改代码。
 
 **子任务委派**（命令内粒度，与整条命令的模型分级正交）：**Fable 想、主会话判断、subagent 执行**——方案设计交 `planner`（Fable），主会话做复核、跨文件一致性、闸门交互、验收，吞吐型步骤派给执行型 agent，原始输出不进主上下文。`plugins/rd/agents/` 共 6 个，diag 另有 `plugins/diag/agents/root-cause.md`。
-
-| 只读型 | 用途 | | 可写型 | 用途 |
-|--------|------|---|--------|------|
-| `code-scout` haiku | 定位代码 | | `impl-worker` sonnet | 按实施单改一个独立单元 |
-| `test-runner` haiku | 跑测试 | | `doc-writer` haiku | 按素材+骨架成文/回填章节 |
-| `diff-digest` haiku | 压缩大 diff，可逐文件落盘 | | | |
-| `planner` fable | 思考型：出方案 / 根因 + 修复 / 小 PR 审查，失败由主会话接手 | | | |
 
 规则见 `shared/_delegate.md`。派生 subagent 的命令 `allowed-tools` 必须列 `Agent`（`allowed-tools` 只做免确认预授权，**不限制**可用工具；没列时仍能派生，但每次都弹确认打断流程）。
 
@@ -100,45 +82,7 @@ model: claude-haiku-4-5-20251001   # 省略则继承会话模型
 
 ## rd 插件核心机制
 
-### 双轨需求
-
-| | REQ（正式需求） | QUICK（快速修复） |
-|---|---|---|
-| 生命周期 | 📝 草稿 → 👀 待评审 → ✅ 评审通过 → 🔨 开发中 → 🧪 测试中 → 🎉 已完成 | 草稿 → 开发中 → 测试中 → 已完成（只跳过评审） |
-| 入口 | `/rd:new` | `/rd:new-quick` |
-| 模板 | `requirement-template.md`（一~十一章） | `quick-template.md`（问题/方案/验证/记录） |
-| 开发门槛 | `/rd:dev` 拒绝未评审的 REQ | 草稿即可开发（方案在 `new-quick` 内确认，不是状态） |
-| 编号 | `REQ-XXX` | `QUICK-XXX`（扫描本地需求目录取最大值+1） |
-
-状态流转由命令驱动，REQ 与 QUICK 共用同一组命令：`/rd:req-review`（提审含 AI 预审）→ `pass/reject`（仅 REQ） · `/rd:dev`（自动） · `/rd:test`（自动，QUICK 按「验证方式」验证）· `/rd:done`（必须 y/n 确认，门槛统一「测试中」）。状态机唯一定义在 `shared/_storage.md`「双轨状态机」；需求索引不落盘，`/rd:req` 实时渲染。`/rd:upgrade <QUICK-XXX>` 将未完成的 QUICK 升级为 REQ（4 阶段扩 6 阶段）。无文档的轻量任务走 `/rd:fix`（修 bug，含根因分析）和 `/rd:do`（优化/重构/升级，AI 选流程）。
-
-### 存储（无全局缓存）
-
-需求文档**唯一事实源**是 primary 仓库的 `requirementsDir`（默认 `docs/requirements/`，纳入 git）。**无全局缓存**：readonly 仓库经 `.devflow/settings.local.json` 的 `requirementSource.path` **直读**主仓需求目录，不复制、不同步。
-
-**无同步**：需求只有一份，写入即生效，无 PostToolUse 同步 Hook、无 cp。（v2.x 的 `~/.claude-requirements/` 全局缓存 + `sync-cache.sh` 已于 v3 移除——breaking change，旧项目需跑 `/rd:migrate` + readonly 重新 `/rd:use` 绑定。）
-
-**仓库角色**（`requirementRole`）：`primary` 读写本仓 `requirementsDir`；`readonly` 无本地需求目录、经 `requirementSource.path` 直读主仓、`/rd:dev` 跳过所有文档写入。新增写操作命令必须考虑 readonly 跳过逻辑。不受角色限制的命令：`fix`/`do`/`issue`/`branch`。
-
-### Hooks（`plugins/rd/hooks/hooks.json`）
-
-| 时机 | 脚本 | timeout | 行为 |
-|------|------|---------|------|
-| SessionStart | session-context.sh | 10s | 注入需求上下文；未初始化/未配分支策略时输出引导 |
-| PreToolUse(Bash) | confirm-before-commit.sh | 120s | 默认放行；仅当 `.claude/.req-confirm-commit` 存在时拦截 git commit / mv·rm 需求文件 |
-| PostToolUse(Write/Edit) | validate-requirement.sh | 5s | 校验文档章节 |
-
-**两个 marker（勿混淆）**：
-- `.claude/.req-confirm-commit`：**确认开关**（常驻）。存在 = 启用提交拦截；默认不存在 = 全部直通。用户说「开启提交确认」→ Claude `touch`，「关闭」→ `rm`。
-- `.claude/.req-auto`：**自动化豁免**（临时，mtime 10 分钟 TTL）。`/rd:fix --auto` 流程开始 `touch`、结束 `rm`；存在且有效时让 Hook 放行 commit 弹框。`--auto` 还跳过命令层文本交互（方案确认、类型选择、issue 关闭询问）并自动串联 commit→push→PR。两者均在 `.gitignore`。
-
-### 分支与 issue
-
-`/rd:branch init` 配置策略：`github-flow`（main↔main）· `git-flow`（develop↔develop，hotfix 建两个 PR）· `trunk-based`。命名 `<prefix>REQ-XXX-<slug>[-iN]`（slug ≤5 词 kebab-case，`-iN` 为关联 issue 后缀）。
-
-**CLI 选择**（`repoType`）：GitHub → `gh`；Gitea → **优先 `tea`**（login URL 匹配 `giteaUrl`），不支持的操作（评论列表、PR diff/review、标签增删、Release 附件）回退 `curl + giteaToken`。绝不自动 `tea login add`。OWNER/REPO 从 `git remote origin` 解析；`giteaUrl` 只从配置读，禁止从 remote 猜测。
-
-`--from-issue=#N` 全链路：创建时拉 issue → 编号写入文档 `issue` 字段（无文档则靠分支名 `-iN` 后缀）→ commit 追加 `closes #N` → done 时询问 API 关闭（`--auto` 跳过询问，靠 `closes #N` 自动关）。
+双轨需求（REQ/QUICK）、存储（无全局缓存、仓库角色）、Hooks 与两个 marker、分支与 issue 的细则见 `plugins/rd/CLAUDE.md`（处理 `plugins/rd/` 下文件时自动加载）。
 
 ---
 
