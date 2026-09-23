@@ -49,8 +49,8 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 | 层 | 模型 | effort | 说明 |
 |----|------|--------|------|
 | 命令（`commands/*.md`） | 会话模型 | 会话 | frontmatter 不写 `model`/`effort`（`model: inherit` 除外），`check-layout.py` 拦 `model` |
-| 执行型 agent：test-runner · diff-digest · doc-writer · ui-verifier | `inherit` | `medium` | 无需推理，但结果被主会话直接采信，漏报 / 错报代价高 |
-| 执行型 agent：code-scout · impl-worker | `inherit` | `high` | 需自主探索（找全调用链）或写代码过验收 |
+| 执行型 agent：test-runner · diff-digest · doc-writer | `inherit` | `medium` | 无需推理，但结果被主会话直接采信，漏报 / 错报代价高 |
+| 执行型 agent：code-scout · impl-worker · ui-verifier | `inherit` | `high` | 需自主探索（找全调用链 / 找选择器）或写代码过验收；ui-verifier 的结论直接勾选需求文档，误判 PASS 代价最高 |
 | 思考型 agent：rd `planner` · diag `root-cause` | `fable` | `xhigh` | 升档拿推理，不随用户调低会话 effort 变浅；失败回主会话降级 |
 
 > **为什么废掉命令级三档（原 haiku 33 条 · sonnet 15 条）**：本机 2.1.239–2.1.280 约 200 次调用实测 0 次生效——`command_permissions` 记下了 `model`，实际调用全是会话模型。① 官方文档：auto 模式下「auto mode 不支持的模型」不被使用、会话保持当前模型，auto 只支持 Opus 4.6+/Sonnet 4.6+/Fable，**Haiku 按设计被忽略**，而 Pro/Max/Team 默认就是 auto；② sonnet 在 auto 下同样不生效，对应 anthropics/claude-code#81318（v2.1.220 起命令/skill 的 `model`/`effort` 覆盖失效的回归，未修）；③ 即便生效，覆盖是在同一对话里换模型，prompt cache 按模型隔离，长会话里要按新模型重写整段历史缓存，小命令多半比留在会话模型读缓存（Opus 5.5 $0.20/MTok）更贵。用户嫌贵用 `/model` 切整个会话。

@@ -2,7 +2,7 @@
 name: ui-verifier
 description: 把一条 UI 可观察的验证项写成 headless Playwright 验收探针并运行，只回传 PASS/FAIL/BLOCKED 与一句证据；截图与 aria 快照留在本 agent 内不回传；供 /rd:test 步骤 7、/rd:do、/rd:fix 的自主验收委派
 model: inherit
-effort: medium
+effort: high
 tools: Read, Glob, Grep, Write, Bash
 maxTurns: 20
 ---

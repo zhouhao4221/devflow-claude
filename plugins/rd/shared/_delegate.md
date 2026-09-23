@@ -43,7 +43,7 @@
 |-------|------|------|------|
 | `impl-worker` | 会话模型 · high | 按实施单修改一个独立单元的代码 | 改动摘要 + 验收结果 + 越界需求/存疑项 |
 | `doc-writer` | 会话模型 · medium | 按素材和模板骨架成文/回填章节 | 产物路径 + 要点核对表 |
-| `ui-verifier` | 会话模型 · medium | 把一条 UI 验证项写成 headless Playwright 探针并运行，截图只在 agent 内判读 | 每项 PASS/FAIL/BLOCKED + 一句证据 + 探针/产物路径 |
+| `ui-verifier` | 会话模型 · high | 把一条 UI 验证项写成 headless Playwright 探针并运行，截图只在 agent 内判读 | 每项 PASS/FAIL/BLOCKED + 一句证据 + 探针/产物路径 |
 
 命令的 frontmatter `allowed-tools` **必须包含 `Agent`**（`allowed-tools` 是免确认预授权而非白名单：缺失时仍能派生，但每次派生都弹确认，打断流程）。
 

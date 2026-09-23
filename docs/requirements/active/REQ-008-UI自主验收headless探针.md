@@ -110,7 +110,7 @@
 | 自修上限 | 选择器超时允许修正重跑 1 次；仍失败为 FAIL；主会话不因 FAIL 重派 | 避免反复烧 token |
 | 回写 | PASS → `[x] 原文（自动验收：<spec 路径>）`；FAIL、BLOCKED → 保持裸 `[ ]`，报告写期望 vs 实际或阻塞原因；manual → 引导用户手动验证，通过则勾选，**用户明确选择暂缓**才标 `（未实测：原因）`，否则保持裸 `[ ]` | AI 不自动打「未实测 / 待观察」标注——带标注的项会被 `/rd:done` 放行（REQ-006），只能由人决定暂缓；裸 `[ ]` 由 `/rd:done` 闸门拦下要求确认；readonly 仓库不写回，只在报告列出 |
 | 探针留存 | 探针默认保留在 `<E2E 目录>/acceptance/<REQ/QUICK 编号或分支 slug>/`，列入修改文件，是否提交由用户在 commit 时定 | 下次 `/rd:test` 阶段三一并回归 |
-| 非功能约束 | 主会话每项 ≈300 token prompt + ≈80 token 回传；单项子代理总消耗预期 ≤ 3 万 token（超出时记录原因，作为是否调整 effort / 合并策略的依据）；`ui-verifier` 为 `model: inherit`、`effort: medium`；账号只写 env 变量名，不写密钥 | 产物目录缺省 `test-results/acceptance/` |
+| 非功能约束 | 主会话每项 ≈300 token prompt + ≈80 token 回传；单项子代理总消耗预期 ≤ 3 万 token（超出时记录原因，作为是否调整 effort / 合并策略的依据）；`ui-verifier` 为 `model: inherit`、`effort: high`；账号只写 env 变量名，不写密钥 | 产物目录缺省 `test-results/acceptance/` |
 
 ---
 
@@ -189,7 +189,7 @@
 
 - [ ] `python3 scripts/check-layout.py --check` 通过（新 agent、新链接可达）
 - [ ] `python3 scripts/check-requirements.py --check` 通过
-- [ ] `grep -H "^model:\|^effort:" plugins/rd/agents/ui-verifier.md` 为 `inherit` / `medium`；rd agent 共 7 个
+- [ ] `grep -H "^model:\|^effort:" plugins/rd/agents/ui-verifier.md` 为 `inherit` / `high`；rd agent 共 7 个
 - [ ] `grep -n "自主验收" plugins/rd/shared/_verify.md plugins/rd/commands/test.md plugins/rd/commands/do.md plugins/rd/commands/fix.md` 四处命中
 - [ ] `_verify.md`、`test.md` 等改动文件均 < 30 KB
 - [ ] 下游实测跑完自主验收后 `git status` 只多出 `acceptance/` 探针与产物目录文件，无其它改动
@@ -271,6 +271,7 @@ stateDiagram-v2
 |-----|---------|---------|
 | 2026-09-23 | 初始版本（基于 /rd:do 分析与 planner 方案；探针保留、首版仅 Playwright、账号仅写 env 变量名三点已确认） | - |
 | 2026-09-23 | 按 AI 预审修改：manual / BLOCKED 不再自动标「未实测」（用户决定暂缓才标）；效果目标加单项子代理总消耗 ≤ 3 万 token；风险项加 Write / Bash 权限；关联补 QUICK-003、REQ-006；6.1 加 git status 检查，6.2 加验收项 8、9 | 三、四、五、六、十章 |
+| 2026-09-23 | `ui-verifier` effort medium → high：需自主找选择器、写探针过验收，结论直接勾选需求文档，误判 PASS 代价高；与 code-scout / impl-worker 同档 | 三、十章 |
 
 ---
 
@@ -278,9 +279,9 @@ stateDiagram-v2
 
 - **关联需求**：REQ-002（qa/uat 插件 - 浏览器 UAT/E2E 测试工作流，已移除；本需求是其低 token 替代）；QUICK-003（do / fix 固定验证步骤，引入 `_verify.md` 与「手动验证清单」，本需求在其上加「自主验收」）；REQ-006（`/rd:done` 对带「未实测 / 待观察」标注的未勾项放行，本需求回写规则须与之兼容）
 - **相关文档**：`plugins/rd/commands/test.md`、`plugins/rd/shared/_verify.md`、`plugins/rd/shared/_delegate.md`、`plugins/rd/agents/test-runner.md`、`plugins/rd/templates/prompt-snippets/testing.md`、`docs/changelogs/v3.0.0.md`（uat 移除）
-- **假设**：下游 E2E 项目使用 Playwright ≥ 1.49（`ariaSnapshot()`；更低版本 agent 跳过 aria 快照）；下游 `.gitignore` 已含 `test-results/`；`effort: medium` 足以读组件写出可用选择器
+- **假设**：下游 E2E 项目使用 Playwright ≥ 1.49（`ariaSnapshot()`；更低版本 agent 跳过 aria 快照）；下游 `.gitignore` 已含 `test-results/`；`effort: high` 下单项消耗仍在 3 万 token 预算内
 - **外部依赖**：下游项目自行安装 Playwright 与浏览器（`npx playwright install`）；测试账号由下游 `.env.test` / 环境提供
-- **风险项**：权限风险——`ui-verifier` 带 Write / Bash，「只写探针文件、不启停服务」只是提示词约束，没有硬拦截，靠 6.1 的 `git status` 检查与主会话复核兜底；技术风险——探针选择器随页面改版失效，维护成本转嫁到回归；medium effort 写选择器成功率未实测（FAIL 多为选择器问题时升 high）；`--skip-e2e` 且无 E2E 用例时步骤 7 是否仍启动前端做自主验收需实测后确认
+- **风险项**：权限风险——`ui-verifier` 带 Write / Bash，「只写探针文件、不启停服务」只是提示词约束，没有硬拦截，靠 6.1 的 `git status` 检查与主会话复核兜底；技术风险——探针选择器随页面改版失效，维护成本转嫁到回归；high effort 的单项消耗未实测（超预算时再评估是否降回 medium）；`--skip-e2e` 且无 E2E 用例时步骤 7 是否仍启动前端做自主验收需实测后确认
 
 ---
 
@@ -329,7 +330,7 @@ stateDiagram-v2
 
 | # | 文件 | 类型 | 改动 |
 |---|------|------|------|
-| 1 | `plugins/rd/agents/ui-verifier.md` | 新增 | `model: inherit`、`effort: medium`、`maxTurns: 20`、工具 Read/Glob/Grep/Write/Bash；只写探针、选择器 role/label/text 优先、只用 DOM/文本/URL 断言禁 `toHaveScreenshot`、viewport 截图、选择器超时自修 1 次、先 aria 后截图每项最多一张、单项总消耗 ≤ 3 万 token、严格返回格式 |
+| 1 | `plugins/rd/agents/ui-verifier.md` | 新增 | `model: inherit`、`effort: high`、`maxTurns: 20`、工具 Read/Glob/Grep/Write/Bash；只写探针、选择器 role/label/text 优先、只用 DOM/文本/URL 断言禁 `toHaveScreenshot`、viewport 截图、选择器超时自修 1 次、先 aria 后截图每项最多一张、单项总消耗 ≤ 3 万 token、严格返回格式 |
 | 2 | `plugins/rd/shared/_verify.md` | 修改 | 新增「自主验收」节：前置三条、script/visual/manual 分类、派发（同页 ≤3 项合并、独立项并行）、主会话不读图、回写（PASS 勾选附探针；FAIL/BLOCKED 保持裸 `[ ]`；manual 引导用户，用户明确暂缓才标「未实测」）、验证结果段加「自主验收」行 |
 | 3 | `plugins/rd/commands/test.md` | 修改 | description 与步骤 7「交互验证」→「自主验收」；报告加「自主验收 n/m」；验收 FAIL 计入失败；阶段三回归含 `acceptance/` |
 | 4 | `plugins/rd/commands/do.md` | 修改 | 3.5 验证：手动验证清单 UI 项先走自主验收 |
@@ -338,7 +339,7 @@ stateDiagram-v2
 | 7 | `plugins/rd/shared/_delegate.md` | 修改 | 可写型 agent 表加 `ui-verifier`；准入说明：不套委派实施四条，按 `_verify.md` 前置三条 |
 | 8 | `plugins/rd/templates/prompt-snippets/testing.md` | 修改 | 「必备输入」加 5 条示例：E2E 命令（headless）、前端地址、登录配方（仅 env 变量名）、产物目录、服务启动与探活 |
 | 9 | `plugins/rd/schemas/prompt-schema.md` | 修改 | testing.md 加 3 条推荐关键词（前端地址 / 登录 / 产物，缺失只警告）；schema-version 1.1 → 1.2 |
-| 10 | `CLAUDE.md` | 修改 | rd agent 共 6 个 → 7 个；模型策略表 medium 行加 `ui-verifier` |
+| 10 | `CLAUDE.md` | 修改 | rd agent 共 6 个 → 7 个；模型策略表 high 行加 `ui-verifier` |
 | 11 | `docs/design/token-optimization.md` | 修改 | effort 清单与「已应用」加 `ui-verifier` |
 
 ### 11.4 实现步骤

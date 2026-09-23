@@ -131,7 +131,7 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 ### 4.3 命令不写 `model`：换模型只在 agent 层做
 
-**结论**（2026-09-23）：命令 frontmatter 一律不写 `model`（`inherit` 除外，`check-layout.py` 拦截），执行型 agent 写 `model: inherit` 跑会话模型、按特性钉 effort（test-runner / diff-digest / doc-writer / ui-verifier `medium`，code-scout / impl-worker `high`）；只有思考型 agent 换 Fable（`xhigh`，下文）。用户嫌贵用 `/model` 切整个会话。
+**结论**（2026-09-23）：命令 frontmatter 一律不写 `model`（`inherit` 除外，`check-layout.py` 拦截），执行型 agent 写 `model: inherit` 跑会话模型、按特性钉 effort（test-runner / diff-digest / doc-writer `medium`，code-scout / impl-worker / ui-verifier `high`）；只有思考型 agent 换 Fable（`xhigh`，下文）。用户嫌贵用 `/model` 切整个会话。
 
 **为什么废掉原来的 haiku / sonnet / 省略三档**（原 33 条 haiku、15 条 sonnet 命令）：
 
