@@ -50,7 +50,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 |----|------|--------|------|
 | 命令（`commands/*.md`） | 会话模型 | 会话 | frontmatter 不写 `model`/`effort`（`model: inherit` 除外），`check-layout.py` 拦 `model` |
 | 执行型 agent：test-runner · diff-digest · doc-writer | `inherit` | `medium` | 无需推理，但结果被主会话直接采信，漏报 / 错报代价高 |
-| 执行型 agent：code-scout · impl-worker | `inherit` | `high` | 需自主探索（找全调用链）或写代码过验收 |
+| 执行型 agent：code-scout · impl-worker · ui-verifier | `inherit` | `high` | 需自主探索（找全调用链 / 找选择器）或写代码过验收；ui-verifier 的结论直接勾选需求文档，误判 PASS 代价最高 |
 | 思考型 agent：rd `planner` · diag `root-cause` | `fable` | `xhigh` | 升档拿推理，不随用户调低会话 effort 变浅；失败回主会话降级 |
 
 > **为什么废掉命令级三档（原 haiku 33 条 · sonnet 15 条）**：本机 2.1.239–2.1.280 约 200 次调用实测 0 次生效——`command_permissions` 记下了 `model`，实际调用全是会话模型。① 官方文档：auto 模式下「auto mode 不支持的模型」不被使用、会话保持当前模型，auto 只支持 Opus 4.6+/Sonnet 4.6+/Fable，**Haiku 按设计被忽略**，而 Pro/Max/Team 默认就是 auto；② sonnet 在 auto 下同样不生效，对应 anthropics/claude-code#81318（v2.1.220 起命令/skill 的 `model`/`effort` 覆盖失效的回归，未修）；③ 即便生效，覆盖是在同一对话里换模型，prompt cache 按模型隔离，长会话里要按新模型重写整段历史缓存，小命令多半比留在会话模型读缓存（Opus 5.5 $0.20/MTok）更贵。用户嫌贵用 `/model` 切整个会话。
@@ -58,7 +58,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 > **执行型 agent 跟会话模型、按特性钉 effort**（2026-09-23）：写 `model: inherit`，模型由用户 `/model` 决定。effort 按「错了的代价 × 需要探索多少」定，不按「活简单」定：**下限 `medium`、不用 `low`**（主会话直接采信 agent 结论，省下的 thinking 抵不过一次漏报）；需要自主探索或写代码的 `high`（低 effort 工具调用更少更合并，易漏文件）；深度推理 `xhigh`（Fable 在 Claude Code 默认即 xhigh，钉住只为不随会话调低）。只用 medium/high/xhigh，inherit 下各代会话模型都支持。agent 的 `effort` 实测生效（2026-09-23，两个只差 effort 的临时 agent 同题同模型：low 共 720 输出 token / 30 秒，max 共 18956 / 3 分钟、单次 thinking 1.75 万；#81318 只影响命令 / skill）。jsonl 不记录 effort，再验证只能这样比输出 token。原 haiku（4 个）/ sonnet（impl-worker）弃用：Haiku 4.5 不支持 `effort`（原 `effort: low` 形同虚设）、只有 200K 上下文；Sonnet 5 缓存读价与 Opus 5.5 同为 $0.20/MTok，按本机用量只省约 30%。代价：会话是 Fable 时执行型 agent 也按 Fable 计费——想省钱就把会话切到 Opus 5.5 / Sonnet。命令 frontmatter 的 `effort` 同受 #81318 影响，不用。
 > 按推理强度拆命令的旧规则（REQ-007：`/rd:pr` 只读/CLI 包装、`/rd:review` 审查改代码）保留为职责划分，不再对应模型档位。
 
-**子任务委派**（命令内粒度；只有思考型 agent 换模型）：**Fable 想、主会话判断、subagent 执行**——方案设计交 `planner`（Fable），主会话做复核、跨文件一致性、闸门交互、验收，吞吐型步骤派给执行型 agent，原始输出不进主上下文。`plugins/rd/agents/` 共 6 个，diag 另有 `plugins/diag/agents/root-cause.md`。
+**子任务委派**（命令内粒度；只有思考型 agent 换模型）：**Fable 想、主会话判断、subagent 执行**——方案设计交 `planner`（Fable），主会话做复核、跨文件一致性、闸门交互、验收，吞吐型步骤派给执行型 agent，原始输出不进主上下文。`plugins/rd/agents/` 共 7 个，diag 另有 `plugins/diag/agents/root-cause.md`。
 
 规则见 `shared/_delegate.md`。派生 subagent 的命令 `allowed-tools` 必须列 `Agent`（`allowed-tools` 只做免确认预授权，**不限制**可用工具；没列时仍能派生，但每次都弹确认打断流程）。
 

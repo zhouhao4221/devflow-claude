@@ -1,5 +1,5 @@
 # Prompt 文件期望结构
-<!-- schema-version: 1.1 -->
+<!-- schema-version: 1.2 -->
 
 > 插件命令运行时从项目 `docs/prompt/` 读取架构知识。
 > 本文件定义各命令依赖的章节，供 `/rd:update` 在插件更新后检查项目是否同步覆盖。
@@ -50,6 +50,14 @@
 | 运行命令 / run / exec | 执行测试的命令 |
 | 文件位置 / 目录 / path | 测试文件存放路径 |
 | 框架 / framework / library | 使用的测试框架 |
+
+**推荐**（缺失时 `/rd:test` 步骤 7、`/rd:do`、`/rd:fix` 的自主验收降级为手动引导，`/rd:update` 仅警告）：
+
+| 关键词 | 用途 |
+|--------|------|
+| 前端地址 / baseURL / url | 自主验收探针访问的前端入口，同时要求写 headless E2E 运行命令 |
+| 登录 / 账号 / auth | 登录配方：步骤 + 账号 env 变量名（不写密钥） |
+| 产物 / 截图 / artifact | 探针截图与 aria 快照的存放目录，缺省 `test-results/acceptance/` |
 
 ---
 
