@@ -1,5 +1,5 @@
 ---
-description: 需求测试 - 综合测试验证（回归 + 新建 + 交互验证）
+description: 需求测试 - 综合测试验证（回归 + 新建 + 自主验收）
 argument-hint: "[REQ-XXX|QUICK-XXX]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 
 # 需求测试
 
-针对指定需求执行综合测试：运行已有测试 → 引导创建新测试 → 交互验证测试要点。
+针对指定需求执行综合测试：运行已有测试 → 引导创建新测试 → 自主验收测试要点。
 
 > 存储路径规则见 [`_storage.md`](../shared/_storage.md)
 
@@ -36,11 +36,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 4. **阶段一：UT** — 回归运行变更相关已有 UT（委派 `test-runner`）→ 缺失时引导 `/rd:test_new --type=ut`
 5. **阶段二：API 测试** — 按 testing.md 启动环境 → 回归已有（委派 `test-runner`）→ 缺失时引导 `/rd:test_new --type=api`
 6. **阶段三：E2E 测试** — 额外检查前端服务 → 回归已有（委派 `test-runner`）→ 缺失时引导 `/rd:test_new --type=e2e`
-7. **交互验证** — 自动化未覆盖的验证项逐项引导手动验证；通过的项勾选写回需求文档（readonly 仓库不写回，只在报告中列出），未通过或暂不验证的保持未勾（可加「（待观察：原因）」标注）
+7. **自主验收** — 阶段一~三未覆盖的验证项按 [`_verify.md`](../shared/_verify.md)「自主验收」分类：`script` / `visual` 并行派 `ui-verifier`（headless 探针，截图不进主会话），`manual` 逐项引导用户手动验证。前端未起时先按 testing.md 启动（同阶段三，`--skip-e2e` 不影响本步）；前置不满足时全部退回逐项手动引导，报告写「自主验收：未配置（原因）」。回写按 `_verify.md`：PASS 勾选并附探针路径；FAIL、BLOCKED 保持未勾；manual 通过则勾选，用户明确暂缓才加「（待观察：原因）」或「（未实测：原因）」；readonly 仓库不写回，只在报告中列出
 8. 更新状态为「测试中」并勾选生命周期；旧模板的存量 QUICK 若没有「测试中」复选框，在「开发中」之后插入该行再勾选（守卫要求状态与最后已勾格一致）；记录结果
-9. 汇总报告（各阶段通过/失败、测试要点覆盖率）
+9. 汇总报告（各阶段通过/失败、自主验收 n/m（FAIL n，BLOCKED n）、测试要点覆盖率）
 
-全部通过 → 提示 `/rd:done`。存在失败 → 列出失败用例和原因，提示 `/rd:dev` 修复或 `--failed` 重跑。
+全部通过 → 提示 `/rd:done`。存在失败（含自主验收 FAIL）→ 列出失败用例和原因，提示 `/rd:dev` 修复或 `--failed` 重跑。
 
 ---
 
@@ -53,6 +53,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 - 同一阶段内测试命令可按文件/模块拆分且数量 > 1 时，一次并行派多个
 - subagent 回传 ERROR（依赖缺失、命令不存在、编译失败）时按原因处理或询问用户，不要改命令绕过
 - 汇总报告的失败用例直接取自各 subagent 返回，不再重跑
+- `<E2E 目录>/acceptance/` 下的自主验收探针属于阶段三回归范围，下次运行一并跑
 
 ---
 

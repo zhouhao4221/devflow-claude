@@ -131,7 +131,7 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 ### 4.3 命令不写 `model`：换模型只在 agent 层做
 
-**结论**（2026-09-23）：命令 frontmatter 一律不写 `model`（`inherit` 除外，`check-layout.py` 拦截），执行型 agent 写 `model: inherit` 跑会话模型、按特性钉 effort（test-runner / diff-digest / doc-writer `medium`，code-scout / impl-worker `high`）；只有思考型 agent 换 Fable（`xhigh`，下文）。用户嫌贵用 `/model` 切整个会话。
+**结论**（2026-09-23）：命令 frontmatter 一律不写 `model`（`inherit` 除外，`check-layout.py` 拦截），执行型 agent 写 `model: inherit` 跑会话模型、按特性钉 effort（test-runner / diff-digest / doc-writer / ui-verifier `medium`，code-scout / impl-worker `high`）；只有思考型 agent 换 Fable（`xhigh`，下文）。用户嫌贵用 `/model` 切整个会话。
 
 **为什么废掉原来的 haiku / sonnet / 省略三档**（原 33 条 haiku、15 条 sonnet 命令）：
 
@@ -201,7 +201,7 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 
 **禁忌**：小任务不委派（任务说明 + 回传本身有开销，经验阈值 > 1 万 token 才划算）；不要把需要主会话上下文的推理（方案设计、跨文件改动）拆出去——planner/executor 割裂后返工更贵。命令本身不写 `model`（§4.3），委派不是降档的理由。
 
-**已应用**：`/rd:test` 阶段一~三回归运行（`test-runner`）· `/rd:dev` §4 / `/rd:fix` §1.2 / `/rd:do` §2 代码定位（`code-scout`，主会话只精读返回的 file:line）· `/rd:review` 大 PR 需求比对用 `diff-digest` 摘要；代码质量审查改调原生 `/code-review`（自研 `file-reviewer` 已删，实测自研需主会话把 diff 抄进每个 prompt，隔离不成立）。
+**已应用**：`/rd:test` 阶段一~三回归运行（`test-runner`）· `/rd:test` 步骤 7 与 `_verify.md` 手动验证清单的 UI 项自主验收（`ui-verifier` 写 headless 探针，截图与 aria 快照只在 agent 内判读，主会话每项只收一段结论）· `/rd:dev` §4 / `/rd:fix` §1.2 / `/rd:do` §2 代码定位（`code-scout`，主会话只精读返回的 file:line）· `/rd:review` 大 PR 需求比对用 `diff-digest` 摘要；代码质量审查改调原生 `/code-review`（自研 `file-reviewer` 已删，实测自研需主会话把 diff 抄进每个 prompt，隔离不成立）。
 
 ---
 

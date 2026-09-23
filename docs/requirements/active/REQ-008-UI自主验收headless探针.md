@@ -6,12 +6,12 @@
 |-----|-----|
 | 编号 | REQ-008 |
 | 类型 | 全栈 |
-| 状态 | 评审通过 |
+| 状态 | 开发中 |
 | 模块 | 插件架构 |
 | 优先级 | P2 |
 | 创建日期 | 2026-09-23 |
 | 负责人 | - |
-| branch | - |
+| branch | feat/REQ-008-ui-auto-acceptance |
 | issue | - |
 
 ## 生命周期
@@ -21,7 +21,7 @@
 - [x] 草稿（编写中）
 - [x] 待评审
 - [x] 评审通过
-- [ ] 开发中
+- [x] 开发中
 - [ ] 测试中
 - [ ] 已完成
 
@@ -89,13 +89,13 @@
 
 > 列出所有功能点，开发完成后勾选
 
-- [ ] **ui-verifier agent**：接收一条验证项（入口 / 操作 / 预期 + 模式 script|visual）与 baseURL、登录配方、E2E 命令、探针路径、产物目录、候选前端文件；写 headless Playwright 探针并运行；只回传 PASS / FAIL / BLOCKED + 一句证据 + 探针与产物路径
-- [ ] **自主验收规则（_verify.md）**：前置三条检查、script / visual / manual 分类、派发（一项一 agent，同页 ≤3 项可合并，独立项并行）、主会话纪律（不读图）、回写写法、验证结果段新增「自主验收」行
-- [ ] **/rd:test 步骤 7 改造**：交互验证 → 自主验收；报告加「自主验收 n/m」；验收 FAIL 计入失败；`acceptance/` 探针纳入阶段三回归
-- [ ] **/rd:do、/rd:fix 接入**：手动验证清单中 UI 可观察项先派 `ui-verifier`，剩余才留手动；`/rd:fix --auto` 下自主验收照常执行，FAIL 停下
-- [ ] **testing.md 模板与 schema**：「必备输入」补 E2E 命令（headless）、前端地址、登录配方（仅 env 变量名）、产物目录、服务启动与探活；schema 加推荐关键词（缺失只警告）
-- [ ] **/rd:test_new 分工**：E2E 断言只用 DOM / 文本 / URL，不用 `toHaveScreenshot`；流程用例与 `acceptance/` 探针不重复
-- [ ] **文档同步**：`_delegate.md` 可写型 agent 表与准入说明、CLAUDE.md agent 数量、token-optimization 已应用清单
+- [x] **ui-verifier agent**：接收一条验证项（入口 / 操作 / 预期 + 模式 script|visual）与 baseURL、登录配方、E2E 命令、探针路径、产物目录、候选前端文件；写 headless Playwright 探针并运行；只回传 PASS / FAIL / BLOCKED + 一句证据 + 探针与产物路径
+- [x] **自主验收规则（_verify.md）**：前置三条检查、script / visual / manual 分类、派发（一项一 agent，同页 ≤3 项可合并，独立项并行）、主会话纪律（不读图）、回写写法、验证结果段新增「自主验收」行
+- [x] **/rd:test 步骤 7 改造**：交互验证 → 自主验收；报告加「自主验收 n/m」；验收 FAIL 计入失败；`acceptance/` 探针纳入阶段三回归
+- [x] **/rd:do、/rd:fix 接入**：手动验证清单中 UI 可观察项先派 `ui-verifier`，剩余才留手动；`/rd:fix --auto` 下自主验收照常执行，FAIL 停下
+- [x] **testing.md 模板与 schema**：「必备输入」补 E2E 命令（headless）、前端地址、登录配方（仅 env 变量名）、产物目录、服务启动与探活；schema 加推荐关键词（缺失只警告）
+- [x] **/rd:test_new 分工**：E2E 断言只用 DOM / 文本 / URL，不用 `toHaveScreenshot`；流程用例与 `acceptance/` 探针不重复
+- [x] **文档同步**：`_delegate.md` 可写型 agent 表与准入说明、CLAUDE.md agent 数量、token-optimization 已应用清单
 
 ---
 
@@ -290,18 +290,61 @@ stateDiagram-v2
 
 ### 11.1 数据模型
 
-_开发阶段填充_
+不涉及数据库。新增文件产物：
+
+- 验收探针：`<E2E 目录>/acceptance/<REQ/QUICK 编号 | 分支 slug | adhoc-YYYYMMDD>/<item-id>.spec.ts`（默认保留，列入修改文件，下次 /rd:test 阶段三回归）
+- 产物：`<产物目录，缺省 test-results/acceptance/>/<item-id>.png`（viewport 截图，不 fullPage）与 `<item-id>.aria.yml`（`page.locator('body').ariaSnapshot()`，Playwright < 1.49 无此 API 时跳过）
 
 ### 11.2 API 设计
 
 > 基于第五章接口需求，结合项目代码和 CLAUDE.md API 风格，生成具体技术方案
 
-_开发阶段填充_
+非 HTTP 接口，是主会话 → `ui-verifier` subagent 的委派契约。
+
+**输入**（全部内联进 prompt）：
+
+| 字段 | 说明 |
+|------|------|
+| 工作目录 | 下游项目根 |
+| 验证项 | 编号 + 原文（入口 / 操作 / 预期三段） |
+| 模式 | `script`（DOM/文本/URL 断言）或 `visual`（到达 + 前置操作 + 截图后判读） |
+| baseURL | testing.md 的前端地址 |
+| 登录配方 | 步骤 + 账号 env 变量名，或「无需登录」 |
+| E2E 命令 | testing.md 的 headless 运行命令 |
+| 探针路径 / 产物目录 | 见 11.1 |
+| 候选前端文件 | ≤5 个，来自改动清单 |
+
+**输出**（严格格式）：
+
+```
+验证项：<item-id> <原文>
+结果：PASS | FAIL | BLOCKED
+证据：<一句：断言了什么 / 截图观察到什么>
+探针：<spec 路径>
+产物：<png 路径>[, <aria 路径>]
+失败要点（FAIL/BLOCKED 时 ≤5 行）：<期望 vs 实际 | 阻塞原因>
+```
 
 ### 11.3 文件改动清单
 
-_开发阶段填充_
+| # | 文件 | 类型 | 改动 |
+|---|------|------|------|
+| 1 | `plugins/rd/agents/ui-verifier.md` | 新增 | `model: inherit`、`effort: medium`、`maxTurns: 20`、工具 Read/Glob/Grep/Write/Bash；只写探针、选择器 role/label/text 优先、只用 DOM/文本/URL 断言禁 `toHaveScreenshot`、viewport 截图、选择器超时自修 1 次、先 aria 后截图每项最多一张、单项总消耗 ≤ 3 万 token、严格返回格式 |
+| 2 | `plugins/rd/shared/_verify.md` | 修改 | 新增「自主验收」节：前置三条、script/visual/manual 分类、派发（同页 ≤3 项合并、独立项并行）、主会话不读图、回写（PASS 勾选附探针；FAIL/BLOCKED 保持裸 `[ ]`；manual 引导用户，用户明确暂缓才标「未实测」）、验证结果段加「自主验收」行 |
+| 3 | `plugins/rd/commands/test.md` | 修改 | description 与步骤 7「交互验证」→「自主验收」；报告加「自主验收 n/m」；验收 FAIL 计入失败；阶段三回归含 `acceptance/` |
+| 4 | `plugins/rd/commands/do.md` | 修改 | 3.5 验证：手动验证清单 UI 项先走自主验收 |
+| 5 | `plugins/rd/commands/fix.md` | 修改 | 同上；`--auto` 下自主验收 FAIL 停下 |
+| 6 | `plugins/rd/commands/test_new.md` | 修改 | 步骤 6：E2E 不用 `toHaveScreenshot`；与 `acceptance/` 探针分工 |
+| 7 | `plugins/rd/shared/_delegate.md` | 修改 | 可写型 agent 表加 `ui-verifier`；准入说明：不套委派实施四条，按 `_verify.md` 前置三条 |
+| 8 | `plugins/rd/templates/prompt-snippets/testing.md` | 修改 | 「必备输入」加 5 条示例：E2E 命令（headless）、前端地址、登录配方（仅 env 变量名）、产物目录、服务启动与探活 |
+| 9 | `plugins/rd/schemas/prompt-schema.md` | 修改 | testing.md 加 3 条推荐关键词（前端地址 / 登录 / 产物，缺失只警告）；schema-version 1.1 → 1.2 |
+| 10 | `CLAUDE.md` | 修改 | rd agent 共 6 个 → 7 个；模型策略表 medium 行加 `ui-verifier` |
+| 11 | `docs/design/token-optimization.md` | 修改 | effort 清单与「已应用」加 `ui-verifier` |
 
 ### 11.4 实现步骤
 
-_开发阶段填充_
+1. 新建 `ui-verifier.md`（最上游契约，新抽象，主会话写）
+2. `_verify.md`「自主验收」节（核心规则，主会话写）
+3. 3–9 号文件各一两句改动，互不依赖；改动量小，主会话直接改（委派开销大于收益）
+4. 10–11 号文档同步；跑 `python3 scripts/check-layout.py --check`、`python3 scripts/check-requirements.py --check`，核对 6.1 的 grep 命中与文件 < 30 KB
+5. 合并 → 发版 → `/plugin` 更新 → `/reload-plugins` 后，搭最小 Playwright 示例项目按 6.2 实测（本机无现成 Playwright 项目）
