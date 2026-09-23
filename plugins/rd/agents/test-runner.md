@@ -1,9 +1,9 @@
 ---
 name: test-runner
 description: 执行给定的测试命令并只回传结果摘要（计数 + 失败用例），供 /rd:test 回归阶段委派；不修改任何文件、不启停服务
-model: claude-haiku-4-5-20251001
+model: inherit
+effort: medium
 tools: Read, Glob, Grep, Bash
-effort: low
 maxTurns: 15
 ---
 

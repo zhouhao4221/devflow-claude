@@ -129,19 +129,20 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 **共享文件之间禁止用 Markdown 链接互引**：任何一个 `_*.md` 链到其它几个，模型顺着链接展开就会把整组 ~33KB 全部读进上下文，按主题拆分的收益直接归零（2026-08 前由此派生的 skill 镜像也都因此超 30KB）。互相提及时写纯文本文件名（`` `_branch.md` ``），只有真实依赖（如 `_issue.md` → `_gitea_cli.md` 的 tea 检测）才用链接。
 
-### 4.3 显式降级到 Haiku
+### 4.3 命令不写 `model`：换模型只在 agent 层做
 
-**何时用**：纯读取、列表展示、机械操作、帮助信息类命令。
+**结论**（2026-09-23）：命令 frontmatter 一律不写 `model`（`inherit` 除外，`check-layout.py` 拦截），执行型 agent 写 `model: inherit` 跑会话模型、按特性钉 effort（test-runner / diff-digest / doc-writer `medium`，code-scout / impl-worker `high`）；只有思考型 agent 换 Fable（`xhigh`，下文）。用户嫌贵用 `/model` 切整个会话。
 
-**做法**：在 frontmatter 加 `model: claude-haiku-4-5-20251001`。Haiku 4.5 比 Sonnet 5 便宜 2 倍（$1/$5 vs $2/$10 每百万 token，2026-09 核实），主要收益是快，价差已不大。
+**为什么废掉原来的 haiku / sonnet / 省略三档**（原 33 条 haiku、15 条 sonnet 命令）：
 
-**已应用**：以 `grep -l "^model:" plugins/*/commands/*.md` 为准，不在此维护清单。
+1. **实测从未生效**：扫本机会话 jsonl，Claude Code 2.1.239–2.1.280 约 200 次声明 haiku / sonnet 的命令调用，`command_permissions` 附件都记下了 `model`，但随后的主线程调用 0 次跑在声明的模型上，全是会话模型（opus-5 / fable-5 / fable-5-1 / opus-5-5）。主线程历史上没有任何 haiku / sonnet 调用，它们只出现在 subagent 里。验证方法：比对 jsonl 里 `command_permissions.model` 与下一条 `assistant` 的 `message.model`，并看 `permissionMode`。
+2. **Haiku 按设计被忽略**：skill / 命令 `model` 字段文档写明「In auto mode … a model that auto mode doesn't support also isn't used, and the session keeps its current model」；auto 模式只支持 Opus 4.6+ / Sonnet 4.6+ / Fable（permission-modes 文档），不含 Haiku。Pro / Max / Team 默认就是 auto——对大多数下游用户 haiku 档永远不会生效，也不会被「修复」。
+3. **Sonnet 受 bug 影响**：sonnet 在 auto 支持范围内，实测同样不生效，对应 anthropics/claude-code#81318（v2.1.220 起命令 / skill 的 `model` / `effort` 覆盖静默失效的回归，2026-09-23 未修）。`effort` 同理，不用。
+4. **即便生效也未必省**：命令级覆盖是在同一对话里换模型（「applies for the rest of the current turn」），而 prompt cache 按模型隔离——第一次调用要按新模型把整段历史写一遍缓存。以 100K 上下文为例：留在 Opus 5.5 读缓存 $0.02，切到 Haiku 写缓存约 $0.125；Haiku 每 1K 输出只省 $0.015，要输出 ~7K token 才回本，而 commit / branch / pr 一般只有 1–2K。切回会话模型还要把切换期间的轮次补写进缓存。Haiku 的 200K 上下文也放不下常见的长会话。
 
-**禁忌**：需要复杂推理、代码生成、深度分析的命令（如 `/rd:dev`、`/rd:do`）不要降级。
+**agent 层换模型没有这个问题**：agent 新开上下文，不继承主会话历史，没有上面的缓存重写；它的 `model` 实测一直生效（本机 haiku / sonnet subagent 调用各数千次）。
 
-**中间档 Sonnet**：数据聚合 + 成文类命令（`/pm:weekly`、`monthly`、`milestone`、`stats`、`progress`、`brief`、`risk`）用 `model: claude-sonnet-5`——比会话模型便宜 2～5 倍（Opus 5.5 $4/$20、Fable 5.1 $10/$50，2026-09 核实），写报告绰绰有余。Sonnet 5 原生 1M 上下文且超 200K 不加价、订阅制不计 extra usage（2026-08 核实），旧的「sonnet[1m] 付费墙」顾虑已不存在。`/pm:plan`、`/pm:ask` 需要真实推理，保持省略。
-
-**省略档要收窄**（2026-09）：会话模型升到 Fable 5.1 后，省略档相对 sonnet 的价差从 2.5 倍拉到 5 倍。Anthropic 的建议是先试 Fable 低 effort 再换便宜模型，当时误以为命令 frontmatter 没有 `effort` 字段（2026-09-19 查文档：命令与 skill 同源，也支持 `effort`，本仓库尚未启用）；且这类命令输入密集（读文档、读代码），输入按单价计费，effort 也降不下来。因此**有界的单文档编辑/分析**（`/rd:edit`、`prd-edit`、`split`、`new-quick`）与**模板化的测试/代码生成**（`/rd:test`、`test_new`、`/api:gen`、`map`）显式 `claude-sonnet-5`，CLI 包装类（`/rd:issue`，与 `branch`/`commit` 同类）显式 haiku。省略档只留真正需要会话模型做判断的：`/rd:dev`、`do`、`fix`、`new`、`pr`、`init`（一次性、要归纳架构）、`/pm:plan`、`ask`、`/diag:diagnose`。
+**执行型 agent 也不换模型**（2026-09-23）：`model: inherit`，跟用户的 `/model` 走；effort 按特性钉，下限 `medium`——effort 压的是 thinking 与输出，这些 agent 以读为主（本机平均每次调用读 ~3.9 万、输出 ~1 千 token），`low` 省不了多少，却可能让被主会话直接采信的结果漏报。原 haiku / sonnet 弃用：Haiku 4.5 不支持 `effort`（原 `effort: low` 不起作用）、上下文只有 200K；Sonnet 5 与 Opus 5.5 缓存读价同为 $0.20/MTok，按本机用量只省约 30%；Opus 5.5 在 `medium` 已超过 Opus 5 的 `high`，统一跑会话模型更省心。委派执行型 agent 的收益只剩上下文隔离（§4.8）。代价：会话是 Fable 时执行型 agent 也按 Fable 计费，想省钱就切会话模型。
 
 **会话模型不再假定是 Fable，「想」交给 Fable 子代理**（2026-09-19，v5.1.0）：命令默认跑当前会话模型；`/rd:dev`、`do`（实现方案）、`/rd:fix`（根因 + 修复）、`/rd:review`（小 PR 审查）派 `planner`，`/diag:diagnose`（根因）派 `root-cause`，两者 `model: fable`。子代理失败（Fable 额度用尽 / 不可用）时错误回到主会话，主会话用当前模型接手。中间走过两步弯路（v5.0.1–v5.0.2 给命令钉 `model: best`），教训如下（官方文档 2026-09-19 核实）：
 
@@ -196,11 +197,11 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 
 **做法**：命令文档指示把该步骤派给插件自带的 agent（`plugins/rd/agents/`），主会话只接收结构化结论；frontmatter `allowed-tools` 加 `Agent`。规则与可用 agent 见 `plugins/rd/shared/_delegate.md`。
 
-**收益**：两层。① 机械步骤跑在 haiku 上（`test-runner`）；② **上下文隔离**——原始输出留在 subagent，主会话之后每一轮都不再为它付费，这一层通常比单价差更大。
+**收益**：**上下文隔离**——原始输出留在 subagent，主会话之后每一轮都不再为它付费。
 
-**禁忌**：小任务不委派（任务说明 + 回传本身有开销，经验阈值 > 1 万 token 才划算）；不要把需要主会话上下文的推理（方案设计、跨文件改动）拆出去——planner/executor 割裂后返工更贵。整条命令的 `model` 仍按 §4.3 分 haiku / sonnet / 省略三档，委派不是降档的理由。
+**禁忌**：小任务不委派（任务说明 + 回传本身有开销，经验阈值 > 1 万 token 才划算）；不要把需要主会话上下文的推理（方案设计、跨文件改动）拆出去——planner/executor 割裂后返工更贵。命令本身不写 `model`（§4.3），委派不是降档的理由。
 
-**已应用**：`/rd:test` 阶段一~三回归运行（`test-runner`，haiku）· `/rd:dev` §4 / `/rd:fix` §1.2 / `/rd:do` §2 代码定位（`code-scout`，haiku，主会话只精读返回的 file:line）· `/rd:review` 大 PR 需求比对用 `diff-digest` 摘要；代码质量审查改调原生 `/code-review`（自研 `file-reviewer` 已删，实测自研需主会话把 diff 抄进每个 prompt，隔离不成立）。
+**已应用**：`/rd:test` 阶段一~三回归运行（`test-runner`）· `/rd:dev` §4 / `/rd:fix` §1.2 / `/rd:do` §2 代码定位（`code-scout`，主会话只精读返回的 file:line）· `/rd:review` 大 PR 需求比对用 `diff-digest` 摘要；代码质量审查改调原生 `/code-review`（自研 `file-reviewer` 已删，实测自研需主会话把 diff 抄进每个 prompt，隔离不成立）。
 
 ---
 
@@ -224,7 +225,7 @@ Read(file_path="docs/requirements/active/REQ-001.md", offset=120, limit=50)
 - [ ] 命令文件大小 < 30 KB？超过先想是否能拆 rationale
 - [ ] frontmatter `description` ≤ 50 字符？
 - [ ] frontmatter `allowed-tools` 是否最小集？
-- [ ] 是否纯读取/列表？是 → 加 `model: claude-haiku-4-5-20251001`；是数据聚合成文？→ `model: claude-sonnet-5`；需要深度推理的一步（方案设计/根因分析/小 PR 审查）？→ 不抬命令档，派 `planner`（Fable，失败降级当前模型）
+- [ ] frontmatter 没写 `model`？（命令一律跑会话模型，§4.3）需要深度推理的一步（方案设计/根因分析/小 PR 审查）→ 派 `planner`（Fable，失败降级当前模型）
 - [ ] 有没有会灌入大量原始输出的步骤（跑测试、大 diff）？有 → 委派 subagent（§4.8），`allowed-tools` 加 `Agent`
 - [ ] 引用 `_common.md` 的具体章节？引用越具体越省（模型可能只 Read 一次而非反复）
 - [ ] 长伪代码（> 50 行）能否下沉到脚本？
@@ -246,7 +247,7 @@ wc -c plugins/*/shared/*.md | sort -nr
 ## 7. 不要做的优化
 
 - ❌ **不要为省 token 删掉强制交互闸门描述** —— 这些是命令正确性的合约，不能为了变快而模糊
-- ❌ **不要把 frontmatter 的 `model` 设成不存在的模型** —— 用户账号可能没开 Opus，用 `claude-haiku-4-5-20251001` 这种确定的 ID
+- ❌ **不要给命令加 `model` / `effort` 降档** —— auto 模式忽略 Haiku、#81318 让覆盖失效，即便生效也要重写整段历史缓存（§4.3）；执行型 agent 写 `model: inherit`，effort 下限 `medium`，降成本靠用户切会话模型
 - ❌ **不要把 rationale 删光** —— 设计依据迁出主文件后**必须**有归宿（rationale 文档），否则下次维护无人能改
 - ❌ **不要在 hook 里调用 LLM** —— hook 输出每次都进 prompt，即使是简单分类也会让会话启动变慢
 - ❌ **不要让命令"为了精简"省略输出模板** —— 模型看不到模板就不知道该输出什么样的格式，反而要更多 token 自己想
@@ -257,4 +258,5 @@ wc -c plugins/*/shared/*.md | sort -nr
 
 - Anthropic prompt caching: https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
 - Claude tokenizer 行为差异：中文每字 1.5~2 tokens 是因为 BPE 把 UTF-8 多字节字符切多个 token
-- 项目 CLAUDE.md「命令与技能结构」章节定义模型分级四档；已应用清单以 `grep -l "^model:" plugins/*/commands/*.md` 为准
+- 项目 CLAUDE.md「命令与技能结构」章节的「模型策略」：命令跑会话模型，agent 层换模型；agent 清单以 `grep -H "^model:" plugins/*/agents/*.md` 为准
+- 命令 `model` 覆盖失效：https://code.claude.com/docs/en/skills.md（`model` 字段）· https://github.com/anthropics/claude-code/issues/81318

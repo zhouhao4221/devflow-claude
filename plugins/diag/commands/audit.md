@@ -2,7 +2,6 @@
 description: 查询 Diag 审计日志 - 按主机/服务/时间过滤
 argument-hint: "[--host=<name>] [--service=<name>] [--from=YYYY-MM-DD] [--to=YYYY-MM-DD] [--limit=50]"
 allowed-tools: Bash(cat:*, ls:*, jq:*, find:*, sort:*, head:*, tail:*, wc:*), Read
-model: claude-haiku-4-5-20251001
 ---
 
 # /diag:audit - 审计查询

@@ -2,7 +2,6 @@
 description: 项目简介 - 生成面向新人或客户的项目概述
 argument-hint: "[--lang=zh|en]"
 allowed-tools: Read, Write, Glob, Grep, Bash(git log:*, mkdir:*)
-model: claude-sonnet-5
 ---
 
 # 项目简介

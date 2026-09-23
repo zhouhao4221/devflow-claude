@@ -1,9 +1,9 @@
 ---
 name: doc-writer
 description: 按给定素材和模板骨架成文（需求文档章节回填、changelog 分类草稿等），素材扫描与逐字撰写都在 subagent 内完成，只回传成品或落盘路径；供 /rd:dev、/rd:changelog、/rd:release 的成文步骤委派
-model: claude-haiku-4-5-20251001
+model: inherit
+effort: medium
 tools: Read, Glob, Grep, Write, Edit
-effort: low
 maxTurns: 20
 ---
 

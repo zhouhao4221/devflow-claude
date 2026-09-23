@@ -41,19 +41,21 @@ claude plugins uninstall rd@devflow  # 卸载插件
 
 ---
 
-## 智能模型分级
+## 模型策略
 
-命令按推理强度分三档，通过 frontmatter 的 `model` 字段声明，平衡响应速度、推理质量与成本：
+命令和执行型子代理都跑你当前的会话模型，只有最需要推理的几步交给 Fable 子代理：
 
-| 档位 | 定位 | 典型命令 |
+| 层 | 模型 | 做什么 |
 |------|------|---------|
-| **Haiku** | 纯查询 / 展示 / 配置 / 规则明确的状态流转 / CLI 包装 | `/rd:req`、`/rd:status`、`/rd:show`、`/rd:commit`、`/rd:issue`、`/rd:pr`、`/pm:standup`、`/api:help` |
-| **Sonnet** | 数据聚合 + 成文 / 有界的文档编辑与模板化生成 | `/pm:weekly`、`/pm:monthly`、`/pm:stats`、`/pm:risk`、`/rd:edit`、`/rd:split`、`/rd:test_new`、`/api:gen` |
-| **会话模型**（不指定） | 分析代码 / 生成方案 / 多轮需求讨论 / 代码审查 / 生产诊断 | `/rd:new`、`/rd:dev`、`/rd:fix`、`/rd:do`、`/rd:review`、`/rd:req-review`、`/diag:diagnose`、`/pm:plan` |
+| 命令 | 你的会话模型 | 所有 `/rd:*`、`/pm:*`、`/api:*`、`/diag:*` |
+| 执行型子代理 | 你的会话模型 | 定位代码、跑测试、压缩大 diff、按模板成文、按已确认方案改代码 |
+| 思考型子代理 | Fable | `/rd:dev`、`/rd:do` 的实现方案，`/rd:fix` 的根因与修复方案，`/rd:review` 的小 PR 审查，`/diag:diagnose` 的根因判断 |
 
-命令默认跑你当前的会话模型，只把最需要推理的几步交给 Fable 子代理：`/rd:dev`、`/rd:do` 的实现方案，`/rd:fix` 的根因与修复方案，`/rd:review` 的小 PR 审查，`/diag:diagnose` 的根因判断。Fable 不可用（额度用完、未开通、云厂商未上架）时由当前模型自动接手，输出首行标注「⚠️ Fable 不可用」。部分套餐下 Fable 按 usage credits 计费，交互会话首次会弹确认。
+命令不再按档位声明 `model`：Claude Code 的 auto 模式（Pro / Max / Team 默认）不支持 Haiku，命令级的模型覆盖会被忽略；即便生效，在同一对话里换模型也要按新模型重建整段对话的缓存，未必更省。想降低成本，用 `/model` 切换整个会话的模型即可。
 
-开发类命令还会把定位代码、跑测试、压缩大 diff 等高吞吐步骤委派给 subagent，原始输出不进主会话上下文。
+Fable 不可用（额度用完、未开通、云厂商未上架）时由当前模型自动接手，输出首行标注「⚠️ Fable 不可用」。部分套餐下 Fable 按 usage credits 计费，交互会话首次会弹确认。
+
+子代理新开上下文，原始输出（测试日志、大 diff）不进主会话。
 
 每个命令还通过 `allowed-tools` 只预授权必需的工具；只读命令若调用写入类工具，会先弹出权限确认。
 

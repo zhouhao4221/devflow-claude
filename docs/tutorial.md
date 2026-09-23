@@ -130,7 +130,7 @@ claude plugins install rd@devflow
 - 项目级 `.claude/settings.json` 的 `enabledPlugins` 若写了 `"req@devflow": true`，需改为 `rd@devflow`（`/rd:migrate` 会检测并在确认后替换，改完请提交），否则拉代码的成员仍启用旧插件
 - 旧的 PR 审查命令已并入 `/rd:pr`：`review-pr review` → `/rd:review`，`review-pr merge` → `/rd:pr merge`，`review-pr fetch-comments` → `/rd:pr comments`，单独的 `review-pr` → `/rd:pr status`
 - 注意：`/rd:pr` 不带参数是**创建 PR**（旧的 `review-pr` 不带参数是查看状态）
-- 审查类命令已按模型档位拆分：需求评审 `/rd:review` → `/rd:req-review`（提审时增加 AI 预审）；AI 代码审查 `/rd:pr review` → `/rd:review`；`/rd:pr comments` 改为只读查看，按评论改代码用 `/rd:review comments`。`/rd:migrate` 会一并替换旧写法
+- 审查类命令已按职责拆分：需求评审 `/rd:review` → `/rd:req-review`（提审时增加 AI 预审）；AI 代码审查 `/rd:pr review` → `/rd:review`；`/rd:pr comments` 改为只读查看，按评论改代码用 `/rd:review comments`。`/rd:migrate` 会一并替换旧写法
 
 > 旧插件 req 已从 marketplace 移除；若更新后 `/req:*` 命令全部消失，按上面三步改装 rd 即可。
 

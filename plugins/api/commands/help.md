@@ -2,7 +2,6 @@
 description: 使用教程 - 查看 API 对接插件完整使用指南
 argument-hint: "[章节名或编号] [--lang=zh|en|ko]"
 allowed-tools: Read
-model: claude-haiku-4-5-20251001
 ---
 
 # API 对接插件 - 使用教程

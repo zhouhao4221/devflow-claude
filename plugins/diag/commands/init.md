@@ -2,7 +2,6 @@
 description: 初始化 Diag 插件 - 创建 ~/.claude-diag/ 配置目录 + 服务清单模板 + 依赖检查
 argument-hint: ""
 allowed-tools: Bash(bash:*, ls:*, cat:*, chmod:*, mkdir:*), Read, Edit
-model: claude-haiku-4-5-20251001
 ---
 
 # /diag:init - 初始化 Diag 插件

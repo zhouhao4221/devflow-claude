@@ -1,9 +1,9 @@
 ---
 name: code-scout
 description: 只读代码定位器：按给定问题/需求关键词在代码库中搜索，返回相关文件清单（路径、相关度、原因、关键行号）而非文件内容；供 /rd:dev、/rd:fix、/rd:do 的定位阶段委派
-model: claude-haiku-4-5-20251001
+model: inherit
+effort: high
 tools: Read, Glob, Grep
-effort: low
 maxTurns: 25
 ---
 

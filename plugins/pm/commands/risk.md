@@ -1,7 +1,6 @@
 ---
 description: 风险扫描 - 自动检测项目中的延期、阻塞和异常情况
 allowed-tools: Read, Write, Glob, Grep, Bash(git log:*, git status:*, mkdir:*)
-model: claude-sonnet-5
 ---
 
 # 风险扫描

@@ -2,7 +2,6 @@
 description: 生产诊断插件 - 列出 init / diagnose / audit 子命令
 argument-hint: ""
 allowed-tools: Read
-model: claude-haiku-4-5-20251001
 ---
 
 # Diag - 生产诊断插件

@@ -2,6 +2,7 @@
 name: root-cause
 description: 生产报错根因分析（只读）：按调用方内联的异常信息、堆栈帧、日志片段与本地代码定位表，判断根本原因并给出具体到文件/函数的修复建议，不执行命令、不改文件；供 /diag:diagnose 把根因判断交给 Fable，失败时调用方用当前模型接手
 model: fable
+effort: xhigh
 tools: Read, Glob, Grep
 maxTurns: 30
 ---

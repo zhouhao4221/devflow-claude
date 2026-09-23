@@ -1,7 +1,8 @@
 ---
 name: impl-worker
 description: 按调用方给定的实施单修改一个独立单元的代码（改哪些文件、哪个函数、改成什么、如何验收都由调用方定死），返回改动摘要与存疑项；供 /rd:dev、/rd:do、/rd:fix 在方案已确认且改动可切分为互不依赖单元时并行委派
-model: claude-sonnet-5
+model: inherit
+effort: high
 tools: Read, Glob, Grep, Edit, Write, Bash
 maxTurns: 35
 ---
