@@ -16,6 +16,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      # check-layout 按 YAML 解析 frontmatter，diag 冒烟测试也要用
+      - run: python3 -m pip install --quiet pyyaml
+
       - name: 布局、链接与过时引用
         run: python3 scripts/check-layout.py --check
 
@@ -23,6 +26,4 @@ jobs:
         run: python3 scripts/check-requirements.py --check
 
       - name: diag Hook 冒烟测试
-        run: |
-          python3 -m pip install --quiet pyyaml
-          bash plugins/diag/tests/smoke.sh
+        run: bash plugins/diag/tests/smoke.sh
