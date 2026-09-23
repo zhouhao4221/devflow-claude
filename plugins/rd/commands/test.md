@@ -24,6 +24,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 |-----|------|
 | `--failed` | 仅运行上次失败的测试 |
 | `--skip-ut` / `--skip-api` / `--skip-e2e` | 跳过对应阶段 |
+| `--all` | 不按改动层级选择，跑全部已配置阶段（`--skip-*` 仍生效） |
 | `--force` | 某阶段失败时继续后续 |
 
 ---
@@ -32,13 +33,13 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 
 1. 选择需求 & 前置检查（REQ / QUICK 通用：状态必须为「开发中/测试中」；REQ 功能清单未完成时警告）
 2. 提取验证清单——按类型取章节：REQ「六、测试要点」，QUICK「验证方式」（见 `_storage.md`「双轨状态机」）；REQ 按 API/业务规则/数据权限/其他分维度
-3. 识别变更范围（优先需求文档「文件改动清单」，否则 `git diff`，按 testing.md 定位测试文件）
-4. **阶段一：UT** — 回归运行变更相关已有 UT（委派 `test-runner`）→ 缺失时引导 `/rd:test_new --type=ut`
-5. **阶段二：API 测试** — 按 testing.md 启动环境 → 回归已有（委派 `test-runner`）→ 缺失时引导 `/rd:test_new --type=api`
-6. **阶段三：E2E 测试** — 额外检查前端服务 → 回归已有（委派 `test-runner`）→ 缺失时引导 `/rd:test_new --type=e2e`
+3. 识别变更范围并选择阶段——改动来源、层级判定与「层级 → 阶段」规则见 [`_verify.md`](../shared/_verify.md)「测试阶段选择」；输出一行「测试阶段：…」，再按 testing.md 定位各阶段的测试文件
+4. **阶段一：UT**（第 3 步未选中则跳过，下同） — 回归运行变更相关已有 UT（委派 `test-runner`）→ 缺失时引导 `/rd:test_new --type=ut`
+5. **阶段二：API 测试** — 选中时才按 testing.md 启动环境 → 回归已有（委派 `test-runner`）→ 缺失时引导 `/rd:test_new --type=api`
+6. **阶段三：E2E 测试** — 选中时才额外检查前端服务 → 回归已有（委派 `test-runner`）→ 缺失时引导 `/rd:test_new --type=e2e`
 7. **自主验收** — 阶段一~三未覆盖的验证项按 [`_verify.md`](../shared/_verify.md)「自主验收」分类：`script` / `visual` 并行派 `ui-verifier`（headless 探针，截图不进主会话），`manual` 逐项引导用户手动验证。前端未起时先按 testing.md 启动（同阶段三，`--skip-e2e` 不影响本步）；前置不满足时全部退回逐项手动引导，报告写「自主验收：未配置（原因）」。回写按 `_verify.md`：PASS 勾选并附探针路径；FAIL、BLOCKED 保持未勾；manual 通过则勾选，用户明确暂缓才加「（待观察：原因）」或「（未实测：原因）」；readonly 仓库不写回，只在报告中列出
 8. 更新状态为「测试中」并勾选生命周期；旧模板的存量 QUICK 若没有「测试中」复选框，在「开发中」之后插入该行再勾选（守卫要求状态与最后已勾格一致）；记录结果
-9. 汇总报告（各阶段通过/失败、自主验收 n/m（FAIL n，BLOCKED n）、测试要点覆盖率）
+9. 汇总报告（各阶段通过/失败/跳过及跳过原因、自主验收 n/m（FAIL n，BLOCKED n）、测试要点覆盖率）
 
 全部通过 → 提示 `/rd:done`。存在失败（含自主验收 FAIL）→ 列出失败用例和原因，提示 `/rd:dev` 修复或 `--failed` 重跑。
 
@@ -64,6 +65,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 | 综合测试（默认） | `/rd:test REQ-XXX` |
 | 增量测试 | `/rd:test REQ-XXX --failed` |
 | 跳过阶段 | `--skip-ut` / `--skip-api` / `--skip-e2e` |
+| 全阶段 | `/rd:test REQ-XXX --all` |
 | 强制继续 | `--force` |
 
 ---

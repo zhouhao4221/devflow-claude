@@ -233,9 +233,11 @@ REQ-001 部门渠道关联
 
 下一步：
 - /rd:pr REQ-001 - 创建 PR（根据仓库类型自动创建或提示命令）
-- /rd:test REQ-001 - 进入测试
+- /rd:test REQ-001 - 进入测试（预计跑：UT + API，依据 order_service.go；跳过 E2E）
 - /rd:commit - 提交代码
 ```
+
+`/rd:test` 那行的预计阶段与依据按 [`_verify.md`](../shared/_verify.md)「测试阶段选择」，以本次实际改动（相对 branchFrom 的 diff ∪ 11.3）判定。
 
 > 如果配置了 `branchStrategy.repoType`（gitea/github），会提示可以创建 PR。
 > 未配置时不显示 PR 相关提示。
