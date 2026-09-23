@@ -2,7 +2,6 @@
 description: 热更新插件 - 拉取最新命令文件和技能，所有项目立即生效
 argument-hint: "[--check]"
 allowed-tools: Read, Bash(git:*, jq:*, find:*, ls:*)
-model: claude-haiku-4-5-20251001
 ---
 
 # 热更新 rd 插件

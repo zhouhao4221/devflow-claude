@@ -42,29 +42,27 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 - **命令同名 skill 镜像**：与 command 落在同一菜单、`description` 一模一样，每条命令重复两遍（`claude plugin details req` 里出现 `do, do`、`pr, pr`），多出的那份 description 还白占 always-on token。原 `scripts/gen-skills.py` 按 `SKIP_MIRROR` 名单派生的 51 个镜像（req 23 · pm 12 · api 6 · uat 6 · diag 4）已整体删除。
 - **共享参考文档放 `commands/`**：`_storage.md` 之类会变出 `/rd:_storage` 等 12 个伪命令。统一放 `plugins/<p>/shared/`（rd 10 · pm 1 · api 1）。
 
-`scripts/check-layout.py` 一次性守住五条：`skills/` 无命令镜像、`commands/` 无非命令文件、命令未钉 Fable（`model` 不得为 `fable`/`best`/`claude-fable-5*`）、所有相对链接可达、插件内无过时引用（`.claude/settings*` 读写 DevFlow 字段、`sync-cache` / 全局缓存、缓存同步类表述、未定义的 `<plugin-path>`；迁移说明与 Claude Code 自身配置项豁免，确需保留加 `stale-ok`）。`--check` 报错退 1（发布前置，`.github/workflows/check.yml` 在每个 PR 上连同 diag 冒烟测试自动跑），不带参数则自动清理可清理的部分。`scripts/check-requirements.py --check` 守需求目录：`completed/` 内状态为已完成、`active/` 内不为已完成、状态与生命周期已勾格一致、编号唯一，同样进 CI 与发布前置。
+`scripts/check-layout.py` 一次性守住五条：`skills/` 无命令镜像、`commands/` 无非命令文件、命令不写 `model`（`inherit` 除外）、所有相对链接可达、插件内无过时引用（`.claude/settings*` 读写 DevFlow 字段、`sync-cache` / 全局缓存、缓存同步类表述、未定义的 `<plugin-path>`；迁移说明与 Claude Code 自身配置项豁免，确需保留加 `stale-ok`）。`--check` 报错退 1（发布前置，`.github/workflows/check.yml` 在每个 PR 上连同 diag 冒烟测试自动跑），不带参数则自动清理可清理的部分。`scripts/check-requirements.py --check` 守需求目录：`completed/` 内状态为已完成、`active/` 内不为已完成、状态与生命周期已勾格一致、编号唯一，同样进 CI 与发布前置。
 
-**模型分级**（三档，README 三语版的三档表与本节保持一致）：
+**模型策略：命令与执行型 agent 都跑会话模型，只有思考型 agent 换 Fable**（2026-09-23，README 三语版「模型策略」一节与本节保持一致）：
 
-| 策略 | 适用 | 做法 |
-|------|------|------|
-| 显式 haiku | 纯查询/展示/格式化输出/配置/规则明确的状态流转/CLI 包装（branch·commit·issue·pr） | `model: claude-haiku-4-5-20251001` |
-| 显式 sonnet | 数据聚合 + 成文类（pm 周报/月报/里程碑/统计/进度/简介/风险扫描）、有界的单元审查、有界的单文档编辑/分析（rd edit·prd-edit·split·new-quick）、模板化的测试与代码生成（rd test·test_new、api gen·map） | `model: claude-sonnet-5` |
-| 不指定 | 需要会话模型做判断：分析代码/生成方案/多轮需求讨论/架构归纳/自由问答/需求评审预审（rd req-review）/代码审查（rd review）/生产诊断（diag diagnose）；其中方案设计、根因分析、小 PR 审查再派 Fable agent（见下） | 省略 `model` |
+| 层 | 模型 | effort | 说明 |
+|----|------|--------|------|
+| 命令（`commands/*.md`） | 会话模型 | 会话 | frontmatter 不写 `model`/`effort`（`model: inherit` 除外），`check-layout.py` 拦 `model` |
+| 执行型 agent：test-runner · diff-digest · doc-writer | `inherit` | `medium` | 无需推理，但结果被主会话直接采信，漏报 / 错报代价高 |
+| 执行型 agent：code-scout · impl-worker | `inherit` | `high` | 需自主探索（找全调用链）或写代码过验收 |
+| 思考型 agent：rd `planner` · diag `root-cause` | `fable` | `xhigh` | 升档拿推理，不随用户调低会话 effort 变浅；失败回主会话降级 |
 
-> **思考交给 Fable，失败降级当前模型**（2026-09-19）：命令默认跑当前会话模型（按非 Fable 设计）；dev/do/fix/review 把方案设计、根因 + 修复、小 PR 审查派给 rd 的 `planner`，diag diagnose 把根因判断派给 diag 的 `root-cause`，两者 `model: fable`、只读。Fable 不可用时 agent 失败、错误回到主会话，主会话用当前模型按同一骨架接手并标注 `⚠️ Fable 不可用`（实测额度用尽时返回 `Agent terminated early due to an API error: You're out of usage credits…`，主会话不受影响）。会话模型本身是 Fable 时照常工作，只是贵。
-> **不要给命令钉 Fable**：命令级 `model` 覆盖（含 `best`）在 Fable 额度用尽时直接报错、命令锁死（v5.0.1–v5.0.2 实测，`best` 只在 Fable「不可用」时退 Opus，额度用尽不算），`fallbackModel` 也明确不处理计费 / 限流错误；只有子代理失败能回到主会话降级；`check-layout.py` 会拦下钉 Fable 的命令 frontmatter。
-> sonnet 一律写 `claude-sonnet-5`（原生 1M 上下文、超 200K 不加价、Pro/Max 不计 extra usage，2026-08 核实）。`pm:plan`/`pm:ask` 需要真实推理，保持省略。
-> `model` 是命令层的主成本杠杆。**输入密集型的有界任务**（读文档/读代码为主、产出受模板约束）一律显式 haiku/sonnet（2026-09 按此把 9 条命令降档）。命令 frontmatter 与 skill 同源（除 `name`/`paths`），也能写 `effort`（2026-09-19 查文档，此前误记为仅 agent 支持），本仓库尚未启用。
-> 模型分级**仅对 `commands/*.md` 命令调用生效**；helper skill 无 `model` 字段，运行在触发它的会话/命令模型下。
-> 边界例外：`done`/`upgrade`/`release` 虽含写操作，但流程被模板和显式参数高度约束，仍用 haiku。反向例外：`req-review` 的 pass/reject 本是状态流转，但与提审的 AI 预审共用一条命令，随命令走省略档（REQ-007）。
-> 按档位切命令：一条命令只能钉一档，子命令推理强度差异大时拆成两条命令，而不是整条抬档——`/rd:pr`（create/status/comments/merge，haiku）与 `/rd:review`（AI 审查 / 按评论改代码，省略档）就是这样分的；`/rd:pr comments` 只读展示、`/rd:review comments` 才改代码。
+> **为什么废掉命令级三档（原 haiku 33 条 · sonnet 15 条）**：本机 2.1.239–2.1.280 约 200 次调用实测 0 次生效——`command_permissions` 记下了 `model`，实际调用全是会话模型。① 官方文档：auto 模式下「auto mode 不支持的模型」不被使用、会话保持当前模型，auto 只支持 Opus 4.6+/Sonnet 4.6+/Fable，**Haiku 按设计被忽略**，而 Pro/Max/Team 默认就是 auto；② sonnet 在 auto 下同样不生效，对应 anthropics/claude-code#81318（v2.1.220 起命令/skill 的 `model`/`effort` 覆盖失效的回归，未修）；③ 即便生效，覆盖是在同一对话里换模型，prompt cache 按模型隔离，长会话里要按新模型重写整段历史缓存，小命令多半比留在会话模型读缓存（Opus 5.5 $0.20/MTok）更贵。用户嫌贵用 `/model` 切整个会话。
+> **思考交给 Fable，失败降级当前模型**（2026-09-19）：dev/do/fix/review 把方案设计、根因 + 修复、小 PR 审查派给 rd 的 `planner`，diag diagnose 把根因判断派给 diag 的 `root-cause`，两者 `model: fable`、只读。Fable 不可用时 agent 失败、错误回到主会话，主会话用当前模型按同一骨架接手并标注 `⚠️ Fable 不可用`（实测额度用尽时返回 `Agent terminated early due to an API error: You're out of usage credits…`，主会话不受影响）。会话模型本身是 Fable 时照常工作，只是贵。钉在命令上的 Fable 反而会在额度用尽时直接报错、命令锁死（v5.0.1–v5.0.2 实测，`fallbackModel` 不处理计费 / 限流错误）——这是命令不写 `model` 的另一条理由。
+> **执行型 agent 跟会话模型、按特性钉 effort**（2026-09-23）：写 `model: inherit`，模型由用户 `/model` 决定。effort 按「错了的代价 × 需要探索多少」定，不按「活简单」定：**下限 `medium`、不用 `low`**（主会话直接采信 agent 结论，省下的 thinking 抵不过一次漏报）；需要自主探索或写代码的 `high`（低 effort 工具调用更少更合并，易漏文件）；深度推理 `xhigh`（Fable 在 Claude Code 默认即 xhigh，钉住只为不随会话调低）。只用 medium/high/xhigh，inherit 下各代会话模型都支持。agent 的 `effort` 是否生效尚未实测（jsonl 不记录 effort，需对比 high 与 medium agent 的输出 token 量间接验证；#81318 只报了命令 / skill）。原 haiku（4 个）/ sonnet（impl-worker）弃用：Haiku 4.5 不支持 `effort`（原 `effort: low` 形同虚设）、只有 200K 上下文；Sonnet 5 缓存读价与 Opus 5.5 同为 $0.20/MTok，按本机用量只省约 30%。代价：会话是 Fable 时执行型 agent 也按 Fable 计费——想省钱就把会话切到 Opus 5.5 / Sonnet。命令 frontmatter 的 `effort` 同受 #81318 影响，不用。
+> 按推理强度拆命令的旧规则（REQ-007：`/rd:pr` 只读/CLI 包装、`/rd:review` 审查改代码）保留为职责划分，不再对应模型档位。
 
-**子任务委派**（命令内粒度，与整条命令的模型分级正交）：**Fable 想、主会话判断、subagent 执行**——方案设计交 `planner`（Fable），主会话做复核、跨文件一致性、闸门交互、验收，吞吐型步骤派给执行型 agent，原始输出不进主上下文。`plugins/rd/agents/` 共 6 个，diag 另有 `plugins/diag/agents/root-cause.md`。
+**子任务委派**（命令内粒度；只有思考型 agent 换模型）：**Fable 想、主会话判断、subagent 执行**——方案设计交 `planner`（Fable），主会话做复核、跨文件一致性、闸门交互、验收，吞吐型步骤派给执行型 agent，原始输出不进主上下文。`plugins/rd/agents/` 共 6 个，diag 另有 `plugins/diag/agents/root-cause.md`。
 
 规则见 `shared/_delegate.md`。派生 subagent 的命令 `allowed-tools` 必须列 `Agent`（`allowed-tools` 只做免确认预授权，**不限制**可用工具；没列时仍能派生，但每次都弹确认打断流程）。
 
-**委派写操作有准入门槛**（`impl-worker`，见 `_delegate.md` 的「委派实施」）：方案已确认到文件级 + 单元互不依赖 + 契约已定死 + 有验收命令，四条全满足才派；新建抽象、跨层契约变更、方案仍在演化的首版实现一律主会话自己写。验收复核的是 `git diff` 实际内容，不是 subagent 的自述。**降档不是委派的理由**——委派是为了上下文隔离（避免开发中途触发压缩、让已确认方案被摘要化），不是为了把推理换成便宜模型。`planner` 反过来是升档：为拿到 Fable 的推理，并借子代理失败实现降级；只委派「想」，素材由主会话内联，结论回主会话复核。
+**委派写操作有准入门槛**（`impl-worker`，见 `_delegate.md` 的「委派实施」）：方案已确认到文件级 + 单元互不依赖 + 契约已定死 + 有验收命令，四条全满足才派；新建抽象、跨层契约变更、方案仍在演化的首版实现一律主会话自己写。验收复核的是 `git diff` 实际内容，不是 subagent 的自述。**降档不是委派的理由**——委派是为了上下文隔离（避免开发中途触发压缩、让已确认方案被摘要化），执行型 agent 与会话同模型，不为省钱把推理拆出去。`planner` 反过来是升档：为拿到 Fable 的推理，并借子代理失败实现降级；只委派「想」，素材由主会话内联，结论回主会话复核。
 
 **大 PR 代码质量审查不自研**：`/rd:review` 直接调原生 `/code-review`（多 agent 并行 + 逐条验证），档位按 PR 复杂度自动选。原 `file-reviewer` agent 已删：实测自研路径要主会话把 diff 抄进每个 prompt，「diff 不进主会话」不成立，还有误报。
 
@@ -123,7 +121,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 4. **`scripts/` 下的 hook 脚本同样受配置约定管辖**：读 `.devflow/settings.json(.local)`、按 `requirementsDir` 解析路径、readonly 走 `requirementSource.path`，不得写死 `docs/requirements` 或回退 `.claude/`。改配置约定时必须连带检查 `hooks.json` 注册的每个脚本——v2.39.1 修的就是它们漏跟 v3 迁移、静默失效整整四个版本。**命令正文、`shared/`、helper skill 同理**：v2.42 之后又查出 req 十余条命令仍读写 `.claude/settings*`、按 v2 缓存同步执行（`branch init` 把配置写到 `.claude/`，其它命令读不到）。这类残留现由 `check-layout.py` 的过时引用检查兜底；约定再变时先改守卫规则，再让它列出遗留。
 5. 两个 marker：`.req-confirm-commit`=开关常驻，`.req-auto`=临时豁免有 TTL。
 6. Gitea 一律「tea 优先、curl 回退」，禁止自动 `tea login add`。
-7. 模型分级三档（haiku / `claude-sonnet-5` / 省略）按推理强度选；需要 Fable 的「想」派 `planner` / `root-cause`（失败降级当前模型），不给命令钉 Fable；helper skill 无 `model` 字段；命令内高吞吐步骤走 subagent 委派而非降整条命令的档位。委派规则集中在 `shared/_delegate.md`：切分要细（一个 subagent 一个源文件/一个单元）、素材正文内联进 prompt（给路径必超轮）、写操作满足准入四条才派、超轮用 SendMessage 续问而非重派。详见「命令与技能结构」。
+7. 命令不写 `model`（auto 模式忽略 Haiku、#81318 让 sonnet 覆盖失效、换模型要重写缓存），一律跑会话模型；执行型 agent 同样 `model: inherit`、按特性钉 effort（下限 medium）；只有需要 Fable 的「想」派 `planner` / `root-cause`（失败降级当前模型）；helper skill 同样不写 `model`。委派规则集中在 `shared/_delegate.md`：切分要细（一个 subagent 一个源文件/一个单元）、素材正文内联进 prompt（给路径必超轮）、写操作满足准入四条才派、超轮用 SendMessage 续问而非重派。详见「命令与技能结构」。
 8. diag 的 6 个风控 Hook 是设计核心，改 hooks 必须同步注册。
 9. `/rd:release` 用 `version-bumper` 按 semver 推导各插件版本；发布事实源是 plugin.json + marketplace.json，README / tutorial 不写插件版本号，无需同步。
 10. **改 `agents/` 或任何插件文件后，本仓库工作区的改动对运行时无效**——Claude Code 运行时加载的是 `~/.claude/plugins/cache/devflow/<plugin>/<version>/`，`/plugin` 更新则从 `~/.claude/plugins/marketplaces/devflow`（GitHub 克隆）拉。cache 按版本号分目录，**不 bump 版本号 `/plugin` 会报「already at the latest version」而不更新**。要让改动生效并可实测，必须走完：提交 → push → `/plugin` 更新 → `/reload-plugins`。在此之前跑 subagent 测的都是旧定义。

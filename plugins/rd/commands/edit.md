@@ -1,7 +1,6 @@
 ---
 description: 编辑需求 - 修改已有需求文档
 argument-hint: "[REQ-XXX] [--section=章节名]"
-model: claude-sonnet-5
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 

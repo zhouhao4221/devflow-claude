@@ -2,7 +2,6 @@
 description: 绑定主项目 - 将当前仓库设为只读，直读主项目需求
 argument-hint: "<primary-repo-path>"
 allowed-tools: Read, Write, Edit, Glob, Bash(ls:*)
-model: claude-haiku-4-5-20251001
 ---
 
 # 绑定主项目

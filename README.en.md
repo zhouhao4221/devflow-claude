@@ -41,19 +41,21 @@ claude plugins uninstall rd@devflow  # Uninstall a plugin
 
 ---
 
-## Smart Model Tiering
+## Model Strategy
 
-Commands are split into three tiers by required reasoning strength, declared via the `model` field in frontmatter, balancing speed, reasoning depth and cost:
+Commands and worker subagents run on your current session model; only the most reasoning-heavy steps go to a Fable subagent:
 
-| Tier | Purpose | Typical commands |
-|------|---------|------------------|
-| **Haiku** | Pure queries / display / config / status transitions with clear rules / CLI wrappers | `/rd:req`, `/rd:status`, `/rd:show`, `/rd:commit`, `/rd:issue`, `/rd:pr`, `/pm:standup`, `/api:help` |
-| **Sonnet** | Data aggregation + document drafting / bounded document editing and template-driven generation | `/pm:weekly`, `/pm:monthly`, `/pm:stats`, `/pm:risk`, `/rd:edit`, `/rd:split`, `/rd:test_new`, `/api:gen` |
-| **Session model** (unspecified) | Analyzing code / plan generation / multi-round requirement discussion / code review / production diagnosis | `/rd:new`, `/rd:dev`, `/rd:fix`, `/rd:do`, `/rd:review`, `/rd:req-review`, `/diag:diagnose`, `/pm:plan` |
+| Layer | Model | What it does |
+|-------|-------|--------------|
+| Commands | Your session model | Every `/rd:*`, `/pm:*`, `/api:*`, `/diag:*` |
+| Worker subagents | Your session model | Locating code, running tests, digesting large diffs, template-driven drafting, editing code per a confirmed plan |
+| Thinking subagents | Fable | The implementation plan in `/rd:dev` and `/rd:do`, the root cause and fix plan in `/rd:fix`, small-PR review in `/rd:review`, root-cause analysis in `/diag:diagnose` |
 
-Commands run on your current session model and hand only the reasoning-heavy steps to a Fable subagent: the implementation plan in `/rd:dev` and `/rd:do`, the root cause and fix plan in `/rd:fix`, small-PR review in `/rd:review`, and root-cause analysis in `/diag:diagnose`. When Fable isn't available (credits used up, not enabled, or not offered by your cloud provider), the session model takes over automatically and the output starts with "⚠️ Fable unavailable". On some plans Fable bills to usage credits, and interactive sessions ask for consent the first time.
+Commands no longer declare a `model` tier: Claude Code's auto mode (the default on Pro / Max / Team) doesn't support Haiku, so a command-level override is ignored; and even when it applies, switching models mid-conversation rebuilds the whole conversation's prompt cache on the new model, which often costs more. To cut cost, switch the whole session with `/model`.
 
-Development commands also delegate high-throughput steps — locating code, running tests, digesting large diffs — to subagents, keeping their raw output out of the main session's context.
+When Fable isn't available (credits used up, not enabled, or not offered by your cloud provider), the session model takes over automatically and the output starts with "⚠️ Fable unavailable". On some plans Fable bills to usage credits, and interactive sessions ask for consent the first time.
+
+Subagents start with a fresh context, so raw output (test logs, large diffs) stays out of the main session.
 
 Each command also pre-approves only the tools it needs via `allowed-tools`; if a read-only command calls a write tool, you still get a permission prompt first.
 

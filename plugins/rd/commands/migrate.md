@@ -1,7 +1,6 @@
 ---
 description: 迁移 - 旧布局迁到 .devflow、调整需求目录、req→rd 命令前缀与插件开关替换
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, mv:*, ls:*, rm:*)
-model: claude-haiku-4-5-20251001
 ---
 
 # 迁移需求

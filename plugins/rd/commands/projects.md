@@ -1,7 +1,6 @@
 ---
 description: 查看需求项目 - 当前仓库对应的需求项目、需求目录与统计
 allowed-tools: Read, Glob, Bash(ls:*)
-model: claude-haiku-4-5-20251001
 ---
 
 # 查看需求项目

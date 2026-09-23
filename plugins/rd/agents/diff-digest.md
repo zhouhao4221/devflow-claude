@@ -1,9 +1,9 @@
 ---
 name: diff-digest
 description: 拉取并压缩大 diff：把 git diff / PR diff 变成结构化摘要（按文件的改动类型、涉及符号、行数、风险点），并可把逐文件 diff 落盘供后续委派引用；原始 diff 不进调用方上下文。供 /rd:review、/rd:pr、/rd:commit 在大改动时委派
-model: claude-haiku-4-5-20251001
+model: inherit
+effort: medium
 tools: Read, Glob, Grep, Bash
-effort: low
 maxTurns: 20
 ---
 

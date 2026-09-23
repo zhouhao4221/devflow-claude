@@ -2,7 +2,6 @@
 description: 完成需求 - 标记完成并归档
 argument-hint: "[REQ-XXX|QUICK-XXX]"
 allowed-tools: Read, Write, Edit, Glob, Bash(git:*, mv:*, gh:*, tea:*, curl:*)
-model: claude-haiku-4-5-20251001
 ---
 
 # 完成需求

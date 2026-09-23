@@ -36,9 +36,10 @@ import sys
 PLUGINS = ["rd", "api", "pm", "diag"]
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
-# 命令不得钉 Fable：额度用尽时命令级 model 覆盖直接报错、整条命令锁死，
-# fallbackModel 也不处理计费/限流错误。思考走 planner / root-cause agent。
-BANNED_MODELS = {"fable", "best", "claude-fable-5-1", "claude-fable-5"}
+# 命令不得写 model（inherit 除外）：降档在 auto 模式下按设计被忽略（auto 不支持 Haiku），
+# sonnet 覆盖受 anthropics/claude-code#81318 影响不生效，即便生效也要按新模型重写整段历史缓存；
+# 钉 Fable 则额度用尽时直接报错、整条命令锁死。便宜模型走 agent，思考走 planner / root-cause。
+ALLOWED_COMMAND_MODELS = {"", "inherit"}
 
 STALE_RULES = [
     # (模式, 说明, 是否也扫描 STALE_DOCS 仓库文档, 豁免的相对路径前缀)
@@ -132,10 +133,10 @@ def check_commands(plugins):
             elif not fm.get("description"):
                 bad.append(f"{p}/commands/{fn}: frontmatter 缺 description")
             else:
-                if fm.get("model", "").lower() in BANNED_MODELS:
+                if fm.get("model", "").lower() not in ALLOWED_COMMAND_MODELS:
                     bad.append(
-                        f"{p}/commands/{fn}: model={fm['model']} —— 不给命令钉 Fable，"
-                        f"思考派 planner / root-cause agent（额度用尽时命令会直接报错）")
+                        f"{p}/commands/{fn}: model={fm['model']} —— 命令跟随会话模型，不写 model；"
+                        f"便宜模型派 agent，思考派 planner / root-cause（见 CLAUDE.md「模型策略」）")
                 commands.append(f"{p}/{fn[:-3]}")
     return bad, commands
 

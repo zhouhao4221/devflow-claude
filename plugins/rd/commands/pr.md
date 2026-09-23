@@ -2,7 +2,6 @@
 description: PR 操作 - 创建、查看状态、查看评论、合并（AI 审查用 /rd:review）
 argument-hint: "[status|comments|merge] [REQ-XXX|PR-ID] [--title=] [--base=]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), Agent
-model: claude-haiku-4-5-20251001
 ---
 
 # Pull Request

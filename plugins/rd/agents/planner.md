@@ -2,6 +2,7 @@
 name: planner
 description: 深度思考型（只读）：按调用方内联的需求/问题、架构摘要与定位清单，出实现方案、根因分析 + 修复方案或小 PR 审查意见，不改任何文件；供 /rd:dev、/rd:do、/rd:fix、/rd:review 把「想」的环节交给 Fable，失败时调用方用当前模型接手
 model: fable
+effort: xhigh
 tools: Read, Glob, Grep
 maxTurns: 40
 ---
