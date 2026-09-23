@@ -1,7 +1,7 @@
 ---
 description: 编辑需求 - 修改已有需求文档
 argument-hint: "[REQ-XXX] [--section=章节名]"
-allowed-tools: Read, Write, Edit, Glob, Grep
+allowed-tools: Read, Write, Edit, Glob, Grep, Agent
 ---
 
 # 编辑需求
@@ -110,6 +110,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 - 与用户多轮讨论修改方向和细节，**不限讨论轮数**
 - **意图澄清**：分析用户真实意图，用户说改 A 但实际应改 B 时主动指出并确认
 - **关联分析**：修改某章节可能导致其他章节不一致时，主动提示是否一并修改
+- **现状确认**：修改涉及页面当前表现且描述不确定时，可提议探针确认（用户同意才派 `ui-verifier`，规则同 requirement-analyzer「探针确认现状」）
 - 用户明确确认修改内容后（如"可以了"、"就这样改"），再进入变更预览
 
 **格式约束（强制）：**
