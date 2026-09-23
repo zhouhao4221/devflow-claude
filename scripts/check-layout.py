@@ -23,6 +23,8 @@ Claude Code 把 `commands/` 下的**每个** `.md` 和 `skills/` 下的**每个*
     CLAUDE.md、docs/design、docs/prompt 与需求索引。
     本脚本不在批量替换范围内，规则里的旧前缀字面量不会被误改。
 
+frontmatter 按 YAML 解析（需 PyYAML），与 Claude Code 运行时的理解一致。
+
 用法：check-layout.py [--check] [--plugin P]
   默认        自动清理能自动清理的（镜像目录、skills/ 散落文件）并报告其余
   --check     只报告，发现任何问题退出码 1（发布前置 / CI 用）
@@ -32,6 +34,11 @@ import os
 import re
 import shutil
 import sys
+
+try:
+    import yaml
+except ImportError:
+    sys.exit("check-layout.py 需要 PyYAML 解析 frontmatter：python3 -m pip install pyyaml")
 
 PLUGINS = ["rd", "api", "pm", "diag"]
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -75,17 +82,25 @@ STALE_CONTEXT = 3
 
 
 def frontmatter(path):
-    with open(path, encoding="utf-8") as f:
-        text = f.read()
-    m = re.match(r"^---\s*\n(.*?)\n---\s*\n", text, re.S)
+    """按 YAML 解析 frontmatter（与 Claude Code 运行时一致）。
+
+    无 frontmatter 块返回 None；YAML 语法错误或顶层不是映射时返回 {"__error__": 原因}。
+    值统一转成去空白的字符串，null / ~ / 空值为 ""。
+    """
+    with open(path, encoding="utf-8-sig") as f:  # 容忍 UTF-8 BOM
+        text = f.read().replace("\r\n", "\n")
+    m = re.match(r"---[ \t]*\n(.*?)^---[ \t]*$", text, re.S | re.M)
     if not m:
         return None
-    fm = {}
-    for line in m.group(1).splitlines():
-        km = re.match(r"^([A-Za-z_-]+):\s*(.*)$", line)
-        if km:
-            fm[km.group(1)] = km.group(2).strip().strip('"')
-    return fm
+    try:
+        data = yaml.safe_load(m.group(1))
+    except yaml.YAMLError as e:
+        return {"__error__": f"YAML 解析失败：{str(e).splitlines()[0]}"}
+    if data is None:
+        return {}
+    if not isinstance(data, dict):
+        return {"__error__": "顶层不是 key: value 映射"}
+    return {str(k): ("" if v is None else str(v).strip()) for k, v in data.items()}
 
 
 def check_skills(plugins):
@@ -106,7 +121,9 @@ def check_skills(plugins):
                 malformed.append(f"{p}/skills/{entry}: 缺少 SKILL.md")
             else:
                 fm = frontmatter(os.path.join(path, "SKILL.md")) or {}
-                if not fm.get("description"):
+                if "__error__" in fm:
+                    malformed.append(f"{p}/skills/{entry}: frontmatter {fm['__error__']}")
+                elif not fm.get("description"):
                     malformed.append(f"{p}/skills/{entry}: frontmatter 缺 description")
                 elif fm.get("name") and fm["name"] != entry:
                     malformed.append(
@@ -130,6 +147,8 @@ def check_commands(plugins):
             if fm is None:
                 bad.append(f"{p}/commands/{fn}: 无 frontmatter，"
                            f"共享参考文档应移到 plugins/{p}/shared/")
+            elif "__error__" in fm:
+                bad.append(f"{p}/commands/{fn}: frontmatter {fm['__error__']}")
             elif not fm.get("description"):
                 bad.append(f"{p}/commands/{fn}: frontmatter 缺 description")
             else:
