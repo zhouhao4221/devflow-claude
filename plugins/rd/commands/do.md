@@ -152,6 +152,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), 
 - lint：✓ | ✗ | 未配置
 - 测试：n/m 通过（<命令>） | 未配置
 - 无测试覆盖：<文件> | 无
+- 建议测试：<阶段>（依据 <文件>） | 无（仅改文档 / 配置）
+- 自主验收：<PASS 数>/<派发项数>（FAIL n，BLOCKED n） | 未配置（<原因>） | 无 UI 项
 - 手动验证：
   - [ ] <可观察行为>
 - 测试改动：<用例与原因> | 无

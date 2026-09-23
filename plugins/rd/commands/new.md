@@ -1,7 +1,7 @@
 ---
 description: 创建新需求 - 基于模板创建需求文档
 argument-hint: "[标题] [--type=后端|前端|全栈] [--module=模块名] [--from-issue=#编号]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*), Agent
 ---
 
 # 创建新需求
@@ -113,7 +113,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, curl:*)
 
 通过多轮对话收集需求信息（详见 requirement-analyzer 技能），围绕以下主题展开：
 
-1. **问题与现状** → 收集背景、客户场景
+1. **问题与现状** → 收集背景、客户场景；现状描述不确定时可提议探针确认（用户同意才派 `ui-verifier`，见 requirement-analyzer「探针确认现状」）
 2. **期望结果** → 收集目标、价值
 3. **操作流程** → 收集使用场景（角色、步骤、异常）
 4. **约束与风险** → 收集非功能约束、外部依赖、风险项
