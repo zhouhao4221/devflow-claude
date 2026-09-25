@@ -6,7 +6,7 @@
 |-----|-----|
 | 编号 | REQ-008 |
 | 类型 | 全栈 |
-| 状态 | 开发中 |
+| 状态 | 测试中 |
 | 模块 | 插件架构 |
 | 优先级 | P2 |
 | 创建日期 | 2026-09-23 |
@@ -22,7 +22,7 @@
 - [x] 待评审
 - [x] 评审通过
 - [x] 开发中
-- [ ] 测试中
+- [x] 测试中
 - [ ] 已完成
 
 ---
@@ -187,26 +187,26 @@
 
 ### 6.1 技术测试
 
-- [ ] `python3 scripts/check-layout.py --check` 通过（新 agent、新链接可达）
-- [ ] `python3 scripts/check-requirements.py --check` 通过
-- [ ] `grep -H "^model:\|^effort:" plugins/rd/agents/ui-verifier.md` 为 `inherit` / `high`；rd agent 共 7 个
-- [ ] `grep -n "自主验收" plugins/rd/shared/_verify.md plugins/rd/commands/test.md plugins/rd/commands/do.md plugins/rd/commands/fix.md` 四处命中
-- [ ] `_verify.md`、`test.md` 等改动文件均 < 30 KB
-- [ ] 下游实测跑完自主验收后 `git status` 只多出 `acceptance/` 探针与产物目录文件，无其它改动
+- [x] `python3 scripts/check-layout.py --check` 通过（新 agent、新链接可达）
+- [x] `python3 scripts/check-requirements.py --check` 通过
+- [x] `grep -H "^model:\|^effort:" plugins/rd/agents/ui-verifier.md` 为 `inherit` / `high`；rd agent 共 7 个
+- [x] `grep -n "自主验收" plugins/rd/shared/_verify.md plugins/rd/commands/test.md plugins/rd/commands/do.md plugins/rd/commands/fix.md` 四处命中
+- [x] `_verify.md`、`test.md` 等改动文件均 < 30 KB
+- [x] 下游实测跑完自主验收后 `git status` 只多出 `acceptance/` 探针与产物目录文件，无其它改动
 
 ### 6.2 验收标准
 
 > 产品/业务方验收时的确认项，描述可观测的业务结果
 
-- [ ] 验收项1：在一个配置齐全的 Playwright 下游项目上执行 `/rd:test REQ-XXX`，步骤 7 自动完成 script 类验收项，需求文档中对应项被勾选并附探针路径，全程无需人工打开浏览器
-- [ ] 验收项2：同一次运行中，主会话上下文不出现任何截图或 aria 快照内容，每项只收到结论行
-- [ ] 验收项3：一条 visual 类验收项（如「某按钮为禁用灰色」）由 agent 截图判读后返回带观察描述的 PASS / FAIL
-- [ ] 验收项4：人为制造一个不符合预期的页面行为，对应项返回 FAIL，需求文档保持裸 `[ ]`，报告给出期望 vs 实际与截图路径，`/rd:done` 被拦下要求确认
-- [ ] 验收项5：删除 testing.md 中的前端地址后再跑，自主验收整段退回手动引导，报告写「自主验收：未配置（缺前端地址）」
-- [ ] 验收项6：对一个前端 bug 执行 `/rd:fix`，完成提示中 UI 项显示 `[x]（自动验收：<spec>）`
-- [ ] 验收项7：再次执行 `/rd:test`，阶段三回归包含 `acceptance/` 下的探针
-- [ ] 验收项8：一个需求同时含 script、visual、manual 三类验收项且其中 2–3 项在同一页面时，同页项合并为一个 `ui-verifier`，manual 项进入手动引导而不派子代理；用户不验证也不选择暂缓的 manual 项保持裸 `[ ]`，`/rd:done` 要求确认
-- [ ] 验收项9：每个 `ui-verifier` 子代理新增内容 ≤ 3 万 token、折合 ≤ $0.25（从会话记录统计 input + cache_creation 与按价折算）
+- [x] 验收项1：在一个配置齐全的 Playwright 下游项目上执行 `/rd:test REQ-XXX`，步骤 7 自动完成 script 类验收项，需求文档中对应项被勾选并附探针路径，全程无需人工打开浏览器
+- [x] 验收项2：同一次运行中，主会话上下文不出现任何截图或 aria 快照内容，每项只收到结论行
+- [x] 验收项3：一条 visual 类验收项（如「某按钮为禁用灰色」）由 agent 截图判读后返回带观察描述的 PASS / FAIL
+- [x] 验收项4：人为制造一个不符合预期的页面行为，对应项返回 FAIL，需求文档保持裸 `[ ]`，报告给出期望 vs 实际与截图路径，`/rd:done` 被拦下要求确认
+- [x] 验收项5：删除 testing.md 中的前端地址后再跑，自主验收整段退回手动引导，报告写「自主验收：未配置（缺前端地址）」
+- [x] 验收项6：对一个前端 bug 执行 `/rd:fix`，完成提示中 UI 项显示 `[x]（自动验收：<spec>）`
+- [x] 验收项7：再次执行 `/rd:test`，阶段三回归包含 `acceptance/` 下的探针
+- [x] 验收项8：一个需求同时含 script、visual、manual 三类验收项且其中 2–3 项在同一页面时，同页项合并为一个 `ui-verifier`，manual 项进入手动引导而不派子代理；用户不验证也不选择暂缓的 manual 项保持裸 `[ ]`，`/rd:done` 要求确认
+- [x] 验收项9：每个 `ui-verifier` 子代理新增内容 ≤ 3 万 token、折合 ≤ $0.25（从会话记录统计 input + cache_creation 与按价折算）
 
 ---
 
