@@ -57,6 +57,10 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), Agent
 
 **重要**：正式需求 (REQ) 未通过评审**不能**开始开发；快速修复 (QUICK) 跳过评审环节；readonly 仓库允许开发已完成的需求。状态机定义见 `_storage.md`「双轨状态机」。
 
+### 2.1 上下文检查
+
+前置检查通过后、动分支之前，按 [`_delegate.md`](../shared/_delegate.md) 的「进入方案阶段前的上下文检查」判断要不要提示先 `/clear` / `/compact`。重跑命令用 `/rd:dev <编号>`，保留指令里的任务标识就是需求编号。
+
 ### 2.5 分支管理
 
 > 仅 `primary` 仓库执行，`readonly` 仓库跳过此步骤。

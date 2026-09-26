@@ -43,6 +43,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*, m
 
 ### 1. AI 辅助分析 bug
 
+> **先做上下文检查**：按 [`_delegate.md`](../shared/_delegate.md) 的「进入方案阶段前的上下文检查」判断要不要提示先 `/clear` / `/compact`（`--auto` 不提示）。重跑命令就是用户原始的 `/rd:fix` 描述与参数。
+
 > Read `docs/prompt/architecture.md` 了解分层结构和目录布局；缺失则回退 CLAUDE.md 的「项目架构」章节（兼容旧项目），都没有静默继续。
 > Read `docs/prompt/error-diagnosis.md`，存在则按其规范（必备输入、根因判定标准、常见失败模式）约束定位；缺失静默跳过。
 > **此阶段在当前分支上进行，不创建新分支。**

@@ -84,6 +84,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), 
 
 ### 2. 分析代码，生成方案
 
+> **先做上下文检查**：按 [`_delegate.md`](../shared/_delegate.md) 的「进入方案阶段前的上下文检查」判断要不要提示先 `/clear` / `/compact`。重跑命令就是用户原始的 `/rd:do` 描述与参数。
+
 > Read `docs/prompt/architecture.md` 了解分层结构和目录布局；缺失则回退 CLAUDE.md 的「项目架构」章节（兼容旧项目），都没有静默继续。
 > 第 1 步意图为「重构 / 优化」时，Read `docs/prompt/refactoring.md`，存在则按其约束（行为不变、契约不变、范围聚焦）生成方案；缺失静默跳过。
 
