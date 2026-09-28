@@ -53,7 +53,7 @@ allowed-tools: Read, Write, Edit, Glob, Bash(ls:*)
 
 #### 4.1 CLAUDE.md 架构检查
 
-检查 CLAUDE.md 是否含：`分层架构`、`目录结构`、`技术栈`、`项目架构`、`Architecture`、`Tech Stack`、`Project Structure` 之一。缺失时引导（与 `/rd:init` 架构检查一致），选择项目类型后从 `${CLAUDE_PLUGIN_ROOT}/templates/claude-md-snippets/` 追加片段。
+检查 CLAUDE.md 是否含：`分层架构`、`目录结构`、`技术栈`、`项目架构`、`Architecture`、`Tech Stack`、`Project Structure` 之一。缺失时引导（与 `/rd:init` 架构检查一致），选择项目类型后从 `${CLAUDE_PLUGIN_ROOT}/templates/claude-md-snippets/` 追加片段。无 CLAUDE.md 而有 AGENTS.md 时检查、追加都作用于 AGENTS.md，不得新建 CLAUDE.md（见 [_claude-md.md](../shared/_claude-md.md#项目指令文件claudemd-或-agentsmd)）。
 
 #### 4.2 分支策略检查
 

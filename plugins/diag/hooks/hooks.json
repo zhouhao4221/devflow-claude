@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/sensitive-input-guard.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/sensitive-input-guard.sh\"",
             "timeout": 5
           }
         ]
@@ -17,22 +17,22 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/validate-hooks.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/validate-hooks.sh\"",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/host-whitelist.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/host-whitelist.sh\"",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/command-whitelist.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/command-whitelist.sh\"",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/write-guard.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/write-guard.sh\"",
             "timeout": 5
           }
         ]
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/audit-log.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/audit-log.sh\"",
             "timeout": 5
           }
         ]

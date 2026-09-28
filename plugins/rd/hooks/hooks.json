@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session-context.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/session-context.sh\"",
             "timeout": 10
           }
         ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/confirm-before-commit.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/confirm-before-commit.sh\"",
             "timeout": 120
           }
         ]
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-requirement.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/validate-requirement.sh\"",
             "timeout": 5
           }
         ]
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-requirement.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/validate-requirement.sh\"",
             "timeout": 5
           }
         ]
