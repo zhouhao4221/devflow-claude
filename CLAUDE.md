@@ -32,15 +32,15 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 
 ## 命令与技能结构
 
-**command 是能力的唯一入口；`skills/` 下只放 helper skill**（REQ-003 的「命令→技能镜像」派生机制已于 2026-08 废止）：
+**command 是能力的唯一入口；`skills/` 下只放 helper skill**：
 
 - **`commands/<name>.md`**：唯一权威源，且 `commands/` 下**只能**放这类文件（必须有 frontmatter + `description`）。可引用 `../shared/` 里的共享子文件（`_storage.md`、`_gitea_cli.md`、`release-rationale.md` 等）。
 - **`skills/<name>/SKILL.md`**：仅限**与任何命令都不同名**的 helper skill（见下节），全部手写。
 
 **两类东西都会污染斜杠菜单，一律禁止**——Claude Code 把 `skills/` 下每个子目录、`commands/` 下每个 `.md` 都注册成菜单项：
 
-- **命令同名 skill 镜像**：与 command 落在同一菜单、`description` 一模一样，每条命令重复两遍（`claude plugin details req` 里出现 `do, do`、`pr, pr`），多出的那份 description 还白占 always-on token。原 `scripts/gen-skills.py` 按 `SKIP_MIRROR` 名单派生的 51 个镜像（req 23 · pm 12 · api 6 · uat 6 · diag 4）已整体删除。
-- **共享参考文档放 `commands/`**：`_storage.md` 之类会变出 `/rd:_storage` 等 12 个伪命令。统一放 `plugins/<p>/shared/`（rd 10 · pm 1 · api 1）。
+- **命令同名 skill 镜像**：与 command 落在同一菜单、`description` 一模一样，每条命令重复两遍（`claude plugin details req` 里出现 `do, do`、`pr, pr`），多出的那份 description 还白占 always-on token。
+- **共享参考文档放 `commands/`**：`_storage.md` 之类会变出 `/rd:_storage` 这样的伪命令。统一放 `plugins/<p>/shared/`。
 
 `scripts/check-layout.py` 一次性守住五条：`skills/` 无命令镜像、`commands/` 无非命令文件、命令不写 `model`（`inherit` 除外；frontmatter 按 YAML 解析，与运行时一致，需 PyYAML）、所有相对链接可达、插件内无过时引用（`.claude/settings*` 读写 DevFlow 字段、`sync-cache` / 全局缓存、缓存同步类表述、未定义的 `<plugin-path>`；迁移说明与 Claude Code 自身配置项豁免，确需保留加 `stale-ok`）。`--check` 报错退 1（发布前置，`.github/workflows/check.yml` 在每个 PR 上连同 diag 冒烟测试自动跑），不带参数则自动清理可清理的部分。`scripts/check-requirements.py --check` 守需求目录：`completed/` 内状态为已完成、`active/` 内不为已完成、状态与生命周期已勾格一致、编号唯一，同样进 CI 与发布前置。
 
@@ -121,7 +121,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 4. **`scripts/` 下的 hook 脚本同样受配置约定管辖**：读 `.devflow/settings.json(.local)`、按 `requirementsDir` 解析路径、readonly 走 `requirementSource.path`，不得写死 `docs/requirements` 或回退 `.claude/`。改配置约定时必须连带检查 `hooks.json` 注册的每个脚本——v2.39.1 修的就是它们漏跟 v3 迁移、静默失效整整四个版本。**命令正文、`shared/`、helper skill 同理**：v2.42 之后又查出 req 十余条命令仍读写 `.claude/settings*`、按 v2 缓存同步执行（`branch init` 把配置写到 `.claude/`，其它命令读不到）。这类残留现由 `check-layout.py` 的过时引用检查兜底；约定再变时先改守卫规则，再让它列出遗留。
 5. 两个 marker：`.req-confirm-commit`=开关常驻，`.req-auto`=临时豁免有 TTL。
 6. Gitea 一律「tea 优先、curl 回退」，禁止自动 `tea login add`。
-7. 命令不写 `model`（auto 模式忽略 Haiku、#81318 让 sonnet 覆盖失效、换模型要重写缓存），一律跑会话模型；执行型 agent 同样 `model: inherit`、按特性钉 effort（下限 medium）；只有需要 Fable 的「想」派 `planner` / `root-cause`（失败降级当前模型）；helper skill 同样不写 `model`。委派规则集中在 `shared/_delegate.md`：切分要细（一个 subagent 一个源文件/一个单元）、素材正文内联进 prompt（给路径必超轮）、写操作满足准入四条才派、超轮用 SendMessage 续问而非重派。详见「命令与技能结构」。
+7. 命令不写 `model`（auto 模式忽略 Haiku、换模型要重写缓存），一律跑会话模型；执行型 agent 同样 `model: inherit`、按特性钉 effort（下限 medium）；只有需要 Fable 的「想」派 `planner` / `root-cause`（失败降级当前模型）；helper skill 同样不写 `model`。委派规则集中在 `shared/_delegate.md`：切分要细（一个 subagent 一个源文件/一个单元）、素材正文内联进 prompt（给路径必超轮）、写操作满足准入四条才派、超轮用 SendMessage 续问而非重派。详见「命令与技能结构」。
 8. diag 的 6 个风控 Hook 是设计核心，改 hooks 必须同步注册。
 9. `/rd:release` 用 `version-bumper` 按 semver 推导各插件版本；发布事实源是 plugin.json + marketplace.json，README / tutorial 不写插件版本号，无需同步。
 10. **改 `agents/` 或任何插件文件后，本仓库工作区的改动对运行时无效**——Claude Code 运行时加载的是 `~/.claude/plugins/cache/devflow/<plugin>/<version>/`，`/plugin` 更新则从 `~/.claude/plugins/marketplaces/devflow`（GitHub 克隆）拉。cache 按版本号分目录，**不 bump 版本号 `/plugin` 会报「already at the latest version」而不更新**。要让改动生效并可实测，必须走完：提交 → push → `/plugin` 更新 → `/reload-plugins`。在此之前跑 subagent 测的都是旧定义。
