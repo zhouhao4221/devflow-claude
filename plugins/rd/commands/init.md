@@ -58,7 +58,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(mkdir:*, ls:*, cp:*)
 
 ### 7. 生成架构文件
 
-`docs/prompt/architecture.md` 已存在则跳过。否则扫描项目结构检测技术栈（go.mod → Go · pom.xml/build.gradle → Java · package.json 按依赖判断前后端 · requirements.txt/pyproject.toml → Python · Cargo.toml → Rust · 否则通用），同时扫描目录分层、测试文件位置、代码风格，生成架构文件草稿，用户确认后写入。在 CLAUDE.md 末尾追加仅一行指针引用。
+`docs/prompt/architecture.md` 已存在则跳过。否则扫描项目结构检测技术栈（go.mod → Go · pom.xml/build.gradle → Java · package.json 按依赖判断前后端 · requirements.txt/pyproject.toml → Python · Cargo.toml → Rust · 否则通用），同时扫描目录分层、测试文件位置、代码风格，生成架构文件草稿，用户确认后写入。在项目指令文件末尾追加仅一行指针引用（无 CLAUDE.md 而有 AGENTS.md 时追加到 AGENTS.md，**不得新建 CLAUDE.md**，见 [_claude-md.md](../shared/_claude-md.md#项目指令文件claudemd-或-agentsmd)）。
 
 ### 8. 创建 Prompt 库骨架（仅当目标文件不存在）
 
