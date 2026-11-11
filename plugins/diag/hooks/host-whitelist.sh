@@ -14,7 +14,8 @@ diag_is_ssh "$PARSED" || exit 0
 
 HOST=$(diag_ssh_host "$PARSED")
 if [ -z "$HOST" ]; then
-    diag_deny "SSH 命令未能识别目标主机，已阻断。"
+    REASON=$(echo "$PARSED" | jq -r '.error // empty')
+    diag_deny "SSH 命令未能确定目标主机，已阻断${REASON:+：$REASON}。"
 fi
 
 # 配置未初始化 → 拒绝所有 SSH（显式比默认放行更安全）
