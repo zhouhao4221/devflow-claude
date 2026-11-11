@@ -13,6 +13,9 @@ CMD=$(diag_read_command "$INPUT")
 PARSED=$(diag_parse_ssh "$CMD")
 diag_is_ssh "$PARSED" || exit 0
 
+# 无法确定的 ssh 用法（多个 ssh、xargs/sudo/管道给 shell 等）由 host-whitelist 给出原因并拒绝
+[ "$(echo "$PARSED" | jq -r '.ambiguous // false')" = "true" ] && exit 0
+
 REMOTE=$(diag_ssh_remote "$PARSED")
 
 # 空远程命令 = 交互式登录，禁止

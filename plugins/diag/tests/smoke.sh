@@ -12,6 +12,7 @@
 #   T4 敏感输入拦截：password / bearer / AWS / sk-key / 普通消息
 #   T5 Hook 完整性：全部存在放行 / 缺失时拒绝 / 会话 marker 落盘 / 非 ssh 跳过 / 缺 jq 或 python3 时拦 ssh
 #   T9 审计完整性：JSONL 字段齐全
+#   T11 ssh 识别绕过：换行 / 路径 / bash -c / eval / 多个 ssh / 命令替换 / xargs / sudo 一律拒绝，常规写法放行
 #
 # 不覆盖（依赖 AI 行为或真实环境，需人工验证）：
 #   T6 多栈堆栈识别（SKILL.md 策略）
@@ -237,6 +238,47 @@ if [ "$rc_audit" -eq 0 ]; then
 else
     RESULTS+=("❌ T5d audit-log: missing jq → exit=$rc_audit (want 0)"); FAIL=$((FAIL+1))
 fi
+# ===== T11: ssh 识别绕过（失败即拦截）=====
+# 非常规写法必须被识别为 ssh 并拒绝；常规诊断命令与本地提及 ssh 的只读命令必须放行
+BYPASS_CASES=(
+    $'echo x\nssh evil-host rm -rf /data'
+    '/usr/bin/ssh evil-host rm -rf /'
+    'command ssh evil-host rm -rf /'
+    "bash -c 'ssh evil-host rm -rf /'"
+    "bash -lc 'ssh evil-host rm -rf /'"
+    "eval 'ssh evil-host rm -rf /'"
+    'ssh prod-web-01 tail -n 5 /x; ssh evil-host rm -rf /'
+    'ssh prod-web-01 tail /x && ssh evil-host rm -rf /'
+    'echo "ssh evil-host rm -rf /" | bash'
+    'ssh prod-web-01 tail /x; echo "ssh evil-host rm" | sh'
+    '$(ssh evil-host rm -rf /)'
+    '`ssh evil-host rm -rf /`'
+    'xargs ssh evil-host rm < /dev/null'
+    'x=1; sudo ssh evil-host rm'
+    'if ssh evil-host rm; then :; fi'
+)
+for c in "${BYPASS_CASES[@]}"; do
+    assert_deny "T11 bypass denied: $(printf '%q' "$c" | cut -c1-50)" "$c" host-whitelist
+done
+LEGIT_CASES=(
+    'ssh prod-web-01 tail -n 100 /var/log/app/order.log'
+    'ssh prod-web-01 "tail -n 100 /var/log/app/order.log | grep ERROR"'
+    'ssh prod-web-01 tail -n 100 /var/log/app/order.log | grep ERROR | head'
+    "ssh -o ConnectTimeout=5 prod-web-01 'cat /var/log/app/order.log'"
+    $'ssh prod-web-01 "tail -n 5 /x\ngrep E /x"'
+    'grep ssh ~/.bashrc'
+    'man ssh'
+    'command -v ssh'
+    'ssh-keygen -l -f key.pub'
+    'git clone ssh://git@example.com/y.git'
+    'ls /etc/ssh/'
+    'echo "use ssh to login" | head -1'
+)
+for c in "${LEGIT_CASES[@]}"; do
+    for h in host-whitelist command-whitelist write-guard; do
+        assert_allow "T11 legit allowed ($h): $(printf '%q' "$c" | cut -c1-40)" "$c" "$h"
+    done
+done
 
 # ===== T9: 审计完整性 =====
 jq -n --arg c "ssh prod-web-01 tail -n 100 /var/log/app/order.log" '{
