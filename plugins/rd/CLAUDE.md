@@ -11,7 +11,7 @@
 | `CLAUDE.md`（无则 `AGENTS.md`，此时不得新建 CLAUDE.md） | AI 行为指令（通用规则、引用指针） | 每次会话自动加载 |
 | `docs/prompt/architecture.md` | 项目架构知识（分层、规范、技术栈） | `/rd:dev`、`/rd:test` 显式 Read |
 | `docs/prompt/release.md` | 项目发版规则 | `/rd:release` 步骤 0 Read |
-| `docs/prompt/` Prompt 库（`code-generation`/`refactoring`/`test-generation`/`testing`/`error-diagnosis`/`pr-review`/`requirement-structuring`） | 各方面项目特有规范，统一 5 节骨架 | 对应命令按需 Read（`/rd:dev`/`do`/`test*`/`fix`/`pr review`/`new`·`edit`），缺失降级，非阻塞 |
+| `docs/prompt/` Prompt 库（`code-generation`/`refactoring`/`test-generation`/`testing`/`error-diagnosis`/`pr-review`/`requirement-structuring`） | 各方面项目特有规范，统一 5 节骨架 | 对应命令按需 Read（`/rd:dev`/`do`/`test*`/`fix`/`review`/`new`·`edit`），缺失降级，非阻塞 |
 | `docs/requirements/specs/` | 公共知识层（枚举、规则、契约摘要） | 命令按仓库角色注入 |
 | `.devflow/settings.json(.local)` | 结构化配置 | 命令读取字段（local 覆盖同名） |
 | `.claude/skills/<concern>.md` | 窄知识具体约定（如路径变量） | 命令扫描全量注入 |
@@ -39,7 +39,7 @@
 
 需求文档**唯一事实源**是 primary 仓库的 `requirementsDir`（默认 `docs/requirements/`，纳入 git）。**无全局缓存**：readonly 仓库经 `.devflow/settings.local.json` 的 `requirementSource.path` **直读**主仓需求目录，不复制、不同步。
 
-**无同步**：需求只有一份，写入即生效，无 PostToolUse 同步 Hook、无 cp。（v2.x 的 `~/.claude-requirements/` 全局缓存 + `sync-cache.sh` 已于 v3 移除——breaking change，旧项目需跑 `/rd:migrate` + readonly 重新 `/rd:use` 绑定。）
+**无同步**：需求只有一份，写入即生效，无 PostToolUse 同步 Hook、无 cp。
 
 **仓库角色**（`requirementRole`）：`primary` 读写本仓 `requirementsDir`；`readonly` 无本地需求目录、经 `requirementSource.path` 直读主仓、`/rd:dev` 跳过所有文档写入。新增写操作命令必须考虑 readonly 跳过逻辑。不受角色限制的命令：`fix`/`do`/`issue`/`branch`。
 

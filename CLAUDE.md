@@ -26,7 +26,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 
 > uat（UI 验收测试，REQ-002 交付）已于 2026-09 移除：CLI 里驱动浏览器逐场景验收不合适。
 >
-> req 插件已于 v4（REQ-004）更名为 **rd**（R&D 研发）：只换命令前缀 `/req:` → `/rd:`（入口 `/rd:req`），`requirement*` 配置字段、`.claude/.req-*` marker、`REQ-XXX` 编号不变；过渡插件 req（`/req:help`）已移除，老用户按 README / 教程 1.6 迁移。
+> rd 的命令前缀是 `/rd:`（入口 `/rd:req`）；配置字段 `requirement*`、marker `.claude/.req-*`、编号 `REQ-XXX` 沿用 req 时代的命名，不要改名。老用户迁移见 README / 教程 1.6。
 
 **版本事实源是各 `plugin.json` + `marketplace.json`**——README / tutorial 不写插件版本号。README 三语介绍全部 4 个插件（diag 另有 `plugins/diag/README.md`）；教程是 rd 全流程示例，不覆盖 pm / api / diag。
 
@@ -53,10 +53,9 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 | 执行型 agent：code-scout · impl-worker · ui-verifier | `inherit` | `high` | 需自主探索（找全调用链 / 找选择器）或写代码过验收；ui-verifier 的结论直接勾选需求文档，误判 PASS 代价最高 |
 | 思考型 agent：rd `planner` · diag `root-cause` | `fable` | `high` | 升档拿推理，不随用户调低会话 effort 变浅；失败回主会话降级 |
 
-> **为什么废掉命令级三档（原 haiku 33 条 · sonnet 15 条）**：本机 2.1.239–2.1.280 约 200 次调用实测 0 次生效——`command_permissions` 记下了 `model`，实际调用全是会话模型。① 官方文档：auto 模式下「auto mode 不支持的模型」不被使用、会话保持当前模型，auto 只支持 Opus 4.6+/Sonnet 4.6+/Fable，**Haiku 按设计被忽略**，而 Pro/Max/Team 默认就是 auto；② sonnet 在 auto 下同样不生效，对应 anthropics/claude-code#81318（v2.1.220 起命令/skill 的 `model`/`effort` 覆盖失效的回归；2026-09 已关闭但 changelog 无修复条目，未实测——即便已修，①③ 仍成立）；③ 即便生效，覆盖是在同一对话里换模型，prompt cache 按模型隔离，长会话里要按新模型重写整段历史缓存，小命令多半比留在会话模型读缓存（Opus 5.5 $0.20/MTok）更贵。用户嫌贵用 `/model` 切整个会话。
-> **思考交给 Fable，失败降级当前模型**（2026-09-19）：dev/do/fix/review 把方案设计、根因 + 修复、小 PR 审查派给 rd 的 `planner`，diag diagnose 把根因判断派给 diag 的 `root-cause`，两者 `model: fable`、只读。Fable 不可用时 agent 失败、错误回到主会话，主会话用当前模型按同一骨架接手并标注 `⚠️ Fable 不可用`（实测额度用尽时返回 `Agent terminated early due to an API error: You're out of usage credits…`，主会话不受影响）。会话模型本身是 Fable 时照常工作，只是贵。钉在命令上的 Fable 反而会在额度用尽时直接报错、命令锁死（v5.0.1–v5.0.2 实测，`fallbackModel` 不处理计费 / 限流错误）——这是命令不写 `model` 的另一条理由。
-> **执行型 agent 跟会话模型、按特性钉 effort**（2026-09-23）：写 `model: inherit`，模型由用户 `/model` 决定。effort 按「错了的代价 × 需要探索多少」定，不按「活简单」定：**下限 `medium`、不用 `low`**（主会话直接采信 agent 结论，省下的 thinking 抵不过一次漏报）；需要自主探索或写代码的 `high`（低 effort 工具调用更少更合并，易漏文件）；思考型 agent 原钉 `xhigh`，2026-11-12 在 Fable 5.2 上改 `high`：同一 planner 同题同素材（小 PR 审查、do 方案各一）只差 effort，两档发现与方案质量相当、都无误报，xhigh 输出 token 与耗时约为 high 的 1.6–1.9 倍（审查 20.5K/3.5 分 vs 32.1K/5.4 分；方案 10.3K/1.7 分 vs 20.0K/3.3 分）；API 侧对 Fable 5.2 的建议同样是从 `high` 起步、xhigh 只在测出收益时用。钉住 `high` 仍是为不随会话调低。只用 medium/high，inherit 下各代会话模型都支持。agent 的 `effort` 实测生效（2026-09-23，两个只差 effort 的临时 agent 同题同模型：low 共 720 输出 token / 30 秒，max 共 18956 / 3 分钟、单次 thinking 1.75 万；#81318 只影响命令 / skill）。jsonl 不记录 effort，再验证只能这样比输出 token；不用建临时 agent——Agent 工具的 `effort` 参数（2.1.292+）能覆盖 agent frontmatter（2026-11-12 实测，见上），会话中途新建的项目级 agent 也加载不到。原 haiku（4 个）/ sonnet（impl-worker）弃用：Haiku 4.5 不支持 `effort`（原 `effort: low` 形同虚设）、只有 200K 上下文；Sonnet 5 缓存读价与 Opus 5.5 同为 $0.20/MTok，按本机用量只省约 30%。代价：会话是 Fable 时执行型 agent 也按 Fable 计费——想省钱就把会话切到 Opus 5.5 / Sonnet。命令 frontmatter 的 `effort` 同受 #81318 影响，不用。
-> 按推理强度拆命令的旧规则（REQ-007：`/rd:pr` 只读/CLI 包装、`/rd:review` 审查改代码）保留为职责划分，不再对应模型档位。
+> 依据与实测数据见 [`docs/design/token-optimization.md`](./docs/design/token-optimization.md) §4.3。要点：命令级 `model`/`effort` 在 auto 模式下不生效（Haiku 按设计被忽略，sonnet 受 anthropics/claude-code#81318 影响），即便生效也要按新模型重写整段历史缓存；钉在命令上的 Fable 额度用尽时命令直接报错，而 `model: fable` 的子代理失败会回到主会话，由当前模型按同一骨架接手并标注 `⚠️ Fable 不可用`。用户嫌贵用 `/model` 切整个会话。
+> agent 的 effort 按「错了的代价 × 需要探索多少」定：下限 `medium`（主会话直接采信结论，省下的 thinking 抵不过一次漏报），自主探索、写代码与深度推理都用 `high`；只用这两档。思考型 agent 原为 `xhigh`，在 Fable 5.2 上实测与 `high` 质量相当、输出 token 与耗时约 1.6–1.9 倍，2026-11-12 下调。agent 的 `effort` 生效，命令 frontmatter 的不生效；对比档位用 Agent 工具的 `effort` 参数覆盖 frontmatter 即可，不必建临时 agent。会话是 Fable 时执行型 agent 也按 Fable 计费。
+> 职责划分：`/rd:pr` 只做 PR 的 CLI 操作（只读为主），`/rd:review` 负责 AI 审查与按评论改代码。
 
 **子任务委派**（命令内粒度；只有思考型 agent 换模型）：**Fable 想、主会话判断、subagent 执行**——方案设计交 `planner`（Fable），主会话做复核、跨文件一致性、闸门交互、验收，吞吐型步骤派给执行型 agent，原始输出不进主上下文。`plugins/rd/agents/` 共 7 个，diag 另有 `plugins/diag/agents/root-cause.md`。
 

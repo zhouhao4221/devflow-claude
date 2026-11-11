@@ -131,7 +131,7 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 ### 4.3 命令不写 `model`：换模型只在 agent 层做
 
-**结论**（2026-09-23）：命令 frontmatter 一律不写 `model`（`inherit` 除外，`check-layout.py` 拦截），执行型 agent 写 `model: inherit` 跑会话模型、按特性钉 effort（test-runner / diff-digest / doc-writer `medium`，code-scout / impl-worker / ui-verifier `high`）；只有思考型 agent 换 Fable（`high`，下文；2026-11-12 由 `xhigh` 下调，实测数据见 CLAUDE.md「模型策略」）。用户嫌贵用 `/model` 切整个会话。
+**结论**（2026-09-23）：命令 frontmatter 一律不写 `model`（`inherit` 除外，`check-layout.py` 拦截），执行型 agent 写 `model: inherit` 跑会话模型、按特性钉 effort（test-runner / diff-digest / doc-writer `medium`，code-scout / impl-worker / ui-verifier `high`）；只有思考型 agent 换 Fable（`high`，2026-11-12 由 `xhigh` 下调，见下文）。用户嫌贵用 `/model` 切整个会话。
 
 **为什么废掉原来的 haiku / sonnet / 省略三档**（原 33 条 haiku、15 条 sonnet 命令）：
 
@@ -143,6 +143,8 @@ _claude-md.md      # CLAUDE.md 架构检查
 **agent 层换模型没有这个问题**：agent 新开上下文，不继承主会话历史，没有上面的缓存重写；它的 `model` 实测一直生效（本机 haiku / sonnet subagent 调用各数千次）。
 
 **执行型 agent 也不换模型**（2026-09-23）：`model: inherit`，跟用户的 `/model` 走；effort 按特性钉，下限 `medium`——effort 压的是 thinking 与输出，这些 agent 以读为主（本机平均每次调用读 ~3.9 万、输出 ~1 千 token），`low` 省不了多少，却可能让被主会话直接采信的结果漏报。原 haiku / sonnet 弃用：Haiku 4.5 不支持 `effort`（原 `effort: low` 不起作用）、上下文只有 200K；Sonnet 5 与 Opus 5.5 缓存读价同为 $0.20/MTok，按本机用量只省约 30%；Opus 5.5 在 `medium` 已超过 Opus 5 的 `high`，统一跑会话模型更省心。委派执行型 agent 的收益只剩上下文隔离（§4.8）。代价：会话是 Fable 时执行型 agent 也按 Fable 计费，想省钱就切会话模型。
+
+**思考型 agent 的 effort 由 `xhigh` 下调为 `high`**（2026-11-12，Fable 5.2）：同一 `rd:planner`、同题同素材，只差 effort（用 Agent 工具的 `effort` 参数覆盖 frontmatter；会话中途新建的项目级 agent 加载不到，不能靠临时 agent 对比）。小 PR 审查：high 20.5K 输出 token / 3.5 分钟，xhigh 32.1K / 5.4 分钟；do 方案：high 10.3K / 1.7 分钟，xhigh 20.0K / 3.3 分钟。两档都命中已知 bug、无误报，方案结构一致，差别只在定级与断言细节。输出 token 差 1.6–1.9 倍，证明参数生效。API 侧对 Fable 5.2 的建议同样是从 `high` 起步、xhigh 只在测出收益时用。样本只有两题，跨模块根因这类更难的题若出现明显差距再回调。
 
 **会话模型不再假定是 Fable，「想」交给 Fable 子代理**（2026-09-19，v5.1.0）：命令默认跑当前会话模型；`/rd:dev`、`do`（实现方案）、`/rd:fix`（根因 + 修复）、`/rd:review`（小 PR 审查）派 `planner`，`/diag:diagnose`（根因）派 `root-cause`，两者 `model: fable`。子代理失败（Fable 额度用尽 / 不可用）时错误回到主会话，主会话用当前模型接手。中间走过两步弯路（v5.0.1–v5.0.2 给命令钉 `model: best`），教训如下（官方文档 2026-09-19 核实）：
 
