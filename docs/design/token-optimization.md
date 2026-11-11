@@ -156,7 +156,7 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 **何时用**：所有命令。
 
-**做法**：frontmatter 只声明真正需要的工具，只读命令不声明 Write/Edit。注意 `allowed-tools` 只是**免确认预授权**，不限制可用工具——未声明的工具照样能调用，只是会弹确认，不能当安全边界用；命令 frontmatter 也没有禁用工具的字段，硬约束只能靠 Hook。
+**做法**：frontmatter 只声明真正需要的工具，只读命令不声明 Write/Edit。注意 `allowed-tools` 只是**免确认预授权**，不限制可用工具——未声明的工具照样能调用，只是会弹确认（用户开了 `permissions.denyInsteadOfPrompting`（2.1.319+）则直接被拒——所以真用到的工具反过来必须列全，`Agent` / `Skill` 由 `check-layout.py` 守），不能当安全边界用；命令 frontmatter 也没有禁用工具的字段，硬约束只能靠 Hook。
 
 **收益**：越界调用（只读命令去写文件、跑无关 Bash）不会被静默放行，用户在确认框里能拦下；Bash 限定子集（`Bash(git:*, gh:*)`）让常规命令免确认、其余命令弹确认。
 

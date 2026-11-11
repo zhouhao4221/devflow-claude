@@ -10,6 +10,21 @@
 # 解析插件根（Claude Code 调用 Hook 时注入 CLAUDE_PLUGIN_ROOT）
 DIAG_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
+# 依赖缺失时失败即拦截：没有 jq 取到的命令为空、diag_deny 输出不了 JSON，会静默放行；
+# exit 0 不算 hook 失败，onFailure: "block" 兜不住，所以在这里显式 exit 2。
+# 只拦含 ssh 的输入（各脚本先 INPUT=$(cat) 再 source 本文件）：风控链只管 ssh，不能因缺依赖拦掉所有 Bash。
+for _dep in jq python3; do
+    if ! command -v "$_dep" >/dev/null 2>&1; then
+        case "${INPUT:-}" in
+            *ssh*)
+                echo "diag 风控 Hook 缺少依赖 $_dep，无法校验 ssh 命令，已拦截。请安装 $_dep 后重试。" >&2
+                exit 2 ;;
+            *) exit 0 ;;
+        esac
+    fi
+done
+unset _dep
+
 # 配置读取（提供 diag_list_hosts / diag_host_in_whitelist 等）
 # shellcheck disable=SC1091
 source "$DIAG_PLUGIN_ROOT/scripts/services-config.sh"

@@ -10,7 +10,7 @@
 #   T3 写操作阻断：重定向 / tee / systemctl / docker rm / kubectl delete /
 #                  mysql INSERT / sudo / find -delete / apt install
 #   T4 敏感输入拦截：password / bearer / AWS / sk-key / 普通消息
-#   T5 Hook 完整性：全部存在放行 / 缺失时拒绝 / 会话 marker 落盘 / 非 ssh 跳过
+#   T5 Hook 完整性：全部存在放行 / 缺失时拒绝 / 会话 marker 落盘 / 非 ssh 跳过 / 缺 jq 时拦 ssh
 #   T9 审计完整性：JSONL 字段齐全
 #
 # 不覆盖（依赖 AI 行为或真实环境，需人工验证）：
@@ -203,6 +203,27 @@ else
     FAIL=$((FAIL+1))
 fi
 rm -rf "$CHAOS_DIR"
+
+# ===== T5d: 依赖缺失失败即拦截 =====
+# PATH 里只放 jq 以外的工具：含 ssh 的命令必须 exit 2 拦截，非 ssh 命令放行
+NOJQ_DIR="$TMPDIR/nojq-bin"
+mkdir -p "$NOJQ_DIR"
+for b in bash cat dirname grep python3 sed; do ln -sf "$(command -v "$b")" "$NOJQ_DIR/$b"; done
+for h in validate-hooks host-whitelist command-whitelist write-guard; do
+    set +e
+    printf '{"tool_input":{"command":"ssh prod-web-01 uptime"}}' | env -i PATH="$NOJQ_DIR" HOME="$HOME" CLAUDE_PLUGIN_ROOT="$PLUGIN" DIAG_HOME="$DIAG_HOME" "$NOJQ_DIR/bash" "$PLUGIN/hooks/$h.sh" >/dev/null 2>&1
+    rc_ssh=$?
+    printf '{"tool_input":{"command":"ls -la"}}' | env -i PATH="$NOJQ_DIR" HOME="$HOME" CLAUDE_PLUGIN_ROOT="$PLUGIN" DIAG_HOME="$DIAG_HOME" "$NOJQ_DIR/bash" "$PLUGIN/hooks/$h.sh" >/dev/null 2>&1
+    rc_plain=$?
+    set -e
+    if [ "$rc_ssh" -eq 2 ] && [ "$rc_plain" -eq 0 ]; then
+        RESULTS+=("✅ T5d $h: missing jq blocks ssh, passes non-ssh")
+        PASS=$((PASS+1))
+    else
+        RESULTS+=("❌ T5d $h: missing jq → ssh exit=$rc_ssh (want 2), non-ssh exit=$rc_plain (want 0)")
+        FAIL=$((FAIL+1))
+    fi
+done
 
 # ===== T9: 审计完整性 =====
 jq -n --arg c "ssh prod-web-01 tail -n 100 /var/log/app/order.log" '{
