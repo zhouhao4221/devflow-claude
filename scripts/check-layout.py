@@ -13,6 +13,9 @@ Claude Code 把 `commands/` 下的**每个** `.md` 和 `skills/` 下的**每个*
 
 顺带校验：
   - 所有 Markdown 相对链接可达，避免搬迁后留下悬空引用。
+  - 派生 subagent（正文出现反引号包裹的本插件 agent 名）的命令 `allowed-tools` 必须列 `Agent`，
+    走 Skill 工具调原生技能（正文出现「Skill 工具」）的必须列 `Skill`：用户开了
+    `permissions.denyInsteadOfPrompting`（Claude Code 2.1.319+）时，未预授权的调用直接被拒、流程中断。
   - 过时引用：v3 配置迁到 `.devflow/`、全局缓存移除之后，命令正文里残留的
     `.claude/settings*`、`sync-cache`、`<plugin-path>` 等旧写法。这类残留已两次
     造成静默失效（v2.39.1 的 hook、v2.42 之后的 req 命令），由脚本兜底。
@@ -132,6 +135,26 @@ def check_skills(plugins):
     return mirrors, strays, malformed, helpers
 
 
+def _missing_preauth(p, fn, fm):
+    """命令正文派 agent / 调 Skill 却没在 allowed-tools 预授权。"""
+    cdir = os.path.join(ROOT, "plugins", p, "commands")
+    adir = os.path.join(ROOT, "plugins", p, "agents")
+    agents = [a[:-3] for a in os.listdir(adir) if a.endswith(".md")] if os.path.isdir(adir) else []
+    with open(os.path.join(cdir, fn), encoding="utf-8-sig") as f:
+        text = f.read().replace("\r\n", "\n")
+    # 与 frontmatter() 同一正则取正文；不能按 "\n---" 切，正文里的 --- 分隔线会切掉首节
+    m = re.match(r"---[ \t]*\n(.*?)^---[ \t]*$", text, re.S | re.M)
+    body = text[m.end():] if m else text
+    allowed = fm.get("allowed-tools", "")
+    out = []
+    used = [a for a in agents if f"`{a}`" in body]
+    if used and not re.search(r"\bAgent\b", allowed):
+        out.append(f"{p}/commands/{fn}: 派生 {', '.join(used)} 但 allowed-tools 未列 Agent")
+    if "Skill 工具" in body and not re.search(r"\bSkill\b", allowed):
+        out.append(f"{p}/commands/{fn}: 走 Skill 工具但 allowed-tools 未列 Skill")
+    return out
+
+
 def check_commands(plugins):
     """commands/ 下只能放真命令：必须有 frontmatter 且带 description。"""
     bad, commands = [], []
@@ -152,6 +175,7 @@ def check_commands(plugins):
             elif not fm.get("description"):
                 bad.append(f"{p}/commands/{fn}: frontmatter 缺 description")
             else:
+                bad += _missing_preauth(p, fn, fm)
                 if fm.get("model", "").lower() not in ALLOWED_COMMAND_MODELS:
                     bad.append(
                         f"{p}/commands/{fn}: model={fm['model']} —— 命令跟随会话模型，不写 model；"

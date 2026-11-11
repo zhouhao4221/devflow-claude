@@ -42,7 +42,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 - **命令同名 skill 镜像**：与 command 落在同一菜单、`description` 一模一样，每条命令重复两遍（`claude plugin details req` 里出现 `do, do`、`pr, pr`），多出的那份 description 还白占 always-on token。
 - **共享参考文档放 `commands/`**：`_storage.md` 之类会变出 `/rd:_storage` 这样的伪命令。统一放 `plugins/<p>/shared/`。
 
-`scripts/check-layout.py` 一次性守住五条：`skills/` 无命令镜像、`commands/` 无非命令文件、命令不写 `model`（`inherit` 除外；frontmatter 按 YAML 解析，与运行时一致，需 PyYAML）、所有相对链接可达、插件内无过时引用（`.claude/settings*` 读写 DevFlow 字段、`sync-cache` / 全局缓存、缓存同步类表述、未定义的 `<plugin-path>`；迁移说明与 Claude Code 自身配置项豁免，确需保留加 `stale-ok`）。`--check` 报错退 1（发布前置，`.github/workflows/check.yml` 在每个 PR 上连同 diag 冒烟测试自动跑），不带参数则自动清理可清理的部分。`scripts/check-requirements.py --check` 守需求目录：`completed/` 内状态为已完成、`active/` 内不为已完成、状态与生命周期已勾格一致、编号唯一，同样进 CI 与发布前置。
+`scripts/check-layout.py` 一次性守住六条：`skills/` 无命令镜像、`commands/` 无非命令文件、命令不写 `model`（`inherit` 除外；frontmatter 按 YAML 解析，与运行时一致，需 PyYAML）、派 agent / 调 Skill 的命令 `allowed-tools` 列了 `Agent` / `Skill`、所有相对链接可达、插件内无过时引用（`.claude/settings*` 读写 DevFlow 字段、`sync-cache` / 全局缓存、缓存同步类表述、未定义的 `<plugin-path>`；迁移说明与 Claude Code 自身配置项豁免，确需保留加 `stale-ok`）。`--check` 报错退 1（发布前置，`.github/workflows/check.yml` 在每个 PR 上连同 diag 冒烟测试自动跑），不带参数则自动清理可清理的部分。`scripts/check-requirements.py --check` 守需求目录：`completed/` 内状态为已完成、`active/` 内不为已完成、状态与生命周期已勾格一致、编号唯一，同样进 CI 与发布前置。
 
 **模型策略：命令与执行型 agent 都跑会话模型，只有思考型 agent 换 Fable**（2026-09-23，README 三语版「模型策略」一节与本节保持一致）：
 
@@ -51,16 +51,16 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 | 命令（`commands/*.md`） | 会话模型 | 会话 | frontmatter 不写 `model`/`effort`（`model: inherit` 除外），`check-layout.py` 拦 `model` |
 | 执行型 agent：test-runner · diff-digest · doc-writer | `inherit` | `medium` | 无需推理，但结果被主会话直接采信，漏报 / 错报代价高 |
 | 执行型 agent：code-scout · impl-worker · ui-verifier | `inherit` | `high` | 需自主探索（找全调用链 / 找选择器）或写代码过验收；ui-verifier 的结论直接勾选需求文档，误判 PASS 代价最高 |
-| 思考型 agent：rd `planner` · diag `root-cause` | `fable` | `xhigh` | 升档拿推理，不随用户调低会话 effort 变浅；失败回主会话降级 |
+| 思考型 agent：rd `planner` · diag `root-cause` | `fable` | `high` | 升档拿推理，不随用户调低会话 effort 变浅；失败回主会话降级 |
 
 > **为什么废掉命令级三档（原 haiku 33 条 · sonnet 15 条）**：本机 2.1.239–2.1.280 约 200 次调用实测 0 次生效——`command_permissions` 记下了 `model`，实际调用全是会话模型。① 官方文档：auto 模式下「auto mode 不支持的模型」不被使用、会话保持当前模型，auto 只支持 Opus 4.6+/Sonnet 4.6+/Fable，**Haiku 按设计被忽略**，而 Pro/Max/Team 默认就是 auto；② sonnet 在 auto 下同样不生效，对应 anthropics/claude-code#81318（v2.1.220 起命令/skill 的 `model`/`effort` 覆盖失效的回归；2026-09 已关闭但 changelog 无修复条目，未实测——即便已修，①③ 仍成立）；③ 即便生效，覆盖是在同一对话里换模型，prompt cache 按模型隔离，长会话里要按新模型重写整段历史缓存，小命令多半比留在会话模型读缓存（Opus 5.5 $0.20/MTok）更贵。用户嫌贵用 `/model` 切整个会话。
 > **思考交给 Fable，失败降级当前模型**（2026-09-19）：dev/do/fix/review 把方案设计、根因 + 修复、小 PR 审查派给 rd 的 `planner`，diag diagnose 把根因判断派给 diag 的 `root-cause`，两者 `model: fable`、只读。Fable 不可用时 agent 失败、错误回到主会话，主会话用当前模型按同一骨架接手并标注 `⚠️ Fable 不可用`（实测额度用尽时返回 `Agent terminated early due to an API error: You're out of usage credits…`，主会话不受影响）。会话模型本身是 Fable 时照常工作，只是贵。钉在命令上的 Fable 反而会在额度用尽时直接报错、命令锁死（v5.0.1–v5.0.2 实测，`fallbackModel` 不处理计费 / 限流错误）——这是命令不写 `model` 的另一条理由。
-> **执行型 agent 跟会话模型、按特性钉 effort**（2026-09-23）：写 `model: inherit`，模型由用户 `/model` 决定。effort 按「错了的代价 × 需要探索多少」定，不按「活简单」定：**下限 `medium`、不用 `low`**（主会话直接采信 agent 结论，省下的 thinking 抵不过一次漏报）；需要自主探索或写代码的 `high`（低 effort 工具调用更少更合并，易漏文件）；深度推理 `xhigh`（Fable 在 Claude Code 默认即 xhigh，钉住只为不随会话调低）。只用 medium/high/xhigh，inherit 下各代会话模型都支持。agent 的 `effort` 实测生效（2026-09-23，两个只差 effort 的临时 agent 同题同模型：low 共 720 输出 token / 30 秒，max 共 18956 / 3 分钟、单次 thinking 1.75 万；#81318 只影响命令 / skill）。jsonl 不记录 effort，再验证只能这样比输出 token。原 haiku（4 个）/ sonnet（impl-worker）弃用：Haiku 4.5 不支持 `effort`（原 `effort: low` 形同虚设）、只有 200K 上下文；Sonnet 5 缓存读价与 Opus 5.5 同为 $0.20/MTok，按本机用量只省约 30%。代价：会话是 Fable 时执行型 agent 也按 Fable 计费——想省钱就把会话切到 Opus 5.5 / Sonnet。命令 frontmatter 的 `effort` 同受 #81318 影响，不用。
+> **执行型 agent 跟会话模型、按特性钉 effort**（2026-09-23）：写 `model: inherit`，模型由用户 `/model` 决定。effort 按「错了的代价 × 需要探索多少」定，不按「活简单」定：**下限 `medium`、不用 `low`**（主会话直接采信 agent 结论，省下的 thinking 抵不过一次漏报）；需要自主探索或写代码的 `high`（低 effort 工具调用更少更合并，易漏文件）；思考型 agent 原钉 `xhigh`，2026-11-12 在 Fable 5.2 上改 `high`：同一 planner 同题同素材（小 PR 审查、do 方案各一）只差 effort，两档发现与方案质量相当、都无误报，xhigh 输出 token 与耗时约为 high 的 1.6–1.9 倍（审查 20.5K/3.5 分 vs 32.1K/5.4 分；方案 10.3K/1.7 分 vs 20.0K/3.3 分）；API 侧对 Fable 5.2 的建议同样是从 `high` 起步、xhigh 只在测出收益时用。钉住 `high` 仍是为不随会话调低。只用 medium/high，inherit 下各代会话模型都支持。agent 的 `effort` 实测生效（2026-09-23，两个只差 effort 的临时 agent 同题同模型：low 共 720 输出 token / 30 秒，max 共 18956 / 3 分钟、单次 thinking 1.75 万；#81318 只影响命令 / skill）。jsonl 不记录 effort，再验证只能这样比输出 token；不用建临时 agent——Agent 工具的 `effort` 参数（2.1.292+）能覆盖 agent frontmatter（2026-11-12 实测，见上），会话中途新建的项目级 agent 也加载不到。原 haiku（4 个）/ sonnet（impl-worker）弃用：Haiku 4.5 不支持 `effort`（原 `effort: low` 形同虚设）、只有 200K 上下文；Sonnet 5 缓存读价与 Opus 5.5 同为 $0.20/MTok，按本机用量只省约 30%。代价：会话是 Fable 时执行型 agent 也按 Fable 计费——想省钱就把会话切到 Opus 5.5 / Sonnet。命令 frontmatter 的 `effort` 同受 #81318 影响，不用。
 > 按推理强度拆命令的旧规则（REQ-007：`/rd:pr` 只读/CLI 包装、`/rd:review` 审查改代码）保留为职责划分，不再对应模型档位。
 
 **子任务委派**（命令内粒度；只有思考型 agent 换模型）：**Fable 想、主会话判断、subagent 执行**——方案设计交 `planner`（Fable），主会话做复核、跨文件一致性、闸门交互、验收，吞吐型步骤派给执行型 agent，原始输出不进主上下文。`plugins/rd/agents/` 共 7 个，diag 另有 `plugins/diag/agents/root-cause.md`。
 
-规则见 `shared/_delegate.md`。派生 subagent 的命令 `allowed-tools` 必须列 `Agent`（`allowed-tools` 只做免确认预授权，**不限制**可用工具；没列时仍能派生，但每次都弹确认打断流程）。
+规则见 `shared/_delegate.md`。派生 subagent 的命令 `allowed-tools` 必须列 `Agent`，走 Skill 工具的必须列 `Skill`（`allowed-tools` 只做免确认预授权，**不限制**可用工具；没列时默认每次弹确认打断流程，用户开了 `permissions.denyInsteadOfPrompting`（2.1.319+）则直接被拒、流程中断）。`check-layout.py` 守这一条。
 
 **委派写操作有准入门槛**（`impl-worker`，见 `_delegate.md` 的「委派实施」）：方案已确认到文件级 + 单元互不依赖 + 契约已定死 + 有验收命令，四条全满足才派；新建抽象、跨层契约变更、方案仍在演化的首版实现一律主会话自己写。验收复核的是 `git diff` 实际内容，不是 subagent 的自述。**降档不是委派的理由**——委派是为了上下文隔离（避免开发中途触发压缩、让已确认方案被摘要化），执行型 agent 与会话同模型，不为省钱把推理拆出去。`planner` 反过来是升档：为拿到 Fable 的推理，并借子代理失败实现降级；只委派「想」，素材由主会话内联，结论回主会话复核。
 
@@ -68,7 +68,7 @@ DevFlow 是一个 **Claude Code 插件市场（marketplace）**，对外发布 4
 
 **两条已知失败模式**（dogfooding 实测踩过）：① prompt 只给素材的磁盘路径而不内联正文 → subagent 把轮次耗在自己找文件上；② 一个 subagent 塞多个文件 → 撞 `maxTurns` 交出半成品。切分要细、素材要内联。
 
-**allowed-tools**：只读命令不声明 Write/Edit/Bash。不声明 ≠ 禁用——调用时只是弹确认；命令 frontmatter 没有禁用工具的字段（`disallowed-tools` 仅 skill 支持），硬约束只能靠 Hook。**Token 节约**：单文件 < 30 KB；> 50 KB 拆主文件 + rationale；详见 [`docs/design/token-optimization.md`](./docs/design/token-optimization.md)。
+**allowed-tools**：只读命令不声明 Write/Edit/Bash。不声明 ≠ 禁用——调用时弹确认（开了 `denyInsteadOfPrompting` 则被拒，所以写命令真用到的工具必须列全）；命令 frontmatter 没有禁用工具的字段（`disallowed-tools` 仅 skill 支持），硬约束只能靠 Hook。**Token 节约**：单文件 < 30 KB；> 50 KB 拆主文件 + rationale；详见 [`docs/design/token-optimization.md`](./docs/design/token-optimization.md)。
 
 ## 自动触发技能（helper skill）
 

@@ -5,6 +5,7 @@
 INPUT=$(cat)
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+diag_require_deps
 
 # 只对含 ssh 的命令校验：风控链只管 ssh，其他 bash 直接放行（启用 diag 后所有项目的 Bash 都会经过这里）
 # 子串匹配是 parse-ssh.py 识别范围的超集（nohup / env / timeout 包装同样命中），不会漏判

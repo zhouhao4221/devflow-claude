@@ -131,7 +131,7 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 ### 4.3 命令不写 `model`：换模型只在 agent 层做
 
-**结论**（2026-09-23）：命令 frontmatter 一律不写 `model`（`inherit` 除外，`check-layout.py` 拦截），执行型 agent 写 `model: inherit` 跑会话模型、按特性钉 effort（test-runner / diff-digest / doc-writer `medium`，code-scout / impl-worker / ui-verifier `high`）；只有思考型 agent 换 Fable（`xhigh`，下文）。用户嫌贵用 `/model` 切整个会话。
+**结论**（2026-09-23）：命令 frontmatter 一律不写 `model`（`inherit` 除外，`check-layout.py` 拦截），执行型 agent 写 `model: inherit` 跑会话模型、按特性钉 effort（test-runner / diff-digest / doc-writer `medium`，code-scout / impl-worker / ui-verifier `high`）；只有思考型 agent 换 Fable（`high`，下文；2026-11-12 由 `xhigh` 下调，实测数据见 CLAUDE.md「模型策略」）。用户嫌贵用 `/model` 切整个会话。
 
 **为什么废掉原来的 haiku / sonnet / 省略三档**（原 33 条 haiku、15 条 sonnet 命令）：
 
@@ -156,7 +156,7 @@ _claude-md.md      # CLAUDE.md 架构检查
 
 **何时用**：所有命令。
 
-**做法**：frontmatter 只声明真正需要的工具，只读命令不声明 Write/Edit。注意 `allowed-tools` 只是**免确认预授权**，不限制可用工具——未声明的工具照样能调用，只是会弹确认，不能当安全边界用；命令 frontmatter 也没有禁用工具的字段，硬约束只能靠 Hook。
+**做法**：frontmatter 只声明真正需要的工具，只读命令不声明 Write/Edit。注意 `allowed-tools` 只是**免确认预授权**，不限制可用工具——未声明的工具照样能调用，只是会弹确认（用户开了 `permissions.denyInsteadOfPrompting`（2.1.319+）则直接被拒——所以真用到的工具反过来必须列全，`Agent` / `Skill` 由 `check-layout.py` 守），不能当安全边界用；命令 frontmatter 也没有禁用工具的字段，硬约束只能靠 Hook。
 
 **收益**：越界调用（只读命令去写文件、跑无关 Bash）不会被静默放行，用户在确认框里能拦下；Bash 限定子集（`Bash(git:*, gh:*)`）让常规命令免确认、其余命令弹确认。
 

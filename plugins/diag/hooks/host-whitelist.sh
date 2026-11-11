@@ -5,6 +5,7 @@
 INPUT=$(cat)
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+diag_require_deps
 
 CMD=$(diag_read_command "$INPUT")
 [ -z "$CMD" ] && exit 0

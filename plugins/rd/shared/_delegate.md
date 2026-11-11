@@ -45,7 +45,7 @@
 | `doc-writer` | 会话模型 · medium | 按素材和模板骨架成文/回填章节 | 产物路径 + 要点核对表 |
 | `ui-verifier` | 会话模型 · high | 把一条 UI 验证项写成 headless Playwright 探针并运行，截图只在 agent 内判读 | 每项 PASS/FAIL/BLOCKED + 一句证据 + 探针/产物路径 |
 
-命令的 frontmatter `allowed-tools` **必须包含 `Agent`**（`allowed-tools` 是免确认预授权而非白名单：缺失时仍能派生，但每次派生都弹确认，打断流程）。
+命令的 frontmatter `allowed-tools` **必须包含 `Agent`**（`allowed-tools` 是免确认预授权而非白名单：缺失时每次派生都弹确认、打断流程；用户开了 `permissions.denyInsteadOfPrompting` 则直接被拒）。`check-layout.py` 会拦。
 
 代码质量审查不在此列：`/rd:review` 大 PR 直接调原生 `/code-review`（Skill 工具，`allowed-tools` 需列 `Skill`），规则见该命令。
 
@@ -56,6 +56,7 @@
 1. **素材内联**：任务类型、需求要点或问题描述、分层与规范摘要、`code-scout` 的 file:line 清单、返回骨架，都写进 prompt。planner 自己读代码核实，但不负责找需求文档。
 2. **主会话复核**：对照功能清单 / 分层 / 根因依据检查返回结论，缺项直接修正或 SendMessage 让它补；「存疑」项带给用户。复核之后再展示给用户确认。
 3. **失败降级**：Agent 返回 API 错误（Fable 额度用尽、未开通、云厂商未上架）或超轮仍无结论 → 不重试，主会话用当前模型按同一骨架自己做，产物首行注明 `⚠️ Fable 不可用，…由当前模型生成`。
+   **安全拦截不在此列**：子代理被安全机制拦下时（Claude Code 2.1.319 起）系统会提示缩小范围重试或告知用户，照提示办；主会话改用当前模型接手同一任务等于绕过拦截。
 4. **只委派想，不委派做**：确认后的实施、文档回写、提交都在主会话（或按准入条件派 `impl-worker`）。
 
 diag 插件同理，根因判断交给 diag 自带的 `root-cause` agent（fable），见 `/diag:diagnose` 第 7 步。
