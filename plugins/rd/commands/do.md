@@ -91,7 +91,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, tea:*, curl:*), 
 
 > 仅当**用户点名了具体文件**、或改动范围**确定**落在 ≤3 个文件内时才跳过委派直接 Read。「估计不大」不算确定——不确定就委派。跳过时说明一句理由。
 
-**方案交给 `planner`（Fable）**：prompt 内联任务类型 `do 方案`、第 1 步的意图与类型、refactoring.md 的约束（有则）、architecture.md 分层摘要、定位清单、下面的方案骨架；主会话复核后展示。**planner 失败**（Agent 返回 API 错误，如 Fable 额度用尽、未开通、云厂商未上架；或超轮仍无结论）→ 不重试，主会话用当前模型按同一骨架自己出方案，首行注明 `⚠️ Fable 不可用，本方案由当前模型生成`。
+**方案交给 `planner`（Fable）**：prompt 内联任务类型 `do 方案`、第 1 步的意图与类型、refactoring.md 的约束（有则）、architecture.md 分层摘要、定位清单、下面的方案骨架；主会话复核后展示。**planner 失败**（Agent 返回 API 错误，如 Fable 额度用尽、未开通、云厂商未上架；或超轮仍无结论。被安全机制拦下不算，按 Claude Code 的提示缩小范围重试或告知用户，不接手）→ 不重试，主会话用当前模型按同一骨架自己出方案，首行注明 `⚠️ Fable 不可用，本方案由当前模型生成`。
 
 ```
 代码分析：

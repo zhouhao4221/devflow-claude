@@ -6,9 +6,35 @@
 # - diag_parse_ssh：解析 ssh 命令 → JSON {is_ssh, host, remote}
 # - diag_is_ssh / diag_ssh_host / diag_ssh_remote：便捷取值
 # - diag_deny / diag_allow：输出 PreToolUse 决策
+# - diag_require_deps：缺 jq/python3 时对 ssh 命令失败即拦截（仅 PreToolUse 脚本调用）
 
 # 解析插件根（Claude Code 调用 Hook 时注入 CLAUDE_PLUGIN_ROOT）
 DIAG_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+
+# 依赖缺失时失败即拦截（PreToolUse 风控脚本在 source 本文件后显式调用；PostToolUse 的 audit-log 不调）：
+# 没有 jq 取到的命令为空、diag_deny 输出不了 JSON，会静默放行；exit 0 不算 hook 失败，
+# onFailure: "block" 兜不住，所以这里显式 exit 2。只拦命令含 ssh 的：风控链只管 ssh，
+# 不能因缺依赖拦掉所有 Bash。命令用剩下的那个工具取；两个都缺才退回整段输入匹配（偏严）。
+diag_require_deps() {
+    local missing="" d text
+    for d in jq python3; do
+        command -v "$d" >/dev/null 2>&1 || missing="$missing $d"
+    done
+    [ -z "$missing" ] && return 0
+    if command -v jq >/dev/null 2>&1; then
+        text=$(printf '%s' "${INPUT:-}" | jq -r '.tool_input.command // empty' 2>/dev/null) || text="${INPUT:-}"
+    elif command -v python3 >/dev/null 2>&1; then
+        text=$(printf '%s' "${INPUT:-}" | python3 -I -c 'import json,sys; print(json.load(sys.stdin).get("tool_input",{}).get("command",""))' 2>/dev/null) || text="${INPUT:-}"
+    else
+        text="${INPUT:-}"
+    fi
+    case "$text" in
+        *ssh*)
+            echo "diag 风控 Hook 缺少依赖${missing}，无法校验 ssh 命令，已拦截。请安装后重试。" >&2
+            exit 2 ;;
+        *) exit 0 ;;
+    esac
+}
 
 # 配置读取（提供 diag_list_hosts / diag_host_in_whitelist 等）
 # shellcheck disable=SC1091

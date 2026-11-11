@@ -5,12 +5,16 @@
 INPUT=$(cat)
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+diag_require_deps
 
 CMD=$(diag_read_command "$INPUT")
 [ -z "$CMD" ] && exit 0
 
 PARSED=$(diag_parse_ssh "$CMD")
 diag_is_ssh "$PARSED" || exit 0
+
+# 无法确定的 ssh 用法（多个 ssh、xargs/sudo/管道给 shell 等）由 host-whitelist 给出原因并拒绝
+[ "$(echo "$PARSED" | jq -r '.ambiguous // false')" = "true" ] && exit 0
 
 REMOTE=$(diag_ssh_remote "$PARSED")
 
