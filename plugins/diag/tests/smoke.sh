@@ -10,7 +10,7 @@
 #   T3 写操作阻断：重定向 / tee / systemctl / docker rm / kubectl delete /
 #                  mysql INSERT / sudo / find -delete / apt install
 #   T4 敏感输入拦截：password / bearer / AWS / sk-key / 普通消息
-#   T5 Hook 完整性：全部存在放行 / 缺失时拒绝 / 会话 marker 落盘 / 非 ssh 跳过 / 缺 jq 时拦 ssh
+#   T5 Hook 完整性：全部存在放行 / 缺失时拒绝 / 会话 marker 落盘 / 非 ssh 跳过 / 缺 jq 或 python3 时拦 ssh
 #   T9 审计完整性：JSONL 字段齐全
 #
 # 不覆盖（依赖 AI 行为或真实环境，需人工验证）：
@@ -205,25 +205,38 @@ fi
 rm -rf "$CHAOS_DIR"
 
 # ===== T5d: 依赖缺失失败即拦截 =====
-# PATH 里只放 jq 以外的工具：含 ssh 的命令必须 exit 2 拦截，非 ssh 命令放行
-NOJQ_DIR="$TMPDIR/nojq-bin"
-mkdir -p "$NOJQ_DIR"
-for b in bash cat dirname grep python3 sed; do ln -sf "$(command -v "$b")" "$NOJQ_DIR/$b"; done
-for h in validate-hooks host-whitelist command-whitelist write-guard; do
+# 只缺 jq / 只缺 python3 两种 PATH：含 ssh 的命令必须 exit 2，非 ssh 命令放行；
+# cwd 含 ssh 字样不算（只看 tool_input.command）；PostToolUse 的 audit-log 不受影响
+mk_bin() {  # mk_bin <dir> <工具...>
+    local d="$1"; shift; mkdir -p "$d"
+    for b in "$@"; do ln -sf "$(command -v "$b")" "$d/$b"; done
+}
+NOJQ_DIR="$TMPDIR/nojq-bin";  mk_bin "$NOJQ_DIR" bash cat dirname grep python3 sed
+NOPY_DIR="$TMPDIR/nopy-bin";  mk_bin "$NOPY_DIR" bash cat dirname grep jq sed
+run_hook_rc() {  # run_hook_rc <bin-dir> <hook> <stdin-json>
     set +e
-    printf '{"tool_input":{"command":"ssh prod-web-01 uptime"}}' | env -i PATH="$NOJQ_DIR" HOME="$HOME" CLAUDE_PLUGIN_ROOT="$PLUGIN" DIAG_HOME="$DIAG_HOME" "$NOJQ_DIR/bash" "$PLUGIN/hooks/$h.sh" >/dev/null 2>&1
-    rc_ssh=$?
-    printf '{"tool_input":{"command":"ls -la"}}' | env -i PATH="$NOJQ_DIR" HOME="$HOME" CLAUDE_PLUGIN_ROOT="$PLUGIN" DIAG_HOME="$DIAG_HOME" "$NOJQ_DIR/bash" "$PLUGIN/hooks/$h.sh" >/dev/null 2>&1
-    rc_plain=$?
-    set -e
-    if [ "$rc_ssh" -eq 2 ] && [ "$rc_plain" -eq 0 ]; then
-        RESULTS+=("✅ T5d $h: missing jq blocks ssh, passes non-ssh")
-        PASS=$((PASS+1))
-    else
-        RESULTS+=("❌ T5d $h: missing jq → ssh exit=$rc_ssh (want 2), non-ssh exit=$rc_plain (want 0)")
-        FAIL=$((FAIL+1))
-    fi
+    printf '%s' "$3" | env -i PATH="$1" HOME="$HOME" CLAUDE_PLUGIN_ROOT="$PLUGIN" DIAG_HOME="$DIAG_HOME" "$1/bash" "$PLUGIN/hooks/$2.sh" >/dev/null 2>&1
+    local rc=$?; set -e; echo "$rc"
+}
+SSH_IN='{"tool_input":{"command":"ssh prod-web-01 uptime"}}'
+LS_IN='{"cwd":"/home/u/ssh-tools","tool_input":{"command":"ls -la"}}'
+for bin in "$NOJQ_DIR:jq" "$NOPY_DIR:python3"; do
+    dir="${bin%%:*}"; miss="${bin##*:}"
+    for h in validate-hooks host-whitelist command-whitelist write-guard; do
+        rc_ssh=$(run_hook_rc "$dir" "$h" "$SSH_IN"); rc_plain=$(run_hook_rc "$dir" "$h" "$LS_IN")
+        if [ "$rc_ssh" -eq 2 ] && [ "$rc_plain" -eq 0 ]; then
+            RESULTS+=("✅ T5d $h: missing $miss blocks ssh, passes non-ssh"); PASS=$((PASS+1))
+        else
+            RESULTS+=("❌ T5d $h: missing $miss → ssh exit=$rc_ssh (want 2), non-ssh exit=$rc_plain (want 0)"); FAIL=$((FAIL+1))
+        fi
+    done
 done
+rc_audit=$(run_hook_rc "$NOJQ_DIR" audit-log '{"tool_input":{"command":"ls -la ~"},"tool_response":{"stdout":".ssh"}}')
+if [ "$rc_audit" -eq 0 ]; then
+    RESULTS+=("✅ T5d audit-log: missing jq does not block PostToolUse"); PASS=$((PASS+1))
+else
+    RESULTS+=("❌ T5d audit-log: missing jq → exit=$rc_audit (want 0)"); FAIL=$((FAIL+1))
+fi
 
 # ===== T9: 审计完整性 =====
 jq -n --arg c "ssh prod-web-01 tail -n 100 /var/log/app/order.log" '{

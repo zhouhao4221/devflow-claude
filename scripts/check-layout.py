@@ -141,7 +141,10 @@ def _missing_preauth(p, fn, fm):
     adir = os.path.join(ROOT, "plugins", p, "agents")
     agents = [a[:-3] for a in os.listdir(adir) if a.endswith(".md")] if os.path.isdir(adir) else []
     with open(os.path.join(cdir, fn), encoding="utf-8-sig") as f:
-        body = f.read().split("\n---", 2)[-1]
+        text = f.read().replace("\r\n", "\n")
+    # 与 frontmatter() 同一正则取正文；不能按 "\n---" 切，正文里的 --- 分隔线会切掉首节
+    m = re.match(r"---[ \t]*\n(.*?)^---[ \t]*$", text, re.S | re.M)
+    body = text[m.end():] if m else text
     allowed = fm.get("allowed-tools", "")
     out = []
     used = [a for a in agents if f"`{a}`" in body]
